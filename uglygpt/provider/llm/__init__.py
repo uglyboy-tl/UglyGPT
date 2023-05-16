@@ -7,8 +7,16 @@ try:
     from uglygpt.provider.llm.openai import OpenAILLM
     supported_llm_providers.append(OpenAILLM)
 except ImportError:
-    print("OpenAILLM not installed. Skipping import.")
+    logger.warn("OpenAILLM not installed. Skipping import.")
     OpenAILLM = None
+
+try:
+    from uglygpt.provider.llm.huggingchat import HuggingChatLLM
+    supported_llm_providers.append(HuggingChatLLM)
+except ImportError:
+    logger.warn("HuggingChatLLM not installed. Skipping import.")
+    HuggingChatLLM = None
+
 
 def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
     llm_provider_name = llm_provider_name or config.llm_provider
@@ -23,7 +31,7 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
 
     if llm_provider_name == "openai":
         if not OpenAILLM:
-            print(
+            logger.error(
                 "Error: OpenAILLM is not installed. Please install openai"
                 " to use OpenAI as a LLM provider."
             )
@@ -32,7 +40,12 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
     elif llm_provider_name == "gpt4free":
         return None
     elif llm_provider_name == "huggingchat":
-        return None
+        if not HuggingChatLLM:
+            logger.error(
+                "Error: HuggingChatLLM is not installed. Please install huggingface"
+                " to use HuggingChat as a LLM provider."
+            )
+        return HuggingChatLLM()
     elif llm_provider_name == "huggingface":
         return None
     elif llm_provider_name == "bard":

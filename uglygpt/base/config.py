@@ -31,14 +31,19 @@ class Config(metaclass=Singleton):
         self.language = os.getenv("LANGUAGE", "English")
 
         # API keys
+        # OpenAI
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.openai_api_base = os.getenv("OPENAI_API_BASE")
+        # HuggingChat
+        self.hf_chat_code = os.getenv("HF_CHAT_CODE")
+        self.hf_chat_token = os.getenv("HF_CHAT_TOKEN")
+        # Google
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.google_project_id = os.getenv("GOOGLE_PROJECT_ID")
         self.custom_search_engine_id = os.getenv("CUSTOM_SEARCH_ENGINE_ID")
-
+        # BARD
         self.bard_token = os.getenv("BARD_TOKEN")
-
+        # Pinecone
         self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
         self.pinecone_region = os.getenv("PINECONE_ENV")
 
