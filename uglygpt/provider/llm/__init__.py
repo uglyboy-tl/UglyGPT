@@ -17,6 +17,12 @@ except ImportError:
     logger.warn("HuggingChatLLM not installed. Skipping import.")
     HuggingChatLLM = None
 
+try:
+    from uglygpt.provider.llm.gpt4free import GPT4FreeLLM
+    supported_llm_providers.append(GPT4FreeLLM)
+except ImportError:
+    logger.warn("GPT4FreeLLM not installed. Skipping import.")
+    GPT4FreeLLM = None
 
 def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
     llm_provider_name = llm_provider_name or config.llm_provider
@@ -38,14 +44,21 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
         else:
             return OpenAILLM()
     elif llm_provider_name == "gpt4free":
-        return None
+        if not GPT4FreeLLM:
+            logger.error(
+                "Error: GPT4FreeLLM is not installed. Please install gpt4free"
+                " to use GPT4Free as a LLM provider."
+            )
+        else:
+            return GPT4FreeLLM()
     elif llm_provider_name == "huggingchat":
         if not HuggingChatLLM:
             logger.error(
                 "Error: HuggingChatLLM is not installed. Please install huggingface"
                 " to use HuggingChat as a LLM provider."
             )
-        return HuggingChatLLM()
+        else:
+            return HuggingChatLLM()
     elif llm_provider_name == "huggingface":
         return None
     elif llm_provider_name == "bard":
