@@ -20,7 +20,13 @@ def get_embedding_provider(embedding_provider_name: str = "openai") -> Embedding
     Returns: EmbeddingProvider
     """
     if embedding_provider_name == "openai":
-        return OpenAIEmbedding()
+        if not OpenAIEmbedding:
+            logger.error(
+                "Error: OpenAIEmbedding is not installed. Please install openai"
+                " to use OpenAI as a Embedding provider."
+            )
+        else:
+            return OpenAIEmbedding()
     elif embedding_provider_name == "google":
         return None
     else:

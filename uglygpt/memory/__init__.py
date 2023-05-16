@@ -11,6 +11,7 @@ try:
 
     supported_memory.append("pinecone")
 except ImportError:
+    logger.warn("Pinecone not installed. Skipping import.")
     PineconeMemory = None
 
 
