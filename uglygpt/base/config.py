@@ -20,7 +20,7 @@ class Config(metaclass=Singleton):
         self.file_logger_path =  str(workspace_directory / "logs")
 
         # Proxy settings
-        self.proxy = False
+        self.proxy = True
         self.proxy_url = os.getenv("PROXY_URL")
         self.proxy_port = os.getenv("PROXY_PORT")
 
@@ -111,7 +111,8 @@ class Config(metaclass=Singleton):
 
     def stop_proxy(self) -> None:
         """Stop the proxy."""
-        os.environ.pop("HTTP_PROXY")
-        os.environ.pop("HTTPS_PROXY")
+        if self.proxy:
+            os.environ.pop("HTTP_PROXY")
+            os.environ.pop("HTTPS_PROXY")
 
 config = Config()
