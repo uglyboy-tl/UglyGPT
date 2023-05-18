@@ -1,6 +1,6 @@
 import abc
 import re
-from typing import List, Optional
+from typing import Any, List, Optional
 from .output_parsers.base import BaseOutputParser
 
 class BasePromptTemplate(abc.ABC):
@@ -21,3 +21,8 @@ class BasePromptTemplate(abc.ABC):
         pattern = r"(?<!{){([^{}\n]+)}(?!})"
         result = re.sub(pattern, replace, self.template)
         return result
+
+    @abc.abstractmethod
+    def format(self, **kwargs: Any) -> str:
+        """Format the prompt with the given kwargs."""
+        pass

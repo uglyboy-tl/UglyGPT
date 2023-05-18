@@ -8,3 +8,6 @@ class DefaultPromptTemplate(BasePromptTemplate):
     @property
     def input_variables(self):
         return [self.input_key]
+
+    def format(self, **kwargs):
+        return self.format_prompt(**kwargs)
