@@ -23,6 +23,9 @@ class TaskCreationPromptTemplate(BasePromptTemplate):
 
     def format(self, **kwargs):
         prompt = self.format_prompt(**kwargs)
+        if "Language" in kwargs and kwargs["Language"] != "English":
+            language = kwargs["Language"]
+            prompt += f"\nYou must answer in the '{language}' language. If the answer is not in the '{language}' language, you need to translate it in the '{language}' language."
         prompt += self.output_parser.get_format_instructions()
         return prompt
 

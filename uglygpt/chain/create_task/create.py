@@ -6,12 +6,13 @@ from uglygpt.chain.llm import LLMChain
 from uglygpt.provider import LLMProvider
 
 from uglygpt.agent.task_storage import TaskListStorage
-from .prompt import get_prompt
+from uglygpt.chain.create_task.prompt import get_prompt
 
 class CreateTaskChain(Chain):
-    def __init__(self, llm: LLMProvider = None, tasks: TaskListStorage = None) -> None:
+    def __init__(self, llm: LLMProvider = None, tasks: TaskListStorage = None, language: str = "English") -> None:
         self.llm = llm
         self.tasks = tasks
+        self.language = language
         self.input_key: str = "result"
         self.output_key: str = "tasks"
 
@@ -32,7 +33,7 @@ class CreateTaskChain(Chain):
 
         chain = LLMChain(llm = self.llm, prompt = get_prompt("task_creation"))
 
-        new_tasks = chain.parse(task = self.tasks.current_task, objective = self.tasks.objective, tasks = str(self.tasks.get_task_names()), result = inputs[self.input_key])
+        new_tasks = chain.parse(task = self.tasks.current_task, objective = self.tasks.objective, tasks = str(self.tasks.get_task_names()), result = inputs[self.input_key], Language = self.language)
         for new_task in new_tasks:
             self.tasks.append({"task_name": new_task})
 
@@ -42,7 +43,7 @@ class CreateTaskChain(Chain):
 
         chain = LLMChain(llm = self.llm, prompt = get_prompt("task_priority"))
 
-        new_tasks = chain.parse(task = str(task_names), objective = self.tasks.objective)
+        new_tasks = chain.parse(task = str(task_names), objective = self.tasks.objective, Language = self.language)
         new_tasks_list = []
         task_id = self.tasks.current_task_id
         for task_string in new_tasks:

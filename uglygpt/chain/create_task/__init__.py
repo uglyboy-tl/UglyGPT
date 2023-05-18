@@ -1,1 +1,1 @@
-from uglygpt.chain.create_task import CreateTaskChain
+from uglygpt.chain.create_task.create import CreateTaskChain
