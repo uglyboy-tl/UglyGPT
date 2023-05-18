@@ -10,4 +10,5 @@ class DefaultPromptTemplate(BasePromptTemplate):
         return [self.input_key]
 
     def format(self, **kwargs):
+        kwargs = self._merge_partial_and_user_variables(**kwargs)
         return self.format_prompt(**kwargs)

@@ -22,6 +22,7 @@ class TaskCreationPromptTemplate(BasePromptTemplate):
         self.output_parser = NumberedListOutputParser()
 
     def format(self, **kwargs):
+        kwargs = self._merge_partial_and_user_variables(**kwargs)
         prompt = self.format_prompt(**kwargs)
         if "Language" in kwargs and kwargs["Language"] != "English":
             language = kwargs["Language"]
@@ -36,6 +37,7 @@ class TaskPriorityPromptTemplate(BasePromptTemplate):
         self.output_parser = NumberedListOutputParser()
 
     def format(self, **kwargs):
+        kwargs = self._merge_partial_and_user_variables(**kwargs)
         prompt = self.format_prompt(**kwargs)
         prompt += self.output_parser.get_format_instructions()
         return prompt

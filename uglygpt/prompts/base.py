@@ -1,6 +1,6 @@
 import abc
 import re
-from typing import Any, List, Optional
+from typing import Any, List, Dict, Optional
 from .output_parsers.base import BaseOutputParser
 
 class BasePromptTemplate(abc.ABC):
@@ -21,6 +21,14 @@ class BasePromptTemplate(abc.ABC):
         pattern = r"(?<!{){([^{}\n]+)}(?!})"
         result = re.sub(pattern, replace, self.template)
         return result
+
+    def _merge_partial_and_user_variables(self, **kwargs: Any) -> Dict[str, Any]:
+        # Get partial params:
+        partial_kwargs = {
+            k: v if isinstance(v, str) else v()
+            for k, v in self.partial_variables.items()
+        }
+        return {**partial_kwargs, **kwargs}
 
     @abc.abstractmethod
     def format(self, **kwargs: Any) -> str:
