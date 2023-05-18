@@ -2,4 +2,11 @@
 .vscode
 __pycache__/
 .env
+
+``` 一些不需要上传的文件
+```
 test.py
+main.py
+data_ingestion.py
+prompts
+ingestion

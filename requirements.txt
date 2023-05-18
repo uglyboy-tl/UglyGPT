@@ -3,3 +3,4 @@ colorama
 orjson
 numpy
 pytest
+pytest-mock
