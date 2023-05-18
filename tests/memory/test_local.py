@@ -7,8 +7,8 @@ import pytest
 from pytest_mock import MockerFixture
 
 
-from uglygpt.memory.local import EMBED_DIM, SAVE_OPTIONS
-from uglygpt.memory.local import LocalMemory as LocalCache_
+from uglygpt.indexes.local import EMBED_DIM, SAVE_OPTIONS
+from uglygpt.indexes.local import LocalIndex as LocalCache_
 from uglygpt.base.config import Config
 
 

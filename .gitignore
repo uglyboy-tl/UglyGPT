@@ -8,5 +8,4 @@ __pycache__/
 test.py
 main.py
 data_ingestion.py
-prompts
 ingestion

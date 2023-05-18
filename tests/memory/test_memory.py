@@ -2,7 +2,7 @@ import random
 import string
 import pytest
 
-from uglygpt.memory import get_memory
+from uglygpt.indexes import get_memory
 from uglygpt.base.config import config
 
 def test_get_pinecone():

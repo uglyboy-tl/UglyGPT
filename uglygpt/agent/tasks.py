@@ -2,7 +2,6 @@ import re
 from collections import deque
 from typing import Dict, List
 from colorama import Fore
-from logging import DEBUG
 
 from uglygpt.provider import get_llm_provider, LLMProvider
 from uglygpt import logger
@@ -78,7 +77,6 @@ def task_creation(result: Dict, tasks: TaskListStorage, llm: LLMProvider = get_l
 if __name__ == "__main__":
     format_prompt.set_objective("在 Macbook 上安装 Debian")
     tasks = TaskListStorage()
-    logger.set_level(DEBUG)
 
     if tasks.is_empty():
         tasks.append({"task_name":"Develop a task list to complete the objective."})
