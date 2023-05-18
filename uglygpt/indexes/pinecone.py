@@ -1,6 +1,6 @@
 import pinecone
 
-from uglygpt.memory.base import MemoryProviderSingleton
+from uglygpt.indexes.base import BaseIndex
 from uglygpt.provider import get_embedding_vector
 
 class Pinecone:
@@ -65,5 +65,5 @@ class Pinecone:
     def get_stats(self):
         return self.index.describe_index_stats()
 
-class PineconeMemory(Pinecone, MemoryProviderSingleton):
+class PineconeIndex(Pinecone, BaseIndex):
     pass

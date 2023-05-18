@@ -7,7 +7,7 @@ from typing import Any, List, Dict
 import numpy as np
 import orjson
 
-from uglygpt.memory.base import MemoryProviderSingleton
+from uglygpt.indexes.base import BaseIndex
 from uglygpt.provider import get_embedding_vector
 
 EMBED_DIM = 1536
@@ -144,5 +144,5 @@ class LocalCache:
         """
         return len(self.data.texts), self.data.embeddings.shape
 
-class LocalMemory(LocalCache, MemoryProviderSingleton):
+class LocalIndex(LocalCache, BaseIndex):
     pass

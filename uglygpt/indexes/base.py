@@ -3,7 +3,7 @@ import abc
 
 from uglygpt.base import AbstractSingleton
 
-class MemoryProviderSingleton(AbstractSingleton):
+class BaseIndex(AbstractSingleton):
     @abc.abstractmethod
     def add(self, data):
         """Adds to memory"""

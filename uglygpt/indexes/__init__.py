@@ -1,37 +1,40 @@
 from uglygpt.base import logger
-from uglygpt.memory.local import LocalMemory
-from uglygpt.memory.no_memory import NoMemory
+from uglygpt.indexes.local import LocalIndex
+from uglygpt.indexes.no_index import NoIndex
+from uglygpt.indexes.base import BaseIndex
 
 # List of supported memory backends
 # Add a backend to this list if the import attempt is successful
 supported_memory = ["local", "no_memory"]
 
 try:
-    from uglygpt.memory.pinecone import PineconeMemory
+    from uglygpt.indexes.pinecone import PineconeIndex
 
     supported_memory.append("pinecone")
 except ImportError:
     logger.warn("Pinecone not installed. Skipping import.")
-    PineconeMemory = None
+    PineconeIndex = None
 
 
 def get_memory(cfg, init=False):
     memory = None
     if cfg.memory_backend == "pinecone":
-        if not PineconeMemory:
+        if not PineconeIndex:
             logger.warn(
                 "Error: Pinecone is not installed. Please install pinecone"
                 " to use Pinecone as a memory backend."
             )
         else:
-            memory = PineconeMemory(cfg)
+            memory = PineconeIndex(cfg)
             if init:
                 memory.clear()
     elif cfg.memory_backend == "no_memory":
-        memory = NoMemory(cfg)
+        memory = NoIndex(cfg)
 
     if memory is None:
-        memory = LocalMemory(cfg)
+        memory = LocalIndex(cfg)
         if init:
             memory.clear()
     return memory
+
+__all__ = ["get_memory", "BaseIndex"]

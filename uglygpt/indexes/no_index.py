@@ -3,10 +3,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from uglygpt.memory.base import MemoryProviderSingleton
-from uglygpt.base import AbstractSingleton
+from uglygpt.indexes.base import BaseIndex
 
-class NoMemory(MemoryProviderSingleton):
+class NoIndex(BaseIndex):
     """
     A class that does not store any data. This is the default memory provider.
     """
