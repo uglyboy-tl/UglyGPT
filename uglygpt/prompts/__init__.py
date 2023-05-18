@@ -1,5 +1,5 @@
 from .base import BasePromptTemplate
-from .default import DefaultPromptTemplate
+from .default import PromptTemplate
 from .test import TestPromptTemplate
 
 def getPromptTemplate(name: str = None, table_name: str = None):
@@ -7,6 +7,6 @@ def getPromptTemplate(name: str = None, table_name: str = None):
         case "test":
             return TestPromptTemplate()
         case _:
-            return DefaultPromptTemplate()
+            return PromptTemplate(input_variables=["input"], template="{input}")
 
 __all__ = ["BasePromptTemplate", "getPromptTemplate"]

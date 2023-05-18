@@ -9,9 +9,9 @@ class LLMChain(Chain):
         self.llm = llm
         if prompt:
             self.prompt = prompt
-        elif prompt_name != "":
+        else:
             self.prompt = getPromptTemplate(prompt_name)
-        self.output_key = "text"
+        self.output_key = "data"
 
     @property
     def input_keys(self) -> List[str]:
@@ -64,3 +64,7 @@ class LLMChain(Chain):
                 completion = llm.predict(adjective="funny")
         """
         return self._parse_result(self(kwargs, callbacks=callbacks)[self.output_key])
+
+    def set_prompt(self, prompt: BasePromptTemplate) -> None:
+        """Set the prompt template."""
+        self.prompt = prompt
