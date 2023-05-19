@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from inspect import signature, Parameter
 from typing import Any, Dict, Tuple, Optional, Union, Callable
 
+
 @dataclass
 class BaseTool(abc.ABC):
     name: str
     description: str
-    return_directly: bool = False
+    return_direct: bool = False
 
     @property
     def args(self) -> dict:
@@ -20,6 +21,21 @@ class BaseTool(abc.ABC):
                 params[name] = param.default
         return params
 
+    def _parse_input(
+        self,
+        tool_input: Union[str, Dict],
+    ) -> Union[str, Dict[str, Any]]:
+        """Convert tool input to pydantic model."""
+        input_args = self.args
+        if isinstance(tool_input, str):
+            if input_args is not None:
+                key_ = next(iter(input_args.keys()))
+            return tool_input
+        else:
+            if input_args is not None:
+                return {k: v for k, v in tool_input if k in input_args.keys()}
+        return tool_input
+
     def _to_args_and_kwargs(self, tool_input: Union[str, Dict]) -> Tuple[Tuple, Dict]:
         # For backwards compatibility, if run_input is a string,
         # pass as a positional argument.
@@ -29,11 +45,7 @@ class BaseTool(abc.ABC):
             return (), tool_input
 
     @abc.abstractmethod
-    def _run(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def _run(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
     def _to_args_and_kwargs(self, tool_input: Union[str, Dict]) -> Tuple[Tuple, Dict]:
@@ -44,17 +56,11 @@ class BaseTool(abc.ABC):
         else:
             return (), tool_input
 
-    def run(
-        self,
-        tool_input: Union[str, Dict],
-        **kwargs: Any,
-    ) -> Any:
+    def run(self, tool_input: Union[str, Dict], **kwargs: Any) -> Any:
         parsed_input = self._parse_input(tool_input)
         try:
             tool_args, tool_kwargs = self._to_args_and_kwargs(parsed_input)
-            observation = (
-                self._run(*tool_args, **tool_kwargs)
-            )
+            observation = self._run(*tool_args, **tool_kwargs)
         except (Exception, KeyboardInterrupt) as e:
             raise e
         return observation
@@ -62,10 +68,10 @@ class BaseTool(abc.ABC):
 @dataclass
 class Tool(BaseTool):
     """Tool that takes in function or coroutine directly."""
-
     description: str = ""
-    func: Callable[..., str]
+    func: Callable[..., str] = None
     """The function to run when the tool is called."""
+
     @property
     def args(self) -> dict:
         """The tool's input arguments."""
@@ -83,16 +89,11 @@ class Tool(BaseTool):
             )
         return tuple(all_args), {}
 
-    def _run(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def _run(self, *args: Any, **kwargs: Any) -> Any:
         """Use the tool."""
         return self.func(*args, **kwargs)
 
     # TODO: this is for backwards compatibility, remove in future
-
     def __init__(
         self, name: str, func: Callable, description: str, **kwargs: Any
     ) -> None:
@@ -119,7 +120,7 @@ class Tool(BaseTool):
             **kwargs,
         )
 
-@dataclass
+
 class StructuredTool(BaseTool):
     """Tool that can operate on any number of inputs."""
 
