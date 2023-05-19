@@ -12,14 +12,18 @@ Tasks should be sorted from highest to lowest priority, where higher-priority ta
 Do not remove any tasks.
 """
 
+from dataclasses import dataclass, field
+from typing import List, Optional
+from uglygpt.prompts.output_parsers.base import BaseOutputParser
+
 from uglygpt.prompts.base import BasePromptTemplate
 from uglygpt.prompts.output_parsers.list import NumberedListOutputParser
 
+@dataclass
 class TaskCreationPromptTemplate(BasePromptTemplate):
-    def __init__(self):
-        self.input_variables = ["objective", "result", "task", "tasks"]
-        self.template = TASK_CREATION_TEMPLATE
-        self.output_parser = NumberedListOutputParser()
+    input_variables: List[str] = field(default_factory= lambda: ["objective", "result", "task", "tasks"])
+    output_parser: Optional[BaseOutputParser] = field(default_factory=NumberedListOutputParser)
+    template: str = TASK_CREATION_TEMPLATE
 
     def format(self, **kwargs):
         kwargs = self._merge_partial_and_user_variables(**kwargs)
@@ -30,11 +34,11 @@ class TaskCreationPromptTemplate(BasePromptTemplate):
         prompt += self.output_parser.get_format_instructions()
         return prompt
 
+@dataclass
 class TaskPriorityPromptTemplate(BasePromptTemplate):
-    def __init__(self):
-        self.input_variables = ["objective", "task"]
-        self.template = PRIORITY_TEMPLATE
-        self.output_parser = NumberedListOutputParser()
+    input_variables: List[str] = field(default_factory= lambda: ["objective", "task"])
+    output_parser: Optional[BaseOutputParser] = field(default_factory=NumberedListOutputParser)
+    template: str = PRIORITY_TEMPLATE
 
     def format(self, **kwargs):
         kwargs = self._merge_partial_and_user_variables(**kwargs)

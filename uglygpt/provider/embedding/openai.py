@@ -1,5 +1,6 @@
 import time
 import openai
+from dataclasses import dataclass
 from colorama import Fore
 from openai.error import APIError, RateLimitError
 
@@ -9,9 +10,10 @@ from uglygpt.provider.embedding import EmbeddingProvider
 openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
 
+@dataclass
 class OpenAIEmbedding(EmbeddingProvider):
-    def __init__(self):
-        self.model = "text-embedding-ada-002"
+    """OpenAI Embedding provider."""
+    model: str = "text-embedding-ada-002"
 
     def embedding(self, texts:str) -> list:
         """Create an embedding with text-ada-002 using the OpenAI SDK"""

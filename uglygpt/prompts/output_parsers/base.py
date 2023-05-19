@@ -1,6 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
+
+class OutputParserException(Exception):
+    """Exception that output parsers should raise to signify a parsing error.
+
+    This exists to differentiate parsing errors from other code or execution errors
+    that also may arise inside the output parser. OutputParserExceptions will be
+    available to catch and handle in ways to fix the parsing error, while other
+    errors will be raised.
+    """
+
+    pass
+
 class BaseOutputParser(ABC):
     """Class to parse the output of an LLM call.
 

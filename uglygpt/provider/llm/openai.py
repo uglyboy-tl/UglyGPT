@@ -1,5 +1,5 @@
 import openai
-
+from dataclasses import dataclass, field
 from uglygpt.provider.llm.base import LLMProvider
 from uglygpt.base import config
 
@@ -7,12 +7,13 @@ from uglygpt.base import config
 openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
 
+@dataclass
 class OpenAILLM(LLMProvider):
-    def __init__(self):
-        self.requirements = ["openai"]
-        self.model = "text-davinci-003"
-        self.temperature = 0.7
-        self.MAX_TOKENS = 4096
+    """OpenAI LLM provider."""
+    requirements: list[str] = field(default_factory= lambda: ["openai"])
+    model: str = "text-davinci-003"
+    temperature: float = 0.7
+    MAX_TOKENS: int = 4096
 
     def instruct(self, prompt: str, tokens: int=1024) -> str:
         max_new_tokens = int(self.MAX_TOKENS) - tokens

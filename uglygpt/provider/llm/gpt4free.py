@@ -1,4 +1,5 @@
 from time import sleep
+from dataclasses import dataclass, field
 
 import gpt4free
 from gpt4free import Provider
@@ -6,11 +7,10 @@ from gpt4free import Provider
 from uglygpt.base import config, logger
 from uglygpt.provider.llm.base import LLMProvider
 
+@dataclass
 class GPT4FreeLLM(LLMProvider):
-    def __init__(self,type:str = "useless"):
-        self.requirements = ["gpt4free"]
-        self.type = type
-
+    requirements: list[str] = field(default_factory= lambda: ["gpt4free"])
+    type: str = "useless"
 
     def instruct(self, prompt: str, tokens: int = 0) -> str:
         match self.type:

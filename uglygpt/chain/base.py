@@ -1,5 +1,6 @@
 import abc
-from typing import Any, Dict, List, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union, Optional
 from pathlib import Path
 import json
 
@@ -11,9 +12,10 @@ yaml = None
 
 from uglygpt.indexes.base import BaseIndex
 
+@dataclass
 class Chain(abc.ABC):
     """Base interface that all chains should implement."""
-    memory: BaseIndex = None
+    memory: Optional[BaseIndex] = None
 
     @property
     @abc.abstractmethod
@@ -77,24 +79,11 @@ class Chain(abc.ABC):
     def _execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
 
-    @abc.abstractmethod
-    def _aexecute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute the chain asynchronously."""
-
     def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, Any]:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:
             outputs = self._execute(inputs)
-        except (KeyboardInterrupt, Exception) as e:
-            raise e
-        return self.prep_outputs(inputs, outputs, return_only_outputs)
-
-    async def acall(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, Any]:
-        """Execute the chain asynchronously."""
-        inputs = self.prep_inputs(inputs)
-        try:
-            outputs = await self._aexecute(inputs)
         except (KeyboardInterrupt, Exception) as e:
             raise e
         return self.prep_outputs(inputs, outputs, return_only_outputs)
@@ -114,33 +103,6 @@ class Chain(abc.ABC):
 
         if kwargs and not args:
             return self(kwargs, callbacks=callbacks)[self.output_keys[0]]
-
-        if not kwargs and not args:
-            raise ValueError(
-                "`run` supported with either positional arguments or keyword arguments,"
-                " but none were provided."
-            )
-
-        raise ValueError(
-            f"`run` supported with either positional arguments or keyword arguments"
-            f" but not both. Got args: {args} and kwargs: {kwargs}."
-        )
-
-    async def arun(self, *args: Any, callbacks = None, **kwargs: Any) -> str:
-        """Run the chain as text in, text out or multiple variables, text out."""
-        if len(self.output_keys) != 1:
-            raise ValueError(
-                f"`run` not supported when there is not exactly "
-                f"one output key. Got {self.output_keys}."
-            )
-
-        if args and not kwargs:
-            if len(args) != 1:
-                raise ValueError("`run` supports only one positional argument.")
-            return (await self.acall(args[0], callbacks=callbacks))[self.output_keys[0]]
-
-        if kwargs and not args:
-            return (await self.acall(kwargs, callbacks=callbacks))[self.output_keys[0]]
 
         if not kwargs and not args:
             raise ValueError(

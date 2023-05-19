@@ -1,24 +1,18 @@
 import time
+from dataclasses import dataclass,field
 from requests.sessions import Session
-import json
 
 from uglygpt.provider.llm.base import LLMProvider
 from uglygpt.base import config, logger
 
+@dataclass
 class HuggingChatLLM(LLMProvider):
-    def __init__(
-        self,
-        AI_TEMPERATURE: float = 0.7,
-        MAX_TOKENS: int = 2000,
-        AI_MODEL: str = "openassistant",
-        **kwargs,
-    ):
-        self.requirements = []
-        self.AI_TEMPERATURE = AI_TEMPERATURE
-        self.MAX_TOKENS = int(MAX_TOKENS)
-        self.AI_MODEL = AI_MODEL
-        # get cookie from huggingchat-cookies.json
-        self.cookie = None
+    """HuggingChat LLM provider."""
+    requirements: list[str] = field(default_factory= lambda: ["requests"])
+    AI_TEMPERATURE: float = 0.7
+    MAX_TOKENS: int = 2000
+    AI_MODEL: str = "openassistant"
+    cookie: str = None
 
     def instruct(self, prompt: str, tokens: int = 0) -> str:
         self.cookie = config.huggingchat_cookie

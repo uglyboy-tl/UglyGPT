@@ -1,21 +1,22 @@
 import re
+from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 from uglygpt.chain.base import Chain
 from uglygpt.chain.llm import LLMChain
-from uglygpt.provider import LLMProvider
+from uglygpt.provider import LLMProvider, get_llm_provider
 
 from uglygpt.agent.task_storage import TaskListStorage
 from uglygpt.chain.create_task.prompt import get_prompt
 
+@dataclass
 class CreateTaskChain(Chain):
-    def __init__(self, llm: LLMProvider = None, tasks: TaskListStorage = None, language: str = "English") -> None:
-        self.llm = llm
-        self.tasks = tasks
-        self.language = language
-        self.input_key: str = "result"
-        self.output_key: str = "tasks"
-
+    """Chain to create a task from a result."""
+    tasks: TaskListStorage = field(default_factory=TaskListStorage)
+    llm: LLMProvider = field(default_factory=get_llm_provider)
+    language: str = "English"
+    input_key: str = "result"
+    output_key: str = "tasks"
 
     @property
     def _chain_type(self) -> str:
@@ -58,11 +59,6 @@ class CreateTaskChain(Chain):
 
         return {self.output_key: str(self.tasks.get_task_names())}
 
-    # async UnFinished
-    def _aexecute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        return super()._aexecute(inputs)
-
-
 from uglygpt.base import logger
 from colorama import Fore
 from uglygpt.provider import get_llm_provider
@@ -89,5 +85,5 @@ if __name__ == "__main__":
         result = ""
 
         # Get New Tasks
-        chain = CreateTaskChain(llm = get_llm_provider(), tasks = tasks)
+        chain = CreateTaskChain(tasks = tasks)
         chain.run(result)

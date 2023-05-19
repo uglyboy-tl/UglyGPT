@@ -1,13 +1,15 @@
 import abc
 import re
+from dataclasses import dataclass, field
 from typing import Any, List, Dict, Union, Optional, Mapping, Callable
 from .output_parsers.base import BaseOutputParser
 
+@dataclass
 class BasePromptTemplate(abc.ABC):
     input_variables: List[str]
     output_parser: Optional[BaseOutputParser] = None
-    template: str
-    partial_variables: Mapping[str, Union[str, Callable[[], str]]] = {}
+    template: str = ""
+    partial_variables: Mapping[str, Union[str, Callable[[], str]]] = field(default_factory=dict)
 
     def format_prompt(self, **kwargs):
         """Format the prompt with the given kwargs."""

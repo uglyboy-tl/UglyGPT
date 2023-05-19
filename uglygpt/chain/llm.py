@@ -1,17 +1,18 @@
 from typing import Any, Dict, List, Union
+from dataclasses import dataclass,field
+
+from colorama import Fore
+from uglygpt.base import config, logger
 
 from uglygpt.chain.base import Chain
-from uglygpt.provider import LLMProvider
+from uglygpt.provider import LLMProvider, get_llm_provider
 from uglygpt.prompts import BasePromptTemplate, getPromptTemplate
 
+@dataclass
 class LLMChain(Chain):
-    def __init__(self, llm: LLMProvider = None, prompt: BasePromptTemplate = None, prompt_name: str = "") -> None:
-        self.llm = llm
-        if prompt:
-            self.prompt = prompt
-        else:
-            self.prompt = getPromptTemplate(prompt_name)
-        self.output_key = "data"
+    llm: LLMProvider = field(default_factory=get_llm_provider)
+    prompt: BasePromptTemplate = field(default_factory=getPromptTemplate)
+    output_key: str = "data"
 
     @property
     def input_keys(self) -> List[str]:
@@ -32,12 +33,9 @@ class LLMChain(Chain):
     def _execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
         prompt = self.prompt.format(**inputs)
+        if config.debug_mode:
+            logger.debug(prompt, "Prompt:\n", Fore.CYAN)
         result = self.llm.instruct(prompt)
-        return {self.output_key: result}
-
-    async def _aexecute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        prompt = self.prompt.format(**inputs)
-        result = await self.llm.instruct(prompt)
         return {self.output_key: result}
 
     def _parse_result(

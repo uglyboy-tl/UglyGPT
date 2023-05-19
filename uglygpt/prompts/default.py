@@ -1,6 +1,9 @@
-from uglygpt.prompts.base import BasePromptTemplate
 from typing import Any, List
+from dataclasses import dataclass
 
+from uglygpt.prompts.base import BasePromptTemplate
+
+@dataclass
 class PromptTemplate(BasePromptTemplate):
     """Schema to represent a prompt for an LLM.
 
@@ -10,11 +13,8 @@ class PromptTemplate(BasePromptTemplate):
             from langchain import PromptTemplate
             prompt = PromptTemplate(input_variables=["foo"], template="Say {foo}")
     """
-    def __init__(self, input_variables:List[str], template: str) -> None:
-        """A list of the names of the variables the prompt template expects."""
-        self.input_variables = input_variables
-        """The prompt template."""
-        self.template = template
+    input_variables: List[str]
+    template: str
 
     @property
     def _prompt_type(self) -> str:

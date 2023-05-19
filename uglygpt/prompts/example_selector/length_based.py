@@ -1,6 +1,7 @@
 """Select examples based on length."""
 import re
 from typing import Callable, Dict, List
+from dataclasses import dataclass
 
 from uglygpt.prompts.example_selector.base import BaseExampleSelector
 from uglygpt.prompts.base import BasePromptTemplate
@@ -9,7 +10,7 @@ from uglygpt.prompts.base import BasePromptTemplate
 def _get_length_based(text: str) -> int:
     return len(re.split("\n| ", text))
 
-
+@dataclass
 class LengthBasedExampleSelector(BaseExampleSelector):
     """Select examples based on length."""
 
