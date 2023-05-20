@@ -1,11 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Any, List, Optional, Sequence
-from uglygpt.chain import LLMChain
 
 from uglygpt.tools.base import BaseTool
 from uglygpt.prompts import PromptTemplate
 from uglygpt.provider import LLMProvider
-from uglygpt.chain.llm import LLMChain
+from uglygpt.chains import LLMChain
 
 from uglygpt.agent.agent import Agent
 from uglygpt.agent.schema import AgentOutputParser

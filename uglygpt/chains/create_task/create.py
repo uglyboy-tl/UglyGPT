@@ -2,12 +2,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from uglygpt.chain.base import Chain
-from uglygpt.chain.llm import LLMChain
+from uglygpt.chains.base import Chain
+from uglygpt.chains.llm import LLMChain
 from uglygpt.provider import LLMProvider, get_llm_provider
 
 from uglygpt.agent.task_storage import TaskListStorage
-from uglygpt.chain.create_task.prompt import get_prompt
+from uglygpt.chains.create_task.prompt import get_prompt
 
 @dataclass
 class CreateTaskChain(Chain):
@@ -30,7 +30,7 @@ class CreateTaskChain(Chain):
     def output_keys(self) -> List[str]:
         return [self.output_key]
 
-    def _execute(self, inputs: Dict[str, Any]) -> Dict[str, str]:
+    def _call(self, inputs: Dict[str, Any]) -> Dict[str, str]:
 
         chain = LLMChain(llm = self.llm, prompt = get_prompt("task_creation"))
 

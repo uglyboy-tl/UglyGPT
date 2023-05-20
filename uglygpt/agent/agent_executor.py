@@ -2,7 +2,7 @@ import time
 from typing import Any, List, Dict, Tuple, Callable, Optional, Sequence, Union
 from dataclasses import dataclass, field
 
-from uglygpt.chain.base import Chain
+from uglygpt.chains.base import Chain
 from uglygpt.tools.base import BaseTool
 from uglygpt.prompts.output_parsers.base import OutputParserException
 from uglygpt.agent.agent import Agent, BaseSingleActionAgent
@@ -107,7 +107,7 @@ class AgentExecutor(Chain):
             result.append((agent_action, observation))
         return result
 
-    def _execute(self, inputs: Dict[str, str]) -> Dict[str, Any]:
+    def _call(self, inputs: Dict[str, str]) -> Dict[str, Any]:
         """Run text through and get agent response."""
 
         name_to_tool_map = {tool.name: tool for tool in self.tools}

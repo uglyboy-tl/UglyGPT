@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple, Union, Optional, Sequence
 
 from uglygpt.base import config, logger
 from uglygpt.agent.schema import AgentAction, AgentFinish, AgentOutputParser
-from uglygpt.chain import LLMChain
+from uglygpt.chains import LLMChain
 from uglygpt.provider import LLMProvider
 from uglygpt.tools.base import BaseTool
 from uglygpt.prompts import BasePromptTemplate

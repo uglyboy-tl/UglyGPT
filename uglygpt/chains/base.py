@@ -76,14 +76,14 @@ class Chain(abc.ABC):
             return {**inputs, **outputs}
 
     @abc.abstractmethod
-    def _execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
 
     def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, Any]:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:
-            outputs = self._execute(inputs)
+            outputs = self._call(inputs)
         except (KeyboardInterrupt, Exception) as e:
             raise e
         return self.prep_outputs(inputs, outputs, return_only_outputs)

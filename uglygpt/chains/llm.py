@@ -4,7 +4,7 @@ from dataclasses import dataclass,field
 from colorama import Fore
 from uglygpt.base import config, logger
 
-from uglygpt.chain.base import Chain
+from uglygpt.chains.base import Chain
 from uglygpt.provider import LLMProvider, get_llm_provider
 from uglygpt.prompts import BasePromptTemplate, getPromptTemplate
 
@@ -30,13 +30,30 @@ class LLMChain(Chain):
         """
         return [self.output_key]
 
-    def _execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
         prompt = self.prompt.format(**inputs)
         if config.debug_mode:
             logger.debug(prompt, "Prompt:\n", Fore.CYAN)
         result = self.llm.instruct(prompt)
         return {self.output_key: result}
+
+    def predict(self, callbacks = None, **kwargs: Any) -> str:
+        """Format prompt with kwargs and pass to LLM.
+
+        Args:
+            callbacks: Callbacks to pass to LLMChain
+            **kwargs: Keys to pass to prompt template.
+
+        Returns:
+            Completion from LLM.
+
+        Example:
+            .. code-block:: python
+
+                completion = llm.predict(adjective="funny")
+        """
+        return self(kwargs, callbacks=callbacks)[self.output_key]
 
     def _parse_result(
         self, result: str
