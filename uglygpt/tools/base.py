@@ -92,15 +92,6 @@ class Tool(BaseTool):
         """Use the tool."""
         return self.func(*args, **kwargs)
 
-    # TODO: this is for backwards compatibility, remove in future
-    def __init__(
-        self, name: str, func: Callable, description: str, **kwargs: Any
-    ) -> None:
-        """Initialize tool."""
-        super(Tool, self).__init__(
-            name=name, func=func, description=description, **kwargs
-        )
-
     @classmethod
     def from_function(
         cls,
