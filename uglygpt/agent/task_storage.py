@@ -1,16 +1,17 @@
-import re
+from dataclasses import dataclass, field
 from collections import deque
 from typing import Dict, List
 
 # Task storage supporting only a single instance of BabyAGI
+@dataclass
 class TaskListStorage:
-    def __init__(self):
-        self.tasks = deque([])
-        self.task_id_counter = 0
-        self.current_task_id = 0
-        self.current_task = None
-        self.finished_tasks = []
-        self.objective = ""
+    """Storage for tasks."""
+    tasks: deque = field(default_factory=deque)
+    task_id_counter: int = 0
+    current_task_id: int = 0
+    current_task: Dict = field(default_factory=dict)
+    finished_tasks: List[Dict] = field(default_factory=list)
+    objective: str = ""
 
     def append(self, task: Dict):
         self.tasks.append(task)

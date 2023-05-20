@@ -88,7 +88,7 @@ class Agent(BaseSingleActionAgent):
         full_inputs = self.get_full_inputs(intermediate_steps, **kwargs)
         full_output = self.llm_chain.run(**full_inputs)
         if config.debug_mode:
-            logger.debug(full_output, "AgentOutput:")
+            logger.debug(full_output)
         return self.output_parser.parse(full_output)
 
     def _construct_scratchpad(

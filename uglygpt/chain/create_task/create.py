@@ -30,7 +30,7 @@ class CreateTaskChain(Chain):
     def output_keys(self) -> List[str]:
         return [self.output_key]
 
-    def _execute(self, inputs: Dict[str, Any]) -> Dict[str, List]:
+    def _execute(self, inputs: Dict[str, Any]) -> Dict[str, str]:
 
         chain = LLMChain(llm = self.llm, prompt = get_prompt("task_creation"))
 
@@ -57,7 +57,7 @@ class CreateTaskChain(Chain):
         if new_tasks_list:
             self.tasks.replace(new_tasks_list)
 
-        return {self.output_key: str(self.tasks.get_task_names())}
+        return {self.output_key: self.tasks.get_task_names()}
 
 from uglygpt.base import logger
 from colorama import Fore

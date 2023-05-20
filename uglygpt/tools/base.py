@@ -21,6 +21,7 @@ class BaseTool(abc.ABC):
                 params[name] = param.default
         return params
 
+    # TODO: 这里的逻辑可能有一些问题，需要再看看。
     def _parse_input(
         self,
         tool_input: Union[str, Dict],
@@ -28,8 +29,6 @@ class BaseTool(abc.ABC):
         """Convert tool input to pydantic model."""
         input_args = self.args
         if isinstance(tool_input, str):
-            if input_args is not None:
-                key_ = next(iter(input_args.keys()))
             return tool_input
         else:
             if input_args is not None:
