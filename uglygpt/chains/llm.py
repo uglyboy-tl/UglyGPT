@@ -7,12 +7,12 @@ from uglygpt.base import config, logger
 
 from uglygpt.chains.base import Chain
 from uglygpt.provider import LLMProvider, get_llm_provider
-from uglygpt.prompts import BasePromptTemplate, getPromptTemplate
+from uglygpt.prompts import BasePromptTemplate, PromptTemplate
 
 @dataclass
 class LLMChain(Chain):
     llm: LLMProvider = field(default_factory=get_llm_provider)
-    prompt: BasePromptTemplate = field(default_factory=getPromptTemplate)
+    prompt: BasePromptTemplate = field(default_factory=PromptTemplate)
     output_key: str = "data"
 
     @property

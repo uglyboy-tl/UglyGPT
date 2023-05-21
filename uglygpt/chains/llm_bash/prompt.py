@@ -4,8 +4,7 @@ from __future__ import annotations
 import re
 from typing import List
 
-from uglygpt.prompts.default import PromptTemplate
-from uglygpt.prompts.output_parsers.base import BaseOutputParser, OutputParserException
+from uglygpt.prompts import PromptTemplate, BaseOutputParser, OutputParserException
 
 _PROMPT_TEMPLATE = """If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
 

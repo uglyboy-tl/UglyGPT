@@ -1,11 +1,11 @@
 from __future__ import annotations
 import time
-from typing import Any, List, Dict, Tuple, Callable, Optional, Sequence, Union
+from typing import Any, List, Dict, Tuple, Optional, Sequence, Union
 from dataclasses import dataclass, field
 
 from uglygpt.chains.base import Chain
 from uglygpt.tools.base import BaseTool
-from uglygpt.prompts.output_parsers.base import OutputParserException
+from uglygpt.prompts import OutputParserException
 from uglygpt.agent.agent import Agent, BaseSingleActionAgent
 from uglygpt.agent.schema import AgentAction, AgentFinish
 from uglygpt.agent.tools import InvalidTool

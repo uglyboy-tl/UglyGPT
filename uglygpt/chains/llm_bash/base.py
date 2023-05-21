@@ -9,8 +9,7 @@ from uglygpt.provider.llm import LLMProvider
 from uglygpt.chains.base import Chain
 from uglygpt.chains.llm import LLMChain
 from uglygpt.chains.llm_bash.prompt import PROMPT
-from uglygpt.prompts.base import BasePromptTemplate
-from uglygpt.prompts.output_parsers.base import OutputParserException
+from uglygpt.prompts import BasePromptTemplate, OutputParserException
 from uglygpt.chains.llm_bash.bash import BashProcess
 
 

@@ -3,7 +3,7 @@ import abc
 import re
 from dataclasses import dataclass, field
 from typing import Any, List, Dict, Union, Optional, Mapping, Callable
-from .output_parsers.base import BaseOutputParser
+from uglygpt.prompts.output_parsers.base import BaseOutputParser, OutputParserException
 
 @dataclass
 class BasePromptTemplate(abc.ABC):

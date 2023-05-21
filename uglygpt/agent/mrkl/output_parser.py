@@ -5,7 +5,7 @@ from typing import Union
 from uglygpt.agent.agent import AgentOutputParser
 from uglygpt.agent.mrkl.prompt import FORMAT_INSTRUCTIONS
 from uglygpt.agent.schema import AgentAction, AgentFinish
-from uglygpt.prompts.output_parsers.base import OutputParserException
+from uglygpt.prompts import OutputParserException
 
 FINAL_ANSWER_ACTION = "Final Answer:"
 OBSERVATION_PREFIX = "Observation:"

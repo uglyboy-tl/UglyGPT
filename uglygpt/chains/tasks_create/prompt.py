@@ -1,4 +1,11 @@
 from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import List, Optional
+
+from uglygpt.prompts import BasePromptTemplate, BaseOutputParser
+from uglygpt.prompts.output_parsers.list import NumberedListOutputParser
+
 TASK_CREATION_TEMPLATE = """
 You are an task creation AI that uses the result of an execution agent to create new tasks with the following objective: {objective}.
 The last completed task has the result: {result}.
@@ -12,13 +19,6 @@ Consider the ultimate objective of your team: {objective}.
 Tasks should be sorted from highest to lowest priority, where higher-priority tasks are those that act as pre-requisites or are more essential for meeting the objective.
 Do not remove any tasks.
 """
-
-from dataclasses import dataclass, field
-from typing import List, Optional
-from uglygpt.prompts.output_parsers.base import BaseOutputParser
-
-from uglygpt.prompts.base import BasePromptTemplate
-from uglygpt.prompts.output_parsers.list import NumberedListOutputParser
 
 @dataclass
 class TaskCreationPromptTemplate(BasePromptTemplate):

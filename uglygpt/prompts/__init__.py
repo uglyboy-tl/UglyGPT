@@ -1,20 +1,15 @@
 from __future__ import annotations
-from .base import BasePromptTemplate, BaseOutputParser
-from .default import PromptTemplate
-from .few_shot import FewShotPromptTemplate
-from .test import TestPromptTemplate
-
-def getPromptTemplate(name: str = None):
-    match name:
-        case "test":
-            return TestPromptTemplate()
-        case _:
-            return PromptTemplate(input_variables=["input"], template="{input}")
+from uglygpt.prompts.base import BasePromptTemplate
+from uglygpt.prompts.output_parsers.base import BaseOutputParser, OutputParserException
+from uglygpt.prompts.example_selector.base import BaseExampleSelector
+from uglygpt.prompts.default import PromptTemplate
+from uglygpt.prompts.few_shot import FewShotPromptTemplate
 
 __all__ = [
     "BasePromptTemplate",
     "BaseOutputParser",
+    "OutputParserException",
+    "BaseExampleSelector",
     "PromptTemplate",
     "FewShotPromptTemplate",
-    "getPromptTemplate"
 ]

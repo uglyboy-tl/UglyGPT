@@ -14,7 +14,7 @@ from uglygpt.provider.llm import LLMProvider
 from uglygpt.chains.base import Chain
 from uglygpt.chains.llm import LLMChain
 from uglygpt.chains.llm_math.prompt import PROMPT
-from uglygpt.prompts.base import BasePromptTemplate
+from uglygpt.prompts import BasePromptTemplate
 
 @dataclass
 class LLMMathChain(Chain):
