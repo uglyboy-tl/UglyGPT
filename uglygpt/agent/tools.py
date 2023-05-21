@@ -14,12 +14,4 @@ class InvalidTool(BaseTool):
         """Use the tool."""
         return f"{tool_name} is not a valid tool, try another one."
 
-    async def _arun(
-        self,
-        tool_name: str,\
-    ) -> str:
-        """Use the tool asynchronously."""
-        return f"{tool_name} is not a valid tool, try another one."
-
-
 __all__ = ["InvalidTool", "BaseTool", "Tool"]
