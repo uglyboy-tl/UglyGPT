@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uglygpt.provider.llm.base import LLMProvider
 from uglygpt.base import config, logger
 

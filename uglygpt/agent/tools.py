@@ -1,4 +1,5 @@
 """Interface for tools."""
+from __future__ import annotations
 from uglygpt.tools.base import BaseTool, Tool
 
 

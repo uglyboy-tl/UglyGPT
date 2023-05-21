@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import os, re, random, time
 from colorama import Fore, Style

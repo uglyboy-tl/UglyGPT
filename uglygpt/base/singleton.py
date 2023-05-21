@@ -1,4 +1,5 @@
 """The singleton metaclass for ensuring only one instance of a class."""
+from __future__ import annotations
 import abc
 
 class Singleton(abc.ABCMeta, type):

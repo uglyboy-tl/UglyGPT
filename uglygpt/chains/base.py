@@ -1,3 +1,4 @@
+from __future__ import annotations
 import abc
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union, Optional
@@ -60,12 +61,7 @@ class Chain(abc.ABC):
         self._validate_inputs(inputs)
         return inputs
 
-    def prep_outputs(
-        self,
-        inputs: Dict[str, str],
-        outputs: Dict[str, str],
-        return_only_outputs: bool = False,
-    ) -> Dict[str, str]:
+    def prep_outputs(self, inputs: Dict[str, str], outputs: Dict[str, str], return_only_outputs: bool = False) -> Dict[str, str]:
         """Validate and prep outputs."""
         self._validate_outputs(outputs)
         if self.memory is not None:

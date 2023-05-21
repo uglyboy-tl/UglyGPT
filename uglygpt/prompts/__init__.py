@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .base import BasePromptTemplate, BaseOutputParser
 from .default import PromptTemplate
 from .few_shot import FewShotPromptTemplate

@@ -1,4 +1,5 @@
 """Select examples based on length."""
+from __future__ import annotations
 import re
 from typing import Callable, Dict, List
 from dataclasses import dataclass

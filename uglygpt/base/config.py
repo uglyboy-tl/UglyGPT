@@ -1,4 +1,5 @@
 """Configuration class to store the state of bools for different scripts access."""
+from __future__ import annotations
 import os
 from colorama import Fore
 from pathlib import Path

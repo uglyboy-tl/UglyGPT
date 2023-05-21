@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pinecone
 
 from uglygpt.indexes.base import BaseIndex

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import openai
 from dataclasses import dataclass, field
 from uglygpt.provider.llm.base import LLMProvider

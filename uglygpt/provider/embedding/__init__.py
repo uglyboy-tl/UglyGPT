@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uglygpt.provider.embedding.base import EmbeddingProvider
 from uglygpt.base import logger
 

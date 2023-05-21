@@ -1,4 +1,5 @@
 """Base class for memory providers."""
+from __future__ import annotations
 import abc
 
 from uglygpt.base import AbstractSingleton

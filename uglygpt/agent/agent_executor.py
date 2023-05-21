@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 from typing import Any, List, Dict, Tuple, Callable, Optional, Sequence, Union
 from dataclasses import dataclass, field

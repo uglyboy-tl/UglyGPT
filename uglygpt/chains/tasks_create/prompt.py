@@ -1,3 +1,4 @@
+from __future__ import annotations
 TASK_CREATION_TEMPLATE = """
 You are an task creation AI that uses the result of an execution agent to create new tasks with the following objective: {objective}.
 The last completed task has the result: {result}.

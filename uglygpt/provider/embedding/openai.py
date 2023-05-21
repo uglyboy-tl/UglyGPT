@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 import openai
 from dataclasses import dataclass
