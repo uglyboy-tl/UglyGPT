@@ -2,7 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from uglygpt.base import logger, Fore
 from uglygpt.provider.llm import LLMProvider
@@ -26,7 +26,6 @@ class LLMBashChain(Chain):
     """
 
     llm_chain: LLMChain = field(default_factory=LLMChain)
-    llm: Optional[LLMProvider] = None
     """[Deprecated] LLM wrapper to use."""
     input_key: str = "question"  #: :meta private:
     output_key: str = "answer"  #: :meta private:
@@ -55,7 +54,7 @@ class LLMBashChain(Chain):
         inputs: Dict[str, Any],
     ) -> Dict[str, str]:
 
-        t = self.llm_chain.predict(
+        t = self.llm_chain.run(
             question=inputs[self.input_key]
         )
         t = t.strip()

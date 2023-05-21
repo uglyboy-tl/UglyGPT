@@ -4,11 +4,11 @@ from dataclasses import dataclass, field
 
 import math
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numexpr
 
-from uglygpt.base import logger
+from uglygpt.base import logger, Fore
 from uglygpt.provider.llm import LLMProvider
 
 from uglygpt.chains.base import Chain
@@ -28,7 +28,6 @@ class LLMMathChain(Chain):
     """
 
     llm_chain: LLMChain = field(default_factory=LLMChain)
-    llm: Optional[LLMProvider] = None
     """[Deprecated] LLM wrapper to use."""
     prompt: BasePromptTemplate = field(default_factory=lambda: PROMPT)
     """[Deprecated] Prompt to use to translate to python if necessary."""
@@ -77,6 +76,7 @@ class LLMMathChain(Chain):
         text_match = re.search(r"^```text(.*?)```", llm_output, re.DOTALL)
         if text_match:
             expression = text_match.group(1)
+            logger.debug(expression, "Expression:\n", Fore.CYAN)
             output = self._evaluate_expression(expression)
             answer = output
         elif "Answer:" in llm_output:
@@ -91,7 +91,7 @@ class LLMMathChain(Chain):
         self,
         inputs: Dict[str, str],
     ) -> Dict[str, str]:
-        llm_output = self.llm_chain.predict(
+        llm_output = self.llm_chain.run(
             question=inputs[self.input_key],
             stop=["```output"],
         )

@@ -38,23 +38,6 @@ class LLMChain(Chain):
         result = self.llm.instruct(prompt)
         return {self.output_key: result}
 
-    def predict(self, callbacks = None, **kwargs: Any) -> str:
-        """Format prompt with kwargs and pass to LLM.
-
-        Args:
-            callbacks: Callbacks to pass to LLMChain
-            **kwargs: Keys to pass to prompt template.
-
-        Returns:
-            Completion from LLM.
-
-        Example:
-            .. code-block:: python
-
-                completion = llm.predict(adjective="funny")
-        """
-        return self(kwargs, callbacks=callbacks)[self.output_key]
-
     def _parse_result(
         self, result: str
     ) -> Union[str, List[str], Dict[str, str]]:
@@ -64,21 +47,7 @@ class LLMChain(Chain):
             return result
 
     def parse(self, callbacks = None, **kwargs: Any) -> str:
-        """Format prompt with kwargs and pass to LLM.
-
-        Args:
-            callbacks: Callbacks to pass to LLMChain
-            **kwargs: Keys to pass to prompt template.
-
-        Returns:
-            Completion from LLM.
-
-        Example:
-            .. code-block:: python
-
-                completion = llm.predict(adjective="funny")
-        """
-        return self._parse_result(self(kwargs, callbacks=callbacks)[self.output_key])
+        return self._parse_result(self.run(kwargs, callbacks=callbacks))
 
     def set_prompt(self, prompt: BasePromptTemplate) -> None:
         """Set the prompt template."""

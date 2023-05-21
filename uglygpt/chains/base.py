@@ -79,7 +79,7 @@ class Chain(abc.ABC):
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
 
-    def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, Any]:
+    def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, str]:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:

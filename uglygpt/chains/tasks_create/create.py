@@ -6,8 +6,8 @@ from uglygpt.chains.base import Chain
 from uglygpt.chains.llm import LLMChain
 from uglygpt.provider import LLMProvider, get_llm_provider
 
-from uglygpt.agent.task_storage import TaskListStorage
-from uglygpt.chains.create_task.prompt import get_prompt
+from uglygpt.chains.tasks_create.task_storage import TaskListStorage
+from uglygpt.chains.tasks_create.prompt import get_prompt
 
 @dataclass
 class CreateTaskChain(Chain):
