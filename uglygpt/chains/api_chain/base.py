@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from typing import Any, Dict, List, Optional
 
-from uglygpt.base import logger, Fore
+from uglygpt.base import config, logger, Fore
 from uglygpt.provider import LLMProvider
 from uglygpt.chains.api_chain.prompt import API_RESPONSE_PROMPT, API_URL_PROMPT
 from uglygpt.chains.base import Chain
@@ -50,6 +50,8 @@ class APIChain(Chain):
         )
         logger.debug(f"{api_url}","API URL:", Fore.YELLOW)
         api_response = self.requests_wrapper.get(api_url)
+        if config.debug_mode:
+            logger.debug(f"{api_response}","API Response:", Fore.YELLOW)
         answer = self.api_answer_chain.run(
             question=question,
             api_docs=self.api_docs,
