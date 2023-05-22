@@ -38,6 +38,7 @@ class ZeroShotAgent(Agent):
     def create_prompt(
         cls,
         tools: Sequence[BaseTool],
+        context: str = "",
         prefix: str = PREFIX,
         suffix: str = SUFFIX,
         format_instructions: str = FORMAT_INSTRUCTIONS,
@@ -60,7 +61,7 @@ class ZeroShotAgent(Agent):
         tool_strings = "\n".join([f"> {tool.name}: {tool.description}" for tool in tools])
         tool_names = ", ".join([tool.name for tool in tools])
         format_instructions = format_instructions.format(tool_names=tool_names)
-        template = "\n\n".join([prefix, tool_strings, format_instructions, suffix])
+        template = "\n\n".join([prefix, tool_strings, format_instructions, context, suffix])
         if input_variables is None:
             input_variables = ["input", "agent_scratchpad"]
         return PromptTemplate(template=template, input_variables=input_variables)
@@ -117,7 +118,8 @@ if __name__ == "__main__":
     tools.append(Tool.from_function(lambda x: "张三","找负责人","这个工具可以找到对应项目的负责人是谁"))
     tools.append(Tool.from_function(lambda x: "15120033011","找电话号","这个工具可以找到人名对应的电话号码"))
     tools.append(Tool.from_function(lambda x: "打完了","打电话","这个工具可以给对应的电话号码打电话，需要输入电话号码和电话内容"))
-    #tools.append(bing)
+    tools.append(bing)
+    tools.append(human)
 
     # Agent
     from uglygpt.agent.mrkl.base import ZeroShotAgent

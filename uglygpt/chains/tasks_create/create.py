@@ -66,10 +66,28 @@ from uglygpt.provider import get_llm_provider
 
 if __name__ == "__main__":
     tasks = TaskListStorage()
-    tasks.set_objective("在 Macbook 上安装 Debian")
+    tasks.set_objective("调研一下那款AR眼睛比较好？")
 
     if tasks.is_empty():
         tasks.append({"task_name":"Develop a task list to complete the objective."})
+        tasks.popleft()
+        task = tasks.current_task["task_name"]
+        chain = CreateTaskChain(tasks = tasks)
+        chain.run("")
+
+    from uglygpt.tools import Tool
+    from uglygpt.utilities.bing_search import BingSearchAPIWrapper
+    search = BingSearchAPIWrapper(k = 5)
+    bing = Tool(
+            name = "Search",
+            func=search.run,
+            description="useful for when you need to answer questions about current events, Search in Chinese."
+        )
+    tools = [bing]
+    from uglygpt.agent.mrkl.base import ZeroShotAgent
+    agent = ZeroShotAgent.from_llm_and_tools(tools = tools, llm = get_llm_provider())
+    from uglygpt.agent.agent_executor import AgentExecutor
+    agent_execution = AgentExecutor(agent = agent, tools = tools)
 
     while not tasks.is_empty():
         # Show the current tasks
@@ -83,7 +101,7 @@ if __name__ == "__main__":
         # Execute the task
         task = tasks.current_task["task_name"]
         logger.info(Fore.GREEN+f"\nExecuting task {task}\n"+Fore.RESET)
-        result = ""
+        result = agent_execution.run(task)
 
         # Get New Tasks
         chain = CreateTaskChain(tasks = tasks)
