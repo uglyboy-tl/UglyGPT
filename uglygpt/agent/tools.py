@@ -1,8 +1,9 @@
 """Interface for tools."""
 from __future__ import annotations
+from dataclasses import dataclass
 from uglygpt.tools.base import BaseTool, Tool
 
-
+@dataclass
 class InvalidTool(BaseTool):
     """Tool that is run when invalid tool name is encountered by agent."""
 
