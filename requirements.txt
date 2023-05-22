@@ -1,4 +1,5 @@
 openai
+tiktoken
 colorama
 orjson
 numpy
