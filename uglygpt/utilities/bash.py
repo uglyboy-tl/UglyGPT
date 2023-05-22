@@ -40,6 +40,7 @@ class BashProcess(metaclass=Singleton):
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
+                executable="/bin/bash",
             ).stdout.decode()
         except subprocess.CalledProcessError as error:
             if self.return_err_output:

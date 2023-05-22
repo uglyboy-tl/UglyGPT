@@ -43,7 +43,7 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
                 " to use OpenAI as a LLM provider."
             )
         else:
-            return OpenAILLM()
+            return OpenAILLM(temperature=0.3)
     elif llm_provider_name == "gpt4free":
         if not GPT4FreeLLM:
             logger.error(
