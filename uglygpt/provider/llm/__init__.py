@@ -59,7 +59,7 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
                 " to use HuggingChat as a LLM provider."
             )
         else:
-            return HuggingChatLLM()
+            return HuggingChatLLM(AI_TEMPERATURE=0.3)
     elif llm_provider_name == "huggingface":
         return None
     elif llm_provider_name == "bard":
