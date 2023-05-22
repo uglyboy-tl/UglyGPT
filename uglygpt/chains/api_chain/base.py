@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from typing import Any, Dict, List, Optional
 
+from uglygpt.base import logger, Fore
 from uglygpt.provider import LLMProvider
 from uglygpt.chains.api_chain.prompt import API_RESPONSE_PROMPT, API_URL_PROMPT
 from uglygpt.chains.base import Chain
@@ -15,10 +16,10 @@ from uglygpt.utilities.requests import TextRequestsWrapper
 class APIChain(Chain):
     """Chain that makes API calls and summarizes the responses to answer a question."""
 
-    api_request_chain: LLMChain
-    api_answer_chain: LLMChain
-    requests_wrapper: TextRequestsWrapper = field(exclude=True)
-    api_docs: str
+    api_request_chain: LLMChain = field(default_factory=LLMChain)
+    api_answer_chain: LLMChain = field(default_factory=LLMChain)
+    requests_wrapper: TextRequestsWrapper = field(default_factory=TextRequestsWrapper)
+    api_docs: str = ""
     question_key: str = "question"  #: :meta private:
     output_key: str = "output"  #: :meta private:
 
@@ -43,12 +44,13 @@ class APIChain(Chain):
         inputs: Dict[str, Any],
     ) -> Dict[str, str]:
         question = inputs[self.question_key]
-        api_url = self.api_request_chain.predict(
+        api_url = self.api_request_chain.run(
             question=question,
             api_docs=self.api_docs,
         )
+        logger.debug(f"{api_url}","API URL:", Fore.YELLOW)
         api_response = self.requests_wrapper.get(api_url)
-        answer = self.api_answer_chain.predict(
+        answer = self.api_answer_chain.run(
             question=question,
             api_docs=self.api_docs,
             api_url=api_url,
