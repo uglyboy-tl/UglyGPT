@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import re
 import subprocess
-from typing import List, Union
+from typing import List, Tuple,Union
 from uuid import uuid4
 
-class BashProcess:
+from uglygpt.base import Singleton
+
+class BashProcess(metaclass=Singleton):
     """Executes bash commands and returns the output."""
 
     def __init__(
@@ -22,7 +24,7 @@ class BashProcess:
         if persistent:
             self.prompt = str(uuid4())
 
-    def run(self, commands: Union[str, List[str]]) -> str:
+    def run(self, commands: Union[str, List[str]]) -> Tuple(bool, str):
         """Run commands and return final output."""
         if isinstance(commands, str):
             commands = [commands]
@@ -41,11 +43,11 @@ class BashProcess:
             ).stdout.decode()
         except subprocess.CalledProcessError as error:
             if self.return_err_output:
-                return error.stdout.decode()
-            return str(error)
+                return error.stdout.decode(), False
+            return str(error), False
         if self.strip_newlines:
             output = output.strip()
-        return output
+        return output, True
 
     def process_output(self, output: str, command: str) -> str:
         # Remove the command from the output using a regular expression
