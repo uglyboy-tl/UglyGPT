@@ -75,7 +75,7 @@ class Chain(abc.ABC):
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the chain."""
 
-    def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False, callbacks = None) -> Dict[str, str]:
+    def __call__(self, inputs: Dict[str, Any], return_only_outputs: bool = False) -> Dict[str, str]:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:
@@ -84,7 +84,7 @@ class Chain(abc.ABC):
             raise e
         return self.prep_outputs(inputs, outputs, return_only_outputs)
 
-    def run(self, *args: Any, callbacks = None, **kwargs: Any) -> str:
+    def run(self, *args: Any, **kwargs: Any) -> str:
         """Run the chain as text in, text out or multiple variables, text out."""
         if len(self.output_keys) != 1:
             raise ValueError(
@@ -95,10 +95,10 @@ class Chain(abc.ABC):
         if args and not kwargs:
             if len(args) != 1:
                 raise ValueError("`run` supports only one positional argument.")
-            return self(args[0], callbacks=callbacks)[self.output_keys[0]]
+            return self(args[0])[self.output_keys[0]]
 
         if kwargs and not args:
-            return self(kwargs, callbacks=callbacks)[self.output_keys[0]]
+            return self(kwargs)[self.output_keys[0]]
 
         if not kwargs and not args:
             raise ValueError(

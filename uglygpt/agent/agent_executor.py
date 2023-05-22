@@ -1,8 +1,9 @@
 from __future__ import annotations
 import time
-from typing import Any, List, Dict, Tuple, Optional, Sequence, Union
+from typing import Any, List, Dict, Tuple, Optional, Sequence, Union, Callable
 from dataclasses import dataclass, field
 
+from uglygpt.base import logger, Fore
 from uglygpt.chains.base import Chain
 from uglygpt.tools.base import BaseTool
 from uglygpt.prompts import OutputParserException
@@ -18,6 +19,10 @@ class AgentExecutor(Chain):
     return_intermediate_steps: bool = False
     max_iterations: Optional[int] = 15
     max_execution_time: Optional[float] = None
+    handle_parsing_errors: Union[
+        bool, str, Callable[[OutputParserException], str]
+    ] = False
+    verbose: bool = True
 
     @property
     def input_keys(self) -> List[str]:
@@ -117,7 +122,8 @@ class AgentExecutor(Chain):
         iterations = 0
         time_elapsed = 0.0
         start_time = time.time()
-
+        if self.verbose:
+            logger.info("\n".join(f"\n{input_key}: {inputs[input_key]}" for input_key in self.input_keys) , title="Task:", title_color=Fore.YELLOW)
         # We now enter the agent loop (until it returns something).
         while self._should_continue(iterations, time_elapsed):
             next_step_output = self._take_next_step(
@@ -126,8 +132,12 @@ class AgentExecutor(Chain):
                 intermediate_steps,
             )
             if isinstance(next_step_output, AgentFinish):
+                if self.verbose:
+                    logger.info(next_step_output.log, title="Agent:", title_color=Fore.GREEN)
                 return next_step_output.return_values
-
+            if self.verbose:
+                for action, observation in next_step_output:
+                    logger.info("\n"+action.log+f"\nObservation: {observation}", title="Agent:", title_color=Fore.CYAN)
             intermediate_steps.extend(next_step_output)
             iterations += 1
             time_elapsed = time.time() - start_time

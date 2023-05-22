@@ -7,8 +7,7 @@ from uglygpt.agent.mrkl.prompt import FORMAT_INSTRUCTIONS
 from uglygpt.agent.schema import AgentAction, AgentFinish
 from uglygpt.prompts import OutputParserException
 
-FINAL_ANSWER_ACTION = "Final Answer:"
-OBSERVATION_PREFIX = "Observation:"
+FINAL_ANSWER_ACTION = "Response:"
 class MRKLOutputParser(AgentOutputParser):
     def get_format_instructions(self) -> str:
         return FORMAT_INSTRUCTIONS
@@ -19,7 +18,7 @@ class MRKLOutputParser(AgentOutputParser):
                 {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
             )
         # \s matches against tab/newline/whitespace
-        text = text.split(OBSERVATION_PREFIX)[0].strip()
+        text = text.strip()
         regex = (
             r"Action\s*\d*\s*:[\s]*(.*?)[\s]*Action\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         )

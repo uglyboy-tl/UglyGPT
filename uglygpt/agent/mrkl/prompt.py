@@ -1,21 +1,21 @@
 # flake8: noqa
-PREFIX = """Answer the following question in Chinese as best you can. You have access to the following tools:"""
+PREFIX = """You are an Assistant AI. You will complete the following task in Chinese with the following tools as best you can:"""
 FORMAT_INSTRUCTIONS = """Use the following format:
 
 ```
-Thought: Do I need to use a tool? Yes
+Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 ```
-
-When you have a response, or if you do not need to use a tool, you MUST use the format:
-
+Or when you have finished the task, or if you do not need to use a tool, you MUST use the format:
 ```
-Thought: Do I need to use a tool? No
-Final Answer: [your response here]
+Thought: Finished
+Response: [your response here]
 ```
 """
-SUFFIX = """Begin!
+SUFFIX = """Begin:
 
-Question: {input}
-Thought:{agent_scratchpad}"""
+Task: {input}
+{agent_scratchpad}
+
+now it's your turn:"""
