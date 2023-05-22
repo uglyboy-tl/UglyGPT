@@ -36,8 +36,8 @@ class LLMChain(Chain):
         else:
             return result
 
-    def parse(self, callbacks = None, **kwargs: Any) -> str:
-        return self._parse_result(self.run(kwargs, callbacks=callbacks))
+    def parse(self, **kwargs: Any) -> str:
+        return self._parse_result(self.run(kwargs))
 
     def set_prompt(self, prompt: BasePromptTemplate) -> None:
         """Set the prompt template."""

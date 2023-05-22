@@ -10,7 +10,7 @@ from uglygpt.chains.base import Chain
 from uglygpt.chains.llm import LLMChain
 from uglygpt.chains.llm_bash.prompt import PROMPT
 from uglygpt.prompts import BasePromptTemplate, OutputParserException
-from uglygpt.chains.llm_bash.bash import BashProcess
+from uglygpt.utilities.bash import BashProcess
 
 
 @dataclass
@@ -46,7 +46,7 @@ class LLMBashChain(Chain):
 
         :meta private:
         """
-        return [self.output_key]
+        return [self.output_key, "Success"]
 
     def _call(
         self,
@@ -63,8 +63,8 @@ class LLMBashChain(Chain):
             logger.debug(f"{command_list}", "Command:\n", Fore.CYAN)
         except OutputParserException as e:
             raise e
-        output = self.bash_process.run(command_list)
-        return {self.output_key: output}
+        output, success = self.bash_process.run(command_list)
+        return {self.output_key: output, "Success": success}
 
     @property
     def _chain_type(self) -> str:
