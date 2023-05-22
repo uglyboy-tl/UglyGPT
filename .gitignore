@@ -1,11 +1,15 @@
+``` 一些不需要上传的文件夹
+```
 .venv
 .vscode
 __pycache__/
-.env
 
 ``` 一些不需要上传的文件
 ```
+.env
 test.py
-main.py
+
+``` 未来可能需要上传的文件夹
+```
 data_ingestion.py
 ingestion
