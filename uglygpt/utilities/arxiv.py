@@ -1,12 +1,19 @@
 """Util that calls Arxiv."""
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any, Union
 
-from dataclasses import dataclass, field
+from uglygpt.base import logger
 
-import arxiv
-
+try:
+    import arxiv
+except ImportError:
+    logger.error("Could not import arxiv python package.")
+    raise ImportError(
+        "Could not import arxiv python package. "
+        "Please install it with `pip install arxiv`."
+    )
 @dataclass
 class ArxivAPIWrapper:
     """Wrapper around ArxivAPI.
