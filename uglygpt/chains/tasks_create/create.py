@@ -114,13 +114,13 @@ if __name__ == "__main__":
         # Get the current task
         tasks.popleft()
 
-        context = memory.get_relevant(tasks.objective,5,"id")
+        context = memory.get_relevant(tasks.objective,5,"task_name")
         # Execute the task
         task = tasks.current_task["task_name"]
         logger.info(Fore.GREEN+f"\nExecuting task {task}\n"+Fore.RESET)
         result = agent_execution.run(
             objective=tasks.objective, task=task, context="\n".join(context))
-        memory.add(result, id=task)
+        memory.add(result, metadata={"task_name":task})
 
 
         # Get New Tasks

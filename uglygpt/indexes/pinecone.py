@@ -1,14 +1,17 @@
 from __future__ import annotations
 import pinecone
 
-from uglygpt.indexes.base import BaseIndex
-from uglygpt.provider import get_embedding_vector
+from typing import Any, Dict, List
 
-class Pinecone:
+from uglygpt.indexes.base import BaseIndex
+from uglygpt.provider import get_embedding_provider
+
+class Pinecone(BaseIndex):
     def __init__(self, cfg, memory_index = None):
         pinecone_api_key = cfg.pinecone_api_key
         pinecone_region = cfg.pinecone_region
         pinecone.init(api_key=pinecone_api_key, environment=pinecone_region)
+        self.memory = get_embedding_provider()
 
         self.table_name = memory_index or cfg.memory_index
         dimension = 1536
@@ -31,40 +34,21 @@ class Pinecone:
             )
         self.index = pinecone.Index(self.table_name)
 
-    def add(self, data, metadata=None, id=None):
+    def _add(self, vector: List, metadata: Dict) -> None:
         # no metadata here. We may wish to change that long term.
-        vector = get_embedding_vector(data)
-        if metadata is None:
-            metadata = {"raw_text": data}
-        if id is None:
-            id = str(self.vec_num)
+        id = str(self.vec_num)
         self.index.upsert([(id, vector, metadata)])
-        _text = f"Inserting data into memory at index: {self.vec_num}:\n data: {data}"
         self.vec_num += 1
-        return _text
 
-    def get(self, data):
-        return self.get_relevant(data)
-
-    def clear(self):
+    def clear(self) -> None:
         self.index.delete(deleteAll=True)
-        return "Obliviated"
 
-    def get_relevant(self, data, num_relevant=5, key="raw_text"):
-        """
-        Returns all the data in the memory that is relevant to the given data.
-        :param data: The data to compare to.
-        :param num_relevant: The number of relevant data to return. Defaults to 5
-        """
-        vector = get_embedding_vector(data)
+    def _get_relevant(self, vector: List, num_relevant: int) -> List[Any]:
+
         results = self.index.query(
             vector, top_k=num_relevant, include_metadata=True
         )
-        sorted_results = sorted(results.matches, key=lambda x: x.score)
-        return [str(item["metadata"][key]) for item in sorted_results]
+        return sorted(results.matches, key=lambda x: x.score)
 
     def get_stats(self):
         return self.index.describe_index_stats()
-
-class PineconeIndex(Pinecone, BaseIndex):
-    pass

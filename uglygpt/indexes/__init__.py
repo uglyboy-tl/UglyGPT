@@ -8,7 +8,7 @@ from uglygpt.indexes.base import BaseIndex
 supported_memory = ["local", "no_memory"]
 
 try:
-    from uglygpt.indexes.pinecone import PineconeIndex
+    from uglygpt.indexes.pinecone import Pinecone
 
     supported_memory.append("pinecone")
 except ImportError:
@@ -25,7 +25,7 @@ def get_memory(cfg, init=False):
                 " to use Pinecone as a memory backend."
             )
         else:
-            memory = PineconeIndex(cfg)
+            memory = Pinecone(cfg)
             if init:
                 memory.clear()
     elif cfg.memory_backend == "no_memory":
