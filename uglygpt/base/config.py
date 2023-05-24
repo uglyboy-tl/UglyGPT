@@ -35,6 +35,8 @@ class Config(metaclass=Singleton):
         # OpenAI
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.openai_api_base = os.getenv("OPENAI_API_BASE")
+        # HuggingFace
+        self.huggingface_api_token = os.getenv("HUGGINGFACE_API_TOKEN")
         # Google
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.google_project_id = os.getenv("GOOGLE_PROJECT_ID")
@@ -46,6 +48,8 @@ class Config(metaclass=Singleton):
         self.pinecone_region = os.getenv("PINECONE_ENV")
         # TMDB
         self.tmdb_api_key = os.getenv('TMDB_API_KEY')
+        # 高德地图
+        self.amap_api_key = os.getenv('AMAP_API_KEY')
 
         # Memory settings
         self.memory_index = os.getenv("MEMORY_INDEX", "uglygpt")

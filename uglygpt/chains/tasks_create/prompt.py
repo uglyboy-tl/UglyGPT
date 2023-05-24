@@ -11,7 +11,7 @@ You are an task creation AI that uses the result of an execution agent to create
 The last completed task has the result: {result}.
 This result was based on this task description: {task}.
 These are incomplete tasks: {tasks}.
-Based on the result, create new tasks to be completed by the AI system that do not overlap with incomplete tasks.Return one task per line in your response."""
+Based on the result, create new tasks to be completed by the AI system that do not overlap with incomplete tasks. Use at most 4 steps. Return one task per line in your response."""
 
 PRIORITY_TEMPLATE = """
 You are an task prioritization AI tasked with cleaning the formatting of and reprioritizing the following tasks: {task}.

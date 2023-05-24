@@ -10,7 +10,7 @@ from uglygpt.chains.api_chain.prompt import API_RESPONSE_PROMPT, API_URL_PROMPT
 from uglygpt.chains.base import Chain
 from uglygpt.chains.llm import LLMChain
 from uglygpt.prompts import BasePromptTemplate
-from uglygpt.utilities.requests import TextRequestsWrapper
+from uglygpt.requests import TextRequestsWrapper
 
 @dataclass
 class APIChain(Chain):
