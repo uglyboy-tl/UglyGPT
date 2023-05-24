@@ -106,13 +106,9 @@ class ImageGeneratorChain(Chain):
     @classmethod
     def from_llm(
         cls,
-        llm: LLMProvider,
+        llm: LLMProvider = get_llm_provider(),
         prompt: BasePromptTemplate = PROMPT,
         **kwargs: Any,
     ) -> Chain:
         llm_chain = LLMChain(llm=llm, prompt=prompt)
         return cls(llm_chain=llm_chain, **kwargs)
-
-if __name__ == "__main__":
-    image_generator = ImageGeneratorChain.from_llm(llm = get_llm_provider())
-    print(image_generator("原神中的霄宫"))

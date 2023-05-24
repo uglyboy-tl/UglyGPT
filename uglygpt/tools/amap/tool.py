@@ -32,19 +32,3 @@ class AmapRun(BaseTool):
                 return "输入格式错误"
         place = self.api_wrapper.get(place_name)
         return "\n".join(self.api_wrapper.around(place["location"], types))
-
-if __name__ == "__main__":
-    from uglygpt.base import config
-    from uglygpt.provider import get_llm_provider
-    #config.set_debug_mode(True)
-
-    # Tools
-    tools=[AmapRun()]
-    # Agent
-    from uglygpt.agent.mrkl.base import ZeroShotAgent
-    agent = ZeroShotAgent.from_llm_and_tools(tools = tools, llm = get_llm_provider())
-    from uglygpt.agent.agent_executor import AgentExecutor
-    agent_execution = AgentExecutor(agent = agent, tools = tools)
-
-    # Run
-    agent_execution.run("帮我找一找安定门的麦当劳")

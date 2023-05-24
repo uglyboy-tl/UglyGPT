@@ -54,10 +54,3 @@ class AMap():
         else:
             params["extensions"] = "all"
         return self._get(url,params)
-
-
-if __name__ == "__main__":
-    map = AMap()
-    place = map.get("和平里中街3号院")
-    around = map.around(place["location"] ,["050500"], 5000)
-    print("\n".join(around))
