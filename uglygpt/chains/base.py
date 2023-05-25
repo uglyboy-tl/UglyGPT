@@ -2,21 +2,13 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union, Optional
-from pathlib import Path
-import json
 
-""" try:
-    import yaml
-except ImportError:
-    yaml = None """
-yaml = None
-
-from uglygpt.indexes.base import BaseIndex
+from uglygpt.chains.memory import BaseMemory
 
 @dataclass
 class Chain(abc.ABC):
     """Base interface that all chains should implement."""
-    memory: Optional[BaseIndex] = None
+    memory: Optional[BaseMemory] = None
 
     @property
     @abc.abstractmethod
@@ -110,43 +102,3 @@ class Chain(abc.ABC):
             f"`run` supported with either positional arguments or keyword arguments"
             f" but not both. Got args: {args} and kwargs: {kwargs}."
         )
-
-    def dict(self, **kwargs: Any) -> Dict:
-        """Return dictionary representation of chain."""
-        if self.memory is not None:
-            raise ValueError("Saving of memory is not yet supported.")
-        _dict = super().dict()
-        _dict["_type"] = self._chain_type
-        return _dict
-
-    def save(self, file_path: Union[Path, str]) -> None:
-        """Save the chain.
-
-        Args:
-            file_path: Path to file to save the chain to.
-
-        Example:
-        .. code-block:: python
-
-            chain.save(file_path="path/chain.yaml")
-        """
-        # Convert file to Path object.
-        if isinstance(file_path, str):
-            save_path = Path(file_path)
-        else:
-            save_path = file_path
-
-        directory_path = save_path.parent
-        directory_path.mkdir(parents=True, exist_ok=True)
-
-        # Fetch dictionary to save
-        chain_dict = self.dict()
-
-        if save_path.suffix == ".json":
-            with open(file_path, "w") as f:
-                json.dump(chain_dict, f, indent=4)
-        elif save_path.suffix == ".yaml" and yaml is not None:
-            with open(file_path, "w") as f:
-                yaml.dump(chain_dict, f, default_flow_style=False)
-        else:
-            raise ValueError(f"{save_path} must be json or yaml")

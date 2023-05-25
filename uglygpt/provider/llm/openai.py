@@ -27,7 +27,7 @@ class OpenAILLM(LLMProvider):
             tokens = self._num_tokens(prompt)
         max_new_tokens = int(self.MAX_TOKENS) - tokens
         if max_new_tokens <= 0:
-            raise ValueError("Prompt is too long.")
+            raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
         completions = openai.Completion.create(
             model=self.model,
             prompt=prompt,

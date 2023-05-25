@@ -1,9 +1,10 @@
 """Chain that runs an arbitrary python function."""
 from typing import Callable, Dict, List
+from dataclasses import dataclass, field
 
 from uglygpt.chains.base import Chain
 
-
+@dataclass
 class TransformChain(Chain):
     """Chain transform chain output.
 
@@ -15,9 +16,9 @@ class TransformChain(Chain):
             output_variables["entities"], transform=func())
     """
 
-    input_variables: List[str]
-    output_variables: List[str]
-    transform: Callable[[Dict[str, str]], Dict[str, str]]
+    input_variables: List[str] = field(default_factory=list)
+    output_variables: List[str] = field(default_factory=list)
+    transform: Callable[[Dict[str, str]], Dict[str, str]] = field(default_factory=callable)
 
     @property
     def input_keys(self) -> List[str]:
