@@ -37,6 +37,9 @@ class Config(metaclass=Singleton):
         self.openai_api_base = os.getenv("OPENAI_API_BASE")
         # HuggingFace
         self.huggingface_api_token = os.getenv("HUGGINGFACE_API_TOKEN")
+        # AZURE
+        self.azure_key = os.getenv("AZURE_KEY")
+        self.azure_region = os.getenv("AZURE_REGION")
         # Google
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.google_project_id = os.getenv("GOOGLE_PROJECT_ID")

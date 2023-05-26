@@ -12,7 +12,7 @@ class AnalyzeDocumentChain(Chain):
     """Chain that splits documents, then analyzes it in pieces."""
     input_key: str = "input_documents"  #: :meta private:
     map_chain: Chain = field(default_factory=LLMChain)  #: :meta private:
-    reduce_chain: Chain = field(default_factory=LLMChain)  #: :meta private:
+    reduce_chain: Chain = None  #: :meta private:
     rank_key: str = "rank"  #: :meta private:
 
     @property
@@ -29,6 +29,8 @@ class AnalyzeDocumentChain(Chain):
 
         :meta private:
         """
+        if self.reduce_chain is None:
+            return ["output"]
         return self.reduce_chain.output_keys
 
     def _call(
@@ -62,6 +64,9 @@ class AnalyzeDocumentChain(Chain):
             logger.debug(results_text, "Mapping Results:", Fore.GREEN)
 
         # 重新组合
-        other_keys: Dict = {k: v for k, v in inputs.items() if k != self.input_key}
-        other_keys[self.reduce_chain.input_keys[0]] = results_text
-        return self.reduce_chain(other_keys)
+        if self.reduce_chain is not None:
+            other_keys: Dict = {k: v for k, v in inputs.items() if k != self.input_key}
+            other_keys[self.reduce_chain.input_keys[0]] = results_text
+            return self.reduce_chain(other_keys)
+        else:
+            return {self.output_keys[0]: results_text}

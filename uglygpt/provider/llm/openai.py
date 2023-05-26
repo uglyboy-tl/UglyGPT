@@ -9,6 +9,12 @@ from uglygpt.base import config
 openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
 
+def tiktoken_len(text: str) -> int:
+    encoding = tiktoken.encoding_for_model("text-davinci-003")
+    return len(
+        encoding.encode(text)
+    )
+
 @dataclass
 class OpenAILLM(LLMProvider):
     """OpenAI LLM provider."""
@@ -18,8 +24,7 @@ class OpenAILLM(LLMProvider):
     MAX_TOKENS: int = 4096
 
     def _num_tokens(self, prompt: str) -> int:
-        encoding = tiktoken.encoding_for_model(self.model)
-        num_tokens = len(encoding.encode(prompt))
+        num_tokens = tiktoken_len(prompt)
         return num_tokens
 
     def instruct(self, prompt: str, tokens: int=None) -> str:
