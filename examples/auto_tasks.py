@@ -28,17 +28,24 @@ bing = Tool(
 )
 tools = [bing]
 
+# imports
+from uglygpt.agent.mrkl.base import ZeroShotAgent
+from uglygpt.agent.agent_executor import AgentExecutor
+
+# setup
 prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}.You have the following commands available to complete this task given."""
 suffix = """Question: {task}
 {agent_scratchpad}"""
-from uglygpt.agent.mrkl.base import ZeroShotAgent
+
+# create agent
 agent = ZeroShotAgent.from_llm_and_tools(
     tools=tools,
     llm=get_llm_provider(),
     prefix=prefix,
     suffix=suffix,
     input_variables=["objective", "task", "context", "agent_scratchpad"],)
-from uglygpt.agent.agent_executor import AgentExecutor
+
+# create executor
 agent_execution = AgentExecutor(agent=agent, tools=tools)
 
 while not tasks.is_empty():

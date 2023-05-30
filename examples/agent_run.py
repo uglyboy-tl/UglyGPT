@@ -1,5 +1,6 @@
 from uglygpt.base import config
 from uglygpt.provider import get_llm_provider
+
 #config.set_debug_mode(True)
 
 # Tools
@@ -7,6 +8,7 @@ from uglygpt.tools.human import HumanInputRun
 from uglygpt.tools.bing_search import BingSearchRun
 #from uglygpt.tools.arxiv import ArxivQueryRun
 from uglygpt.tools import Tool
+
 human = HumanInputRun()
 bing = BingSearchRun()
 #arxiv = ArxivQueryRun()
@@ -21,8 +23,11 @@ tools.append(bing)
 
 # Agent
 from uglygpt.agent.mrkl.base import ZeroShotAgent
+
 agent = ZeroShotAgent.from_llm_and_tools(tools = tools, llm = get_llm_provider())
+
 from uglygpt.agent.agent_executor import AgentExecutor
+
 agent_execution = AgentExecutor(agent = agent, tools = tools)
 
 # Run
