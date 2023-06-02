@@ -4,7 +4,7 @@ from uglygpt.indexes import get_memory, BaseIndex
 from uglygpt.chains.tasks_create.task_storage import TaskListStorage
 from uglygpt.chains.tasks_create.create import CreateTaskChain
 
-config.debug_mode = True
+#config.debug_mode = True
 
 tasks = TaskListStorage()
 tasks.set_objective("写一份北京今天的天气预报。")
