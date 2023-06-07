@@ -4,5 +4,3 @@ colorama
 orjson
 numpy
 numexpr
-pytest
-pytest-mock

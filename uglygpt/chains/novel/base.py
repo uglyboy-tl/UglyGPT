@@ -10,15 +10,10 @@ from uglygpt.chains.novel.plan_prompt import PlanPromptTemplate
 from uglygpt.chains.novel.prepare_prompt import PreparePromptTemplate
 from uglygpt.chains.novel.prompt import NovelPromptTemplate
 from uglygpt.prompts import BasePromptTemplate
-from uglygpt.indexes import BaseIndex, get_memory
-from uglygpt.provider.llm import get_llm_provider
-
-def set_LLM():
-    return LLMChain(llm = get_llm_provider(), prompt=InitPromptTemplate())
 
 @dataclass
 class NovelChain(Chain):
-    llm_chain: LLMChain = field(default_factory=set_LLM)
+    llm_chain: LLMChain = field(default_factory=LLMChain)
     """[Deprecated] LLM wrapper to use."""
     prompt: BasePromptTemplate = field(default_factory=InitPromptTemplate)
     """[Deprecated] Prompt to use to translate to python if necessary."""
