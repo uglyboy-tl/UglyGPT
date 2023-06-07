@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from uglygpt.prompts.base import BasePromptTemplate
 
@@ -14,8 +14,8 @@ class PromptTemplate(BasePromptTemplate):
             from langchain import PromptTemplate
             prompt = PromptTemplate(input_variables=["foo"], template="Say {foo}")
     """
-    input_variables: List[str]
-    template: str
+    input_variables: List[str] = field(default_factory=list)
+    template: str = ""
 
     @property
     def _prompt_type(self) -> str:
