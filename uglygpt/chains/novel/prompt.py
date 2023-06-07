@@ -86,20 +86,16 @@ class _OutputParser(BaseOutputParser):
         except:
             return None
 
-
 @dataclass
 class NovelPromptTemplate(BasePromptTemplate):
+    input_variables: List[str] = field(default_factory=lambda: [
+        "short_memory",
+        "input_paragraph",
+        "input_instruction",
+        "input_long_term_memory",
+    ])
     output_parser: BaseOutputParser = field(default_factory=_OutputParser)
     template: str = _PROMPT_TEMPLATE
-
-    @property
-    def input_variables(self) -> List[str]:
-        return [
-            "short_memory",
-            "input_paragraph",
-            "input_instruction",
-            "input_long_term_memory",
-        ]
 
     def format(self, **kwargs):
         kwargs = self._merge_partial_and_user_variables(**kwargs)

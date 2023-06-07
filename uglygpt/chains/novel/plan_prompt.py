@@ -55,17 +55,14 @@ class _OutputParser(BaseOutputParser):
 
 @dataclass
 class PlanPromptTemplate(BasePromptTemplate):
+    input_variables: List[str] = field(default_factory=lambda: [
+        "previous_paragraph",
+        "memory",
+        "writer_new_paragraph",
+        "previous_plans"
+    ])
     output_parser: BaseOutputParser = field(default_factory=_OutputParser)
     template: str = _PROMPT_TEMPLATE
-
-    @property
-    def input_variables(self) -> List[str]:
-        return [
-            "previous_paragraph",
-            "memory",
-            "writer_new_paragraph",
-            "previous_plans"
-        ]
 
     def format(self, **kwargs):
         kwargs = self._merge_partial_and_user_variables(**kwargs)

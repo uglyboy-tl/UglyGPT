@@ -84,12 +84,9 @@ class _OutputParser(BaseOutputParser):
 
 @dataclass
 class InitPromptTemplate(BasePromptTemplate):
+    input_variables: List[str] = field(default_factory=lambda: ["type", "topic"])
     output_parser: BaseOutputParser = field(default_factory=_OutputParser)
     template: str = _PROMPT_TEMPLATE
-
-    @property
-    def input_variables(self) -> List[str]:
-        return ["type", "topic"]
 
     def format(self, **kwargs):
         kwargs = self._merge_partial_and_user_variables(**kwargs)

@@ -7,7 +7,7 @@ from uglygpt.prompts.output_parsers.base import BaseOutputParser, OutputParserEx
 
 @dataclass
 class BasePromptTemplate(abc.ABC):
-    input_variables: List[str]
+    input_variables: List[str] = field(default_factory=list)
     output_parser: Optional[BaseOutputParser] = None
     template: str = ""
     partial_variables: Mapping[str, Union[str, Callable[[], str]]] = field(default_factory=dict)
