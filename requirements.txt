@@ -1,3 +1,4 @@
 openai
 tiktoken
 loguru
+tenacity

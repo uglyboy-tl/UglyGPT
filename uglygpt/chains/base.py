@@ -7,7 +7,10 @@ from typing import Any, Dict, List, Union
 
 @dataclass
 class Chain(ABC):
-    """Base interface that all chains should implement."""
+    """Chain 的基类，定义了 Chain 的基本结构。
+    Chain 的主要作用是规范化输入输出，以及规范化输入的格式
+    另外就是对调用 LLM 的参数做预处理，例如对输入的文本进行 Prompt 的拼接和补充，对过长的文本进行切割等
+    """
 
     @property
     @abstractmethod
@@ -39,7 +42,7 @@ class Chain(ABC):
     def _call(self, inputs: Dict[str, Any]) -> str:
         """Execute the chain."""
 
-    def __call__(self, inputs: Dict[str, Any]) -> str:
+    def _run(self, inputs: Dict[str, Any]) -> str:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:
@@ -47,3 +50,21 @@ class Chain(ABC):
         except (KeyboardInterrupt, Exception) as e:
             raise e
         return outputs
+
+    def __call__(self, *args: Any, **kwargs: Any) -> str:
+        """Run the chain as text in, text out or multiple variables, text out."""
+        if args and not kwargs:
+            if len(args) != 1:
+                raise ValueError("`run` supports only one positional argument.")
+            return self._run(args[0])
+
+        if kwargs and not args:
+            return self._run(kwargs)
+
+        if not kwargs and not args:
+            return self._run({})
+
+        raise ValueError(
+            f"`run` supported with either positional arguments or keyword arguments"
+            f" but not both. Got args: {args} and kwargs: {kwargs}."
+        )

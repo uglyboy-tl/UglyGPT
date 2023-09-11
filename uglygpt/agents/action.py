@@ -1,34 +1,27 @@
-from abc import ABCMeta, abstractmethod
+#!/usr/bin/env python3
+#-*-coding:utf-8-*-
+
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 from uglygpt.chains import LLMChain
-from uglygpt.base import logger, WORKSPACE_ROOT
+from uglygpt.base import File
 
 @dataclass
-class Action(metaclass=ABCMeta):
-    name: str = ""
-    llm: LLMChain = field(default_factory=LLMChain)
+class Action(ABC):
     role: str = None
     filename: str = None
+    llm: LLMChain = field(default_factory=LLMChain)
 
     def __post_init__(self):
-        self.llm.llm.set_system(self.role)
+        if self.role:
+            self.llm.llm.set_system(self.role)
 
     def _ask(self, *args, **kwargs) -> str:
-        response = self.llm.run(*args, **kwargs)
+        response = self.llm(*args, **kwargs)
         if self.filename:
-            self._save(self.filename, response)
+            File.save(self.filename, response)
         return response
-
-    @abstractmethod
-    def run(self, *args, **kwargs):
-        pass
-
-    def _save(self, filename, data):
-        file_path = WORKSPACE_ROOT / filename
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(data)
-        logger.debug(f"Saving file to {file_path}")
 
     def _load(self, filename=None):
         if not filename:
@@ -36,6 +29,16 @@ class Action(metaclass=ABCMeta):
                 filename = self.filename
             else:
                 raise ValueError("filename is required")
-        with open(WORKSPACE_ROOT / filename, "r") as f:
-            data = f.read()
+        data = File.load(filename)
         return data
+
+    def _parse(self, result: str):
+        return result
+
+    @abstractmethod
+    def run(self, *args, **kwargs) -> str:
+        pass
+
+    def parse(self, *args, **kwargs):
+        result = self.run(*args, **kwargs)
+        return self._parse(result)

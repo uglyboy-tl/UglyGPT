@@ -2,18 +2,18 @@
 #-*-coding:utf-8-*-
 
 from .base import LLMProvider
-from uAgent.base import config
+from uglygpt.base import config
 
 supported_llm_providers = []
 
 try:
-    from uAgent.llm.openai import ChatGPT
+    from uglygpt.llm.openai import ChatGPT
     supported_llm_providers.append(ChatGPT)
 except ImportError:
     ChatGPT = None
 
 try:
-    from uAgent.llm.openai import GPT4
+    from uglygpt.llm.openai import GPT4
     supported_llm_providers.append(GPT4)
 except ImportError:
     GPT4 = None

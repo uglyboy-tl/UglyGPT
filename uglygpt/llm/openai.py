@@ -3,7 +3,14 @@
 
 from dataclasses import dataclass, field
 import openai
+from openai.error import RateLimitError
 import tiktoken
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+    before_log
+)  # for exponential backoff
 
 from .base import LLMProvider
 from uglygpt.base import config, logger
@@ -69,7 +76,7 @@ class GPT4(LLMProvider):
             raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
         self.messages.append({"role": "user", "content": prompt})
         logger.debug(self.messages)
-        response = openai.ChatCompletion.create(
+        response = self.completion_with_backoff(
             model=self.model,
             messages=self.messages,
             max_tokens=max_new_tokens,
@@ -78,3 +85,7 @@ class GPT4(LLMProvider):
         message = response.choices[0]['message']['content']
         logger.debug(response.choices[0]['message'])
         return message
+
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before=before_log(logger.app_logger,"WARNING"))
+    def completion_with_backoff(self, **kwargs) -> str:
+        return openai.ChatCompletion.create(**kwargs)

@@ -3,6 +3,7 @@
 .venv
 .vscode
 __pycache__/
+logs
 
 ``` 一些不需要上传的文件
 ```
