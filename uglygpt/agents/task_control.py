@@ -6,8 +6,8 @@ from collections import deque
 
 from uglygpt.base import logger
 
-from .task_create import TaskCreation
-from .task_runner import TaskRunner
+from uglygpt.actions.task_create import TaskCreation
+from uglygpt.actions.task_runner import TaskRunner
 
 @dataclass
 class TaskControl:
