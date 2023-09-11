@@ -1,11 +1,9 @@
-from uglygpt.chains.base import Chain
-from uglygpt.chains.llm import LLMChain
-from uglygpt.chains.transform import TransformChain
-from uglygpt.chains.memory import BaseMemory
+from .base import Chain
+from .llm import LLMChain
+from .prompt import Prompt
 
 __all__ = [
     "Chain",
     "LLMChain",
-    "TransformChain",
-    "BaseMemory"
-    ]
+    "PromptTemplate",
+]

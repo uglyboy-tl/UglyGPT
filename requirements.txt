@@ -1,6 +1,3 @@
 openai
 tiktoken
-colorama
-orjson
-numpy
-numexpr
+loguru

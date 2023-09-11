@@ -1,0 +1,120 @@
+from dataclasses import dataclass
+from typing import List, Tuple
+
+from uAgent.base import logger
+from uAgent.agents.action import Action
+from uAgent.chains.prompt import PromptTemplate
+from uAgent.chains.output_parsers.mapping import MappingOutputParser
+
+PROMPT_TEMPLATE = """
+# Context
+{context}
+"""
+ROLE="""
+你是一位项目经理，目标是根据 PRD 和 技术设计 来分解任务，给出任务列表，并分析任务依赖性，从更基础的模块开始项目。
+根据上下文填充以下缺失的信息，注意所有部分都以Python代码的三引号形式单独返回。这里每个任务的颗粒度是单个文件，如果有任何缺失的文件，你可以补充它们。
+注意：使用'##'来分割章节，而不是'#'，并且'## <章节名>'应在代码和三引号之前写。
+
+## 所需的第三方Python包: 以 requirements.txt 的格式提供
+
+## 所需的其他语言第三方包: 以requirements.txt格式提供
+
+## 完整API规范: 使用OpenAPI 3.0，描述前端和后端可能使用的所有API。
+
+## 逻辑分析: 以`Python` list[str, str]形式提供。第一个是文件名，第二个是在此文件中应实现的类/方法/函数。分析文件之间的依赖关系，判断哪些工作应当先完成。
+
+## 任务列表: 以`Python` list[str] 形式提供。每个字符串都是一个文件名，越在前面的，就越是先决依赖，应该优先完成。
+
+## 共享知识: 所有应该公开的事情，比如`utils`函数，`config`中的变量信息等等应该先被明确的内容。
+
+## 任何不清楚的地方: 以纯文本形式描述，确保清晰明确。例如，不要忘记主入口，不要忘记初始化第三方库。
+"""
+
+FORMAT_EXAMPLE = '''
+## Format example
+---
+## 所需的第三方Python包
+```python
+"""
+flask==1.1.2
+bcrypt==3.2.0
+"""
+```
+
+## 所需的其他语言第三方包
+```python
+"""
+No third-party ...
+"""
+```
+
+## 完整API规范
+```python
+"""
+openapi: 3.0.0
+...
+description: A JSON object ...
+"""
+```
+
+## 逻辑分析
+```python
+[
+    ("game.py", "Contains ..."),
+]
+```
+
+## 任务列表
+```python
+[
+    "game.py",
+]
+```
+
+## 共享知识
+```python
+"""
+'game.py' contains ...
+"""
+```
+
+## 任何不清楚的地方
+We need ... how to start.
+---
+-----
+'''
+
+OUTPUT_MAPPING = {
+    "所需的第三方Python包": (str, ...),
+    "所需的其他语言第三方包": (str, ...),
+    "完整API规范": (str, ...),
+    "逻辑分析": (List[Tuple[str, str]], ...),
+    "任务列表": (List[str], ...),
+    "共享知识": (str, ...),
+    "任何不清楚的地方": (str, ...),
+}
+
+@dataclass
+class WriteTasks(Action):
+    name: str = "WriteTasks"
+    role: str = ROLE
+    filename: str = "docs/api.md"
+
+    """def _save(self, context, rsp):
+        ws_name = CodeParser.parse_str(block="Python package name", text=context[-1].content)
+        file_path = WORKSPACE_ROOT / ws_name / 'docs/api_spec_and_tasks.md'
+        file_path.write_text(rsp.content)
+
+        # Write requirements.txt
+        requirements_path = WORKSPACE_ROOT / ws_name / 'requirements.txt'
+        requirements_path.write_text(rsp.instruct_content.dict().get("Required Python third-party packages").strip('"\n')) """
+
+    def run(self, context):
+        logger.info(f'Writing tasks..')
+        self.llm.set_prompt(PromptTemplate(PROMPT_TEMPLATE + FORMAT_EXAMPLE))
+        self._ask(context=context)
+
+    def parse(self):
+        api_design = self._load()
+        output_parser = MappingOutputParser(format_example=FORMAT_EXAMPLE,output_mapping=OUTPUT_MAPPING)
+        return output_parser.parse(api_design)

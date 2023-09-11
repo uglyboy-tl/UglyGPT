@@ -1,188 +1,73 @@
-from __future__ import annotations
-import logging
-import os, re, random, time
-from colorama import Fore, Style
-from logging import LogRecord
+#!/usr/bin/env python3
+#-*-coding:utf-8-*-
 
-from uglygpt.base import config, Singleton
+import os
+from loguru import logger as lg
+from dataclasses import dataclass
 
-class Logger(metaclass=Singleton):
-    def __init__(self):
-        log_dir = config.file_logger_path
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+from .singleton import singleton
+from .config import config
 
-        log_file = "activity.log"
-        error_file = "error.log"
+@singleton
+@dataclass
+class AppLogger:
+    app_logger = lg
 
-        console_formatter = AutoGptFormatter("%(title_color)s %(message)s")
+    def set_logger(self, filename, filter_type=None, level='DEBUG'):
+        """
+        :param filename: 日志文件名
+        :param filter_type: 日志过滤，如：将日志级别为ERROR的单独记录到一个文件中
+        :param level: 日志级别设置
+        :return:
+        """
 
-        # Create a handler for console which simulate typing
-        self.typing_console_handler = TypingConsoleHandler()
-        self.typing_console_handler.setLevel(logging.INFO)
-        self.typing_console_handler.setFormatter(console_formatter)
-
-        # Create a handler for console without typing simulation
-        self.console_handler = ConsoleHandler()
-        self.console_handler.setLevel(logging.DEBUG)
-        self.console_handler.setFormatter(console_formatter)
-
-        # Info handler in activity.log
-        self.file_handler = logging.FileHandler(
-            os.path.join(log_dir, log_file), "a", "utf-8"
+        dic = dict(
+            sink=self.get_log_path(filename),
+            rotation='500 MB',
+            retention='30 days',
+            format="{time}|{level}|{message}",
+            encoding='utf-8',
+            level=level,
+            enqueue=True,
         )
-        self.file_handler.setLevel(logging.DEBUG)
-        info_formatter = AutoGptFormatter(
-            "%(asctime)s %(levelname)s %(title)s %(message_no_color)s"
-        )
-        self.file_handler.setFormatter(info_formatter)
+        if filter_type:
+            dic["filter"] = lambda x: filter_type in str(x['level']).upper()
+        self.app_logger.add(**dic)
+        return self.app_logger
 
-        # Error handler error.log
-        error_handler = logging.FileHandler(
-            os.path.join(log_dir, error_file), "a", "utf-8"
-        )
-        error_handler.setLevel(logging.ERROR)
-        error_formatter = AutoGptFormatter(
-            "%(asctime)s %(levelname)s %(module)s:%(funcName)s:%(lineno)d %(title)s"
-            " %(message_no_color)s"
-        )
-        error_handler.setFormatter(error_formatter)
+    @property
+    def get_logger(self):
+        return self.app_logger
 
-        self.typing_logger = logging.getLogger("TYPER")
-        self.typing_logger.addHandler(self.typing_console_handler)
-        self.typing_logger.addHandler(self.file_handler)
-        self.typing_logger.addHandler(error_handler)
-        self.typing_logger.setLevel(logging.DEBUG)
+    @staticmethod
+    def get_log_path(filename):
+        log_path = os.path.join(config.BASE_LOG_DIR, filename)
+        return log_path
 
-        self.logger = logging.getLogger("LOGGER")
-        self.logger.addHandler(self.console_handler)
-        self.logger.addHandler(self.file_handler)
-        self.logger.addHandler(error_handler)
-        self.logger.setLevel(logging.DEBUG)
+    def trace(self, msg):
+        self.app_logger.trace(msg)
 
-    def typewriter_log(
-        self, title="", title_color="", content="", level=logging.INFO
-    ):
-        if content:
-            if isinstance(content, list):
-                content = " ".join(content)
-        else:
-            content = ""
+    def debug(self, msg):
+        self.app_logger.debug(msg)
 
-        self.typing_logger.log(
-            level, content, extra={"title": title, "color": title_color}
-        )
+    def info(self, msg):
+        self.app_logger.info(msg)
 
-    def debug(
-        self,
-        message,
-        title="",
-        title_color="",
-    ):
-        self._log(title, title_color, message, logging.DEBUG)
+    def success(self, msg):
+        self.app_logger.success(msg)
 
-    def info(
-        self,
-        message,
-        title="",
-        title_color="",
-    ):
-        self._log(title, title_color, message, logging.INFO)
+    def warning(self, msg):
+        self.app_logger.warning(msg)
 
-    def warn(
-        self,
-        message,
-        title="",
-        title_color="",
-    ):
-        self._log(title, title_color, message, logging.WARN)
+    def error(self, msg):
+        self.app_logger.error(msg)
 
-    def error(self, title, message=""):
-        self._log(title, Fore.RED, message, logging.ERROR)
-
-    def _log(
-        self,
-        title: str = "",
-        title_color: str = "",
-        message: str = "",
-        level=logging.INFO,
-    ):
-        if message:
-            if isinstance(message, list):
-                message = " ".join(message)
-        self.logger.log(
-            level, message, extra={"title": str(title), "color": str(title_color)}
-        )
-
-    def set_level(self, level):
-        self.logger.setLevel(level)
-        self.typing_logger.setLevel(level)
-
-"""
-Output stream to console using simulated typing
-"""
-
-class TypingConsoleHandler(logging.StreamHandler):
-    def emit(self, record):
-        min_typing_speed = 0.05
-        max_typing_speed = 0.01
-
-        msg = self.format(record)
-        try:
-            words = msg.split()
-            for i, word in enumerate(words):
-                print(word, end="", flush=True)
-                if i < len(words) - 1:
-                    print(" ", end="", flush=True)
-                typing_speed = random.uniform(min_typing_speed, max_typing_speed)
-                time.sleep(typing_speed)
-                # type faster after each word
-                min_typing_speed = min_typing_speed * 0.95
-                max_typing_speed = max_typing_speed * 0.95
-            print()
-        except Exception:
-            self.handleError(record)
+    def critical(self, msg):
+        self.app_logger.critical(msg)
 
 
-class ConsoleHandler(logging.StreamHandler):
-    def emit(self, record) -> None:
-        msg = self.format(record)
-        try:
-            print(msg)
-        except Exception:
-            self.handleError(record)
 
 
-class AutoGptFormatter(logging.Formatter):
-    """
-    Allows to handle custom placeholders 'title_color' and 'message_no_color'.
-    To use this formatter, make sure to pass 'color', 'title' as log extras.
-    """
-
-    def format(self, record: LogRecord) -> str:
-        if hasattr(record, "color"):
-            record.title_color = (
-                getattr(record, "color")
-                + getattr(record, "title", "")
-                + " "
-                + Style.RESET_ALL
-            )
-        else:
-            record.title_color = getattr(record, "title", "")
-
-        # Add this line to set 'title' to an empty string if it doesn't exist
-        record.title = getattr(record, "title", "")
-
-        if hasattr(record, "msg"):
-            record.message_no_color = remove_color_codes(str(getattr(record, "msg")))
-        else:
-            record.message_no_color = ""
-        return super().format(record)
-
-
-def remove_color_codes(s: str) -> str:
-    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    return ansi_escape.sub("", s)
-
-
-logger = Logger()
+logger = AppLogger()
+logger.set_logger('error.log', filter_type='ERROR')
+logger.set_logger('service.log', filter_type='INFO', level='INFO')

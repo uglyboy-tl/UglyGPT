@@ -1,13 +1,8 @@
+#!/usr/bin/env python3
+#-*-coding:utf-8-*-
 
-from uglygpt.base.singleton import AbstractSingleton, Singleton
-from uglygpt.base.config import config
-from uglygpt.base.logs import logger, Fore
+from .config import config
+from .logs import logger
+from .singleton import singleton
 
-__all__ = [
-    "AbstractSingleton",
-    "Singleton",
-    "Config",
-    "config",
-    "logger",
-    "Fore",
-]
+__all__ = ['config', 'logger', 'singleton']

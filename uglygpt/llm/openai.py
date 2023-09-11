@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+#-*-coding:utf-8-*-
+
+from dataclasses import dataclass, field
+import openai
+import tiktoken
+
+from .base import LLMProvider
+from uglygpt.base import config, logger
+
+# Initialize the OpenAI API client
+openai.api_key = config.openai_api_key
+openai.api_base = config.openai_api_base
+
+def tiktoken_len(text: str) -> int:
+    encoding = tiktoken.encoding_for_model("text-davinci-003")
+    return len(
+        encoding.encode(text)
+    )
+
+@dataclass
+class ChatGPT(LLMProvider):
+    """ChatGPT LLM provider."""
+    temperature: float = 0.7
+
+    def _num_tokens(self, prompt: str) -> int:
+        num_tokens = tiktoken_len(prompt)
+        return num_tokens
+
+    def ask(self, prompt: str) -> str:
+        tokens = self._num_tokens(prompt)
+        max_new_tokens = int(4096) - tokens
+        if max_new_tokens <= 0:
+            raise ValueError(f"Prompt is too long. has {tokens} tokens, max is 4096")
+        logger.debug(prompt)
+        completions = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            max_tokens=max_new_tokens,
+            temperature=self.temperature,
+        )
+        message = completions.choices[0].text
+        logger.debug(message)
+        return message
+
+@dataclass
+class GPT4(LLMProvider):
+    """GPT4 LLM provider."""
+    requirements: list[str] = field(default_factory= lambda: ["openai","tictoken"])
+    model: str = "gpt-4"
+    temperature: float = 0.7
+    MAX_TOKENS: int = 4096
+    messages: list = field(default_factory= list)
+
+    def _num_tokens(self, prompt: str) -> int:
+        num_tokens = tiktoken_len(prompt)
+        return num_tokens
+
+    def set_system(self, msg: str) -> None:
+        """Set the system."""
+        self.messages = []
+        if msg:
+            self.messages.append({"role": "system", "content": msg})
+
+    def ask(self, prompt: str) -> str:
+        tokens = self._num_tokens(prompt)
+        max_new_tokens = int(self.MAX_TOKENS) - tokens
+        if max_new_tokens <= 0:
+            raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
+        self.messages.append({"role": "user", "content": prompt})
+        logger.debug(self.messages)
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            max_tokens=max_new_tokens,
+            temperature=self.temperature,
+        )
+        message = response.choices[0]['message']['content']
+        logger.debug(response.choices[0]['message'])
+        return message

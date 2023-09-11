@@ -1,24 +1,26 @@
-"""The singleton metaclass for ensuring only one instance of a class."""
-from __future__ import annotations
-import abc
+#!/usr/bin/env python3
+#-*-coding:utf-8-*-
 
-class Singleton(abc.ABCMeta, type):
+class _SingletonWrapper:
     """
-    Singleton metaclass for ensuring only one instance of a class.
-    """
-
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """Call method for the singleton metaclass."""
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class AbstractSingleton(abc.ABC, metaclass=Singleton):
-    """
-    Abstract singleton class for ensuring only one instance of a class.
+    A singleton wrapper class. Its instances would be created
+    for each decorated class.
     """
 
-    pass
+    def __init__(self, cls):
+        self.__wrapped__ = cls
+        self._instance = None
+
+    def __call__(self, *args, **kwargs):
+        """Returns a single instance of decorated class"""
+        if self._instance is None:
+            self._instance = self.__wrapped__(*args, **kwargs)
+        return self._instance
+
+def singleton(cls):
+    """
+    A singleton decorator. Returns a wrapper objects. A call on that object
+    returns a single instance object of decorated class. Use the __wrapped__
+    attribute to access decorated class directly in unit tests
+    """
+    return _SingletonWrapper(cls)
