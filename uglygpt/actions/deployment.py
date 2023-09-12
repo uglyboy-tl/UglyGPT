@@ -7,7 +7,7 @@ import subprocess
 import re
 
 from .action import Action
-from .utils import code_parse
+from .command import Command
 from uglygpt.chains import Prompt
 
 ROLE = """
@@ -78,5 +78,9 @@ class Deployment(Action):
         tasks = self._parse(response)
         logger.success(tasks)
         for task in tasks:
-            result = self._execute_command(task["code"])
+            try:
+                result = self._execute_command(task["code"])
+            except:
+                command = Command(objective = task["name"])
+                result = command.run(command=task["code"])
             logger.success(result)

@@ -125,6 +125,8 @@ class Command(Action):
             if "Done" in response:
                 break
             reason,code = self._parse(response)
+
+            # TODO: 去掉下面流程中的 try-except
             try:
                 command = code_parse(code, lang = "bash")
             except Exception:
