@@ -19,9 +19,17 @@ class Action(ABC):
 
     def _ask(self, *args, **kwargs) -> str:
         response = self.llm(*args, **kwargs)
-        if self.filename:
-            File.save(self.filename, response)
         return response
+
+    def _save(self, filename=None, data=None):
+        if not filename:
+            if self.filename:
+                filename = self.filename
+            else:
+                return
+        if not data:
+            raise ValueError("data is required")
+        File.save(filename, data)
 
     def _load(self, filename=None):
         if not filename:
@@ -36,9 +44,5 @@ class Action(ABC):
         return result
 
     @abstractmethod
-    def run(self, *args, **kwargs) -> str:
+    def run(self, *args, **kwargs):
         pass
-
-    def parse(self, *args, **kwargs):
-        result = self.run(*args, **kwargs)
-        return self._parse(result)

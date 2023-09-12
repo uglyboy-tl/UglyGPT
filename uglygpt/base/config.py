@@ -19,4 +19,3 @@ class Config:
 
 config = Config()
 WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(WORKSPACE_ROOT)
