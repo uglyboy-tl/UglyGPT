@@ -5,5 +5,5 @@ from .prompt import Prompt
 __all__ = [
     "Chain",
     "LLMChain",
-    "PromptTemplate",
+    "Prompt",
 ]
