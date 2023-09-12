@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from .logs import logger
+from loguru import logger
 from .config import WORKSPACE_ROOT
 
 @dataclass

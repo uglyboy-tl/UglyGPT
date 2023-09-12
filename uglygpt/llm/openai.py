@@ -11,9 +11,10 @@ from tenacity import (
     wait_random_exponential,
     before_log
 )  # for exponential backoff
+from loguru import logger
 
 from .base import LLMProvider
-from uglygpt.base import config, logger
+from uglygpt.base import config
 
 # Initialize the OpenAI API client
 openai.api_key = config.openai_api_key
@@ -75,7 +76,8 @@ class GPT4(LLMProvider):
         if max_new_tokens <= 0:
             raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
         self.messages.append({"role": "user", "content": prompt})
-        logger.debug(self.messages)
+        logger.trace(self.messages)
+        logger.debug(prompt)
         response = self.completion_with_backoff(
             model=self.model,
             messages=self.messages,
@@ -83,9 +85,9 @@ class GPT4(LLMProvider):
             temperature=self.temperature,
         )
         message = response.choices[0]['message']['content']
-        logger.debug(response.choices[0]['message'])
+        logger.trace(response.choices[0]['message'])
         return message
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before=before_log(logger.app_logger,"WARNING"))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before=before_log(logger,"WARNING"))
     def completion_with_backoff(self, **kwargs) -> str:
         return openai.ChatCompletion.create(**kwargs)
