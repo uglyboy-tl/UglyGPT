@@ -3,13 +3,12 @@
 
 from dataclasses import dataclass, field
 import openai
-from openai.error import RateLimitError
 import tiktoken
 from tenacity import (
     retry,
     stop_after_attempt,
     wait_random_exponential,
-    before_log
+    before_sleep_log
 )  # for exponential backoff
 from loguru import logger
 
@@ -87,6 +86,6 @@ class GPT4(LLMProvider):
         logger.trace(response.choices[0]['message'])
         return message
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before=before_log(logger,"WARNING"))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger,"WARNING"))
     def completion_with_backoff(self, **kwargs) -> str:
         return openai.ChatCompletion.create(**kwargs)
