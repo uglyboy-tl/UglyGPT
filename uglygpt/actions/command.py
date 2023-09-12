@@ -12,15 +12,17 @@ from uglygpt.chains.prompt import Prompt
 
 ROLE = """
 你是一名系统运维工程师，你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
-1. 你需要一步一步的描述你的解决思路，每一步都可以对应一个命令行指令。
+1. 你需要一步一步的描述你的解决思路，每一步都可以对应一个命令行指令（不要一次执行多个命令）。
 2. 确保你的命令行可以自动执行，不需要人工干预。
-3. 你会逐一执行命令行指令，并可以根据每一个命令行指令的执行结果来决定下一步的操作。
-4. 将已经获得的信息融合到你的解决思路中，不断完善你的解决思路。
-5. 如果你的目标已经被解决，你可以不用再执行命令行指令。
+3. 因为你能获取的信息有字数限制，所以使用的命令行指令中尽量保证获得的结果精简。
+4. 你会逐一执行命令行指令，并可以根据每一个命令行指令的执行结果来决定下一步的操作。
+5. 将已经获得的信息融合到你的解决思路中，不断完善你的解决思路。
+6. 如果你的目标已经被解决，可以直接返回“问题已解决”，不需要再给出命令行。
 """
 
 FORMAT_EXAMPLE = """
 -----
+注意：请按照下面的格式来描述你的解决思路和命令行指令。
 ## Format example
 ---
 ### 解决思路
@@ -35,8 +37,6 @@ command
 """
 
 CONTEXT_TEMPLATE = """
-## Context
------
 {context}
 """
 
@@ -99,7 +99,7 @@ class Command(Action):
         logger.success(response)
         reason,code = self._parse(response)
         command = code_parse(code, lang = "bash")
-        while command and command.strip() != "command":
+        while command:
             logger.debug(f"command: {command}")
             result = self._execute_command(command)
             self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE + PROMPT_TEMPLATE + FORMAT_EXAMPLE))

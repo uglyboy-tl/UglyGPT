@@ -77,7 +77,6 @@ class GPT4(LLMProvider):
             raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
         self.messages.append({"role": "user", "content": prompt})
         logger.trace(self.messages)
-        logger.debug(prompt)
         response = self.completion_with_backoff(
             model=self.model,
             messages=self.messages,
