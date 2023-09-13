@@ -50,9 +50,11 @@ PROMPT_TEMPLATE = """
 class Command(Action):
     role: str = ROLE
     objective: str = ""
+    llm: LLMChain = field(init=False)
 
     def __post_init__(self):
         self.role = ROLE.format(objective = self.objective)
+        self.llm = LLMChain(llm_name="gpt4")
         return super().__post_init__()
 
     def _execute_command(self, command: str):

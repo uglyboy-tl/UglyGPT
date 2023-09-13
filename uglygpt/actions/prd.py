@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*-coding:utf-8-*-
+
 from dataclasses import dataclass, field
 from typing import List, Tuple
 from loguru import logger
@@ -139,5 +142,7 @@ class PRD(Action):
         return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, requirements):
-        logger.info(f'撰写PRD..')
-        return self._ask(requirements=requirements, search_information="")
+        logger.info(f'撰写PRD...')
+        response = self._ask(requirements=requirements, search_information="")
+        self._save(response)
+        return response

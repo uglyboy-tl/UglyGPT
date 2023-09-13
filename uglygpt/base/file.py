@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from loguru import logger
+from pathlib import Path
 
-WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def get_project_root():
+    """Search upwards to find the project root directory."""
+    current_path = Path.cwd()
+    while True:
+        if (current_path / '.git').exists() or (current_path / '.project_root').exists() or (current_path / '.gitignore').exists():
+            return current_path
+        parent_path = current_path.parent
+        if parent_path == current_path:
+            raise Exception("Project root not found.")
+        current_path = parent_path
+
+WORKSPACE_ROOT = get_project_root()
 
 @dataclass
 class File:

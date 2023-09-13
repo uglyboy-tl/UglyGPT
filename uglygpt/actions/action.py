@@ -21,7 +21,7 @@ class Action(ABC):
         response = self.llm(*args, **kwargs)
         return response
 
-    def _save(self, filename=None, data=None):
+    def _save(self, data=None, filename=None):
         if not filename:
             if self.filename:
                 filename = self.filename
