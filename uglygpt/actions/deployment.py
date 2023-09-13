@@ -13,15 +13,13 @@ from uglygpt.chains import Prompt
 ROLE = """
 你是一名系统运维工程师，你将根据文档，在 `{deploy_path}` 完成一个项目的部署。
 你需要将文档中的步骤拆解成任务列表，并完成这些任务，部分要求如下：
-1. 任务列表中，每一个任务都可以对应一个命令行指令（不要一次执行多个命令）。
-2. 确保你的命令行可以自动执行，不需要人工干预。
-3. 因为你能获取的信息有字数限制，所以使用的命令行指令中尽量保证获得的结果精简。
-4. 你会逐一执行命令行指令，若指令执行失败会有其他人帮助你修复错误，确保任务完成。
-5. 你的每条命令都只能在特定目录下执行，所以不要执行切换目录操作，而是直接带路径执行。
-6. 如果需要执行项目中的脚本，请调用终端来执行，例如 `x-terminal-emulator -e script.sh`。
-"""
-
-FORMAT_EXAMPLE = """
+- 任务列表中，每一个任务都可以对应一个命令行指令（不要一次执行多个命令）。
+- 确保你的命令行可以自动执行，不需要人工干预。
+- 因为你能获取的信息有字数限制，所以使用的命令行指令中尽量保证获得的结果精简。
+- 你会逐一执行命令行指令，若指令执行失败会有其他人帮助你修复错误，确保任务完成。
+- 你的每条命令都只能在特定目录下执行，所以不要执行切换目录操作，而是直接带路径执行。
+- 如果需要执行项目中的脚本，请调用终端来执行，例如 `x-terminal-emulator -e script.sh`。
+- 请按照 Format example 的格式来描述你的解决思路和命令行指令。
 -----
 ## Format example
 ---
@@ -43,7 +41,10 @@ class Deployment(Action):
     deploy_path: str = ""
 
     def __post_init__(self):
+        # 初始化 Role
         self.role = ROLE.format(deploy_path = self.deploy_path)
+        # 初始化 Prompt
+        self.llm.set_prompt(Prompt(PROMPT_TEMPLATE))
         return super().__post_init__()
 
     def _parse(self, result: str):
@@ -73,7 +74,6 @@ class Deployment(Action):
             #return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     def run(self, context = ""):
-        self.llm.set_prompt(Prompt(PROMPT_TEMPLATE + FORMAT_EXAMPLE))
         response = self._ask(context = context)
         tasks = self._parse(response)
         logger.success(tasks)

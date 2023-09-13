@@ -12,18 +12,16 @@ from uglygpt.chains import Prompt, LLMChain
 
 ROLE = """
 你是一名系统运维工程师，你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
-1. 你需要一步一步的描述你的解决思路，每一步都可以对应一个命令行指令（不要一次执行多个命令）。
-2. 只输出即将执行的命令行指令。
-3. 确保你的命令行可以自动执行，不需要人工干预。
-4. 因为你能获取的信息有字数限制，所以使用的命令行指令中尽量保证获得的结果精简。
-5. 你会逐一执行命令行指令，并可以根据每一个命令行指令的执行结果来决定下一步的操作。
-6. 将已经获得的信息融合到你的解决思路中，不断完善你的解决思路。
-7. 不要执行切换目录的操作，因为你的每条命令都只能在特定目录下执行。
-8. 如果你的目标已完成或者无法解决，可以返回"Done"，并给出解释，无需给出命令行指令。
-"""
-
-# TODO: 优化下面的格式，ChatGPT 经常无法正确返回下面的格式
-FORMAT_EXAMPLE = """
+- 你需要一步一步的描述你的解决思路，每一步都可以对应一个命令行指令（不要一次执行多个命令）。
+    - 你会逐一执行这些指令，并可以根据指令的执行结果来修正下一步的操作。
+    - 将已经获得的执行结果融合到你的解决思路中，不断完善你的解决思路。
+- 只输出即将执行的命令行指令。
+    - 确保你的命令行可以自动执行，不需要人工干预。
+    - 不要执行切换目录的操作，因为你的命令行指令都只能在特定目录下执行。
+    - 因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果精简。
+- 请按照 Format example 的格式来描述你的解决思路和命令行指令。
+    - 注意：使用'##'来分割章节，而不是'#'，并且'## <章节名>'应在代码和三引号之前写。
+    - 如果你的目标已完成或者无法解决，则不需要给出命令行指令；
 -----
 注意：请按照下面的格式来描述你的解决思路和命令行指令，若目标已完成或者无法解决，可以返回"Done"。
 ## Format example
@@ -111,7 +109,7 @@ class Command(Action):
         if context is None:
             context = "你的系统符合这些性质：" + platform.system() + ' ' + platform.release() + ' ' + str(platform.freedesktop_os_release())
         if command is None:
-            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE + FORMAT_EXAMPLE))
+            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE))
             response = self._ask(context = context)
             logger.success(response)
             reason,code = self._parse(response)
@@ -120,7 +118,7 @@ class Command(Action):
         while command:
             logger.debug(f"command: {command}")
             result = self._execute_command(command)
-            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE + PROMPT_TEMPLATE + FORMAT_EXAMPLE))
+            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE + PROMPT_TEMPLATE))
             context = "解决思路：\n" + reason + "\n即将执行的命令行指令：\n" + "```bash\n" + command + "\n```\n"
             response = self._ask(context = context, result = result)
             logger.success(response)
