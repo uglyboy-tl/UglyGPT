@@ -7,6 +7,12 @@ from uglygpt.base import config
 supported_llm_providers = []
 
 try:
+    from uglygpt.llm.openai import GPT3
+    supported_llm_providers.append(GPT3)
+except ImportError:
+    ChatGPT = None
+
+try:
     from uglygpt.llm.openai import ChatGPT
     supported_llm_providers.append(ChatGPT)
 except ImportError:
@@ -29,7 +35,15 @@ def get_llm_provider(llm_provider_name: str = None) -> LLMProvider:
     Returns: LLMProvider
     """
 
-    if llm_provider_name == "chatgpt":
+    if llm_provider_name == "gpt3":
+        if not GPT3:
+            print(
+                "Error: OpenAILLM is not installed. Please install openai, tiktoken"
+                " to use OpenAI as a LLM provider."
+            )
+        else:
+            return GPT3(temperature=0.3)
+    elif llm_provider_name == "chatgpt":
         if not ChatGPT:
             print(
                 "Error: OpenAILLM is not installed. Please install openai, tiktoken"
