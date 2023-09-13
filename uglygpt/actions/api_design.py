@@ -100,7 +100,7 @@ class APIDesign(Action):
         return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, PRD: str):
-        logger.info(f'撰写设计文档...')
+        logger.info(f'撰写API设计文档...')
         response = self._ask(PRD=PRD)
         self._save(response)
         return response
