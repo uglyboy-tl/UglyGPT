@@ -40,8 +40,8 @@ class Action(ABC):
         data = File.load(filename)
         return data
 
-    def _parse(self, result: str):
-        return result
+    def _parse(self, text: str):
+        return text
 
     @abstractmethod
     def run(self, *args, **kwargs):

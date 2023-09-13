@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from typing import  List, Tuple
+from typing import List, Tuple
 from loguru import logger
 
 from .action import Action
+from .utils import mapping_parse
 from uglygpt.chains import LLMChain
 
-ROLE="""
+ROLE = """
 You are a professional product manager; the goal is to design a concise, usable, efficient product
 Requirements: According to the context, fill in the following missing information, note that each sections are returned in Python code triple quote form seperatedly. If the requirements are unclear, ensure minimum viability and avoid excessive design
 ATTENTION: Use '##' to SPLIT SECTIONS, not '#'. AND '## <SECTION_NAME>' SHOULD WRITE BEFORE the code and triple quote. Output carefully referenced "Format example" in format.
@@ -118,9 +119,10 @@ OUTPUT_MAPPING = {
     "竞争四象限图": (str, ...),
     "需求分析": (str, ...),
     "需求池": (List[Tuple[str, str]], ...),
-    "UI设计草图":(str, ...),
+    "UI设计草图": (str, ...),
     "任何不清楚的地方": (str, ...),
 }
+
 
 @dataclass
 class PRD(Action):
@@ -132,6 +134,9 @@ class PRD(Action):
     def __post_init__(self):
         self.llm = LLMChain(llm_name="chatgpt", prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
+
+    def _parse(self, text: str):
+        return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, requirements):
         logger.info(f'撰写PRD..')

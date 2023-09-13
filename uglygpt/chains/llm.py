@@ -14,7 +14,7 @@ class LLMChain(Chain):
     prompt_template: str = ">>> {prompt}"
 
     def __post_init__(self):
-        self.llm = get_llm_provider(self.llm_name)
+        self._llm = get_llm_provider(self.llm_name)
         self.prompt = self.prompt_template
 
     @property
@@ -23,7 +23,7 @@ class LLMChain(Chain):
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         prompt = self.prompt.format(**inputs)
-        return self.llm.ask(prompt)
+        return self._llm.ask(prompt)
 
     @property
     def prompt(self) -> Prompt:
@@ -32,3 +32,8 @@ class LLMChain(Chain):
     @prompt.setter
     def prompt(self, prompt_template: str) -> None:
         self._prompt = Prompt(prompt_template)
+
+    @property
+    def llm(self):
+        """将 llm 只读化，防止被修改"""
+        return self._llm
