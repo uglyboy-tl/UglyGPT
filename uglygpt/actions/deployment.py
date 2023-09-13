@@ -8,7 +8,6 @@ import re
 
 from .action import Action
 from .command import Command
-from uglygpt.chains import Prompt
 
 ROLE = """
 你是一名系统运维工程师，你将根据文档，在 `{deploy_path}` 完成一个项目的部署。
@@ -44,7 +43,7 @@ class Deployment(Action):
         # 初始化 Role
         self.role = ROLE.format(deploy_path = self.deploy_path)
         # 初始化 Prompt
-        self.llm.set_prompt(Prompt(PROMPT_TEMPLATE))
+        self.llm.prompt = PROMPT_TEMPLATE
         return super().__post_init__()
 
     def _parse(self, result: str):

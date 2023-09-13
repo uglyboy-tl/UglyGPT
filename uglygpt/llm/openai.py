@@ -64,13 +64,13 @@ class ChatGPT(LLMProvider):
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
-            logger.warning("model not found. Using cl100k_base encoding.")
+            logger.trace("model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
         if model == "gpt-3.5-turbo":
-            logger.warning("gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
+            logger.trace("gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
             return self._num_tokens(messages, model="gpt-3.5-turbo-0301")
         elif model == "gpt-4":
-            logger.warning("gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
+            logger.trace("gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
             return self._num_tokens(messages, model="gpt-4-0314")
         elif model == "gpt-3.5-turbo-0301":
             tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n

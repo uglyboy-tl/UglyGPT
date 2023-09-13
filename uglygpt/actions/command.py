@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 #-*-coding:utf-8-*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from loguru import logger
 import subprocess
 import platform
 
 from .action import Action
 from .utils import code_parse
-from uglygpt.chains import Prompt, LLMChain
+from uglygpt.chains import LLMChain
 
 ROLE = """
 你是一名系统运维工程师，你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
@@ -48,11 +48,13 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Command(Action):
+    llm: LLMChain = field(init=False)
     role: str = ROLE
     objective: str = ""
 
     def __post_init__(self):
         self.role = ROLE.format(objective = self.objective)
+        self.llm = LLMChain(llm_name="gpt4")
         return super().__post_init__()
 
     def _execute_command(self, command: str):
@@ -97,8 +99,7 @@ class Command(Action):
             self.role = ROLE.format(objective = objective)
             super().__post_init__()
         elif command is not None:
-            llm = LLMChain(prompt=Prompt("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？"))
-            objective = llm()
+            objective = LLMChain(llm_name="chatgpt", prompt_template="```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")()
             logger.debug(f'Objective: {objective}')
             self.objective = objective
             self.role = ROLE.format(objective = objective)
@@ -109,7 +110,7 @@ class Command(Action):
         if context is None:
             context = "你的系统符合这些性质：" + platform.system() + ' ' + platform.release() + ' ' + str(platform.freedesktop_os_release())
         if command is None:
-            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE))
+            self.llm.prompt = CONTEXT_TEMPLATE
             response = self._ask(context = context)
             logger.success(response)
             reason,code = self._parse(response)
@@ -118,7 +119,7 @@ class Command(Action):
         while command:
             logger.debug(f"command: {command}")
             result = self._execute_command(command)
-            self.llm.set_prompt(Prompt(CONTEXT_TEMPLATE + PROMPT_TEMPLATE))
+            self.llm.prompt = CONTEXT_TEMPLATE + PROMPT_TEMPLATE
             context = "解决思路：\n" + reason + "\n即将执行的命令行指令：\n" + "```bash\n" + command + "\n```\n"
             response = self._ask(context = context, result = result)
             logger.success(response)

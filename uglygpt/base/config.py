@@ -18,4 +18,3 @@ class Config:
         self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4")
 
 config = Config()
-WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

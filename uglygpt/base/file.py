@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 #-*-coding:utf-8-*-
 
+import os
 from dataclasses import dataclass
-
 from loguru import logger
-from .config import WORKSPACE_ROOT
+
+WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @dataclass
 class File:
