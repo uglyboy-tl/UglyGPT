@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from dataclasses import dataclass
 from loguru import logger
@@ -34,6 +34,7 @@ PROMPT_TEMPLATE = """
 {context}
 """
 
+
 @dataclass
 class Deployment(Action):
     role: str = ROLE
@@ -41,7 +42,7 @@ class Deployment(Action):
 
     def __post_init__(self):
         # 初始化 Role
-        self.role = ROLE.format(deploy_path = self.deploy_path)
+        self.role = ROLE.format(deploy_path=self.deploy_path)
         # 初始化 Prompt
         self.llm.prompt = PROMPT_TEMPLATE
         return super().__post_init__()
@@ -52,7 +53,8 @@ class Deployment(Action):
     def _execute_command(self, command: str):
         logger.debug(f"run command: {command}")
         try:
-            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
             output = result.stdout.decode().strip()
             logger.success(output)
             if output != "":
@@ -60,17 +62,18 @@ class Deployment(Action):
             else:
                 return "Command executed successfully."
         except subprocess.CalledProcessError as e:
-            raise RuntimeError("Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-            #return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
+            raise RuntimeError("Command '{}' return with error (code {}): {}".format(
+                e.cmd, e.returncode, e.output))
+            # return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
-    def run(self, context = ""):
-        response = self._ask(context = context)
+    def run(self, context=""):
+        response = self.ask(context=context)
         tasks = self._parse(response)
         logger.success(tasks)
         for task in tasks:
             try:
                 result = self._execute_command(task["code"])
             except:
-                command = Command(objective = task["name"])
+                command = Command(objective=task["name"])
                 result = command.run(command=task["code"])
             logger.success(result)

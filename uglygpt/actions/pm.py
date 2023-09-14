@@ -15,7 +15,7 @@ PROMPT_TEMPLATE = """
 ## API设计文档
 {API_Design}
 """
-ROLE='''
+ROLE = '''
 你是一位项目经理，目标是根据 PRD 和 API设计文档 来分解任务，给出任务列表，并分析任务依赖性，从更基础的模块开始项目。
 根据上下文填充以下缺失的信息，注意所有部分都以Python代码的三引号形式单独返回。这里每个任务的颗粒度是单个文件，如果有任何缺失的文件，你可以补充它们。
 注意：使用'##'来分割章节，而不是'#'，并且'## <章节名>'应在代码和三引号之前写。
@@ -97,6 +97,7 @@ OUTPUT_MAPPING = {
     "任何不清楚的地方": (str, ...),
 }
 
+
 @dataclass
 class TasksSplit(Action):
     name: str = "WriteTasks"
@@ -105,13 +106,15 @@ class TasksSplit(Action):
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
-        self.llm = LLMChain(llm_name="chatgpt", prompt_template=PROMPT_TEMPLATE)
+        self.llm = LLMChain(llm_name="chatgpt",
+                            prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
+
     def _parse(self, text: str):
         return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, prd: str, api_design: str):
         logger.info(f'Writing tasks..')
-        response = self._ask(PRD=prd, API_Design = api_design)
+        response = self.ask(PRD=prd, API_Design=api_design)
         self._save(response)
         return response

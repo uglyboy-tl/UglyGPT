@@ -135,7 +135,8 @@ class PRD(Action):
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
-        self.llm = LLMChain(llm_name="chatgpt", prompt_template=PROMPT_TEMPLATE)
+        self.llm = LLMChain(llm_name="chatgpt",
+                            prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
 
     def _parse(self, text: str):
@@ -143,6 +144,6 @@ class PRD(Action):
 
     def run(self, requirements):
         logger.info(f'撰写PRD...')
-        response = self._ask(requirements=requirements, search_information="")
+        response = self.ask(requirements=requirements, search_information="")
         self._save(response)
         return response

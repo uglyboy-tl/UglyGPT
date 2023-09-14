@@ -92,15 +92,15 @@ class APIDesign(Action):
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
-        self.llm = LLMChain(llm_name="chatgpt", prompt_template=PROMPT_TEMPLATE)
+        self.llm = LLMChain(llm_name="chatgpt",
+                            prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
-
 
     def _parse(self, text: str):
         return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, PRD: str):
         logger.info(f'撰写API设计文档...')
-        response = self._ask(PRD=PRD)
+        response = self.ask(PRD=PRD)
         self._save(response)
         return response

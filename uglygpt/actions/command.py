@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
 from loguru import logger
@@ -37,6 +37,7 @@ PROMPT_TEMPLATE = """
 {result}
 """
 
+
 @dataclass
 class Command(Action):
     role: str = ROLE
@@ -44,14 +45,15 @@ class Command(Action):
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
-        self.role = ROLE.format(objective = self.objective)
+        self.role = ROLE.format(objective=self.objective)
         self.llm = LLMChain(llm_name="gpt4")
         return super().__post_init__()
 
     def _execute_command(self, command: str):
         logger.debug(f"run command: {command}")
         try:
-            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
             output = result.stdout.decode().strip()
             logger.success(output)
             if output != "":
@@ -60,7 +62,7 @@ class Command(Action):
                 return "Command executed successfully."
         except subprocess.CalledProcessError as e:
             logger.warning(e.stderr.decode())
-            #raise RuntimeError("Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            # raise RuntimeError("Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
             return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     def _parse(self, text: str):
@@ -69,26 +71,28 @@ class Command(Action):
         command = result.get("command", None)
         return reason, command
 
-    def run(self, objective = None, context = None, command = None):
+    def run(self, objective=None, context=None, command=None):
         logger.info(f'Command Running ..')
         if objective is not None:
             self.objective = objective
-            self.role = ROLE.format(objective = objective)
+            self.role = ROLE.format(objective=objective)
             super().__post_init__()
         elif command is not None:
-            objective = LLMChain(llm_name="chatgpt", prompt_template="```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")()
+            objective = LLMChain(
+                llm_name="chatgpt", prompt_template="```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")()
             logger.debug(f'Objective: {objective}')
             self.objective = objective
-            self.role = ROLE.format(objective = objective)
+            self.role = ROLE.format(objective=objective)
             super().__post_init__()
 
         reason = ""
         logger.debug(f'Role: {self.role}')
         if context is None:
-            context = "你的系统符合这些性质：" + platform.system() + ' ' + platform.release() + ' ' + str(platform.freedesktop_os_release())
+            context = "你的系统符合这些性质：" + platform.system() + ' ' + platform.release() + ' ' + \
+                str(platform.freedesktop_os_release())
         if command is None:
             self.llm.prompt = CONTEXT_TEMPLATE
-            response = self._ask(context = context)
+            response = self.ask(context=context)
             reason, command = self._parse(response)
             logger.success(reason)
 
@@ -96,7 +100,8 @@ class Command(Action):
             logger.debug(f"command: {command}")
             result = self._execute_command(command)
             self.llm.prompt = CONTEXT_TEMPLATE + PROMPT_TEMPLATE
-            context = "解决思路：\n" + reason + "\n即将执行的命令行指令：\n" + "```bash\n" + command + "\n```\n"
-            response = self._ask(context = context, result = result)
+            context = "解决思路：\n" + reason + "\n即将执行的命令行指令：\n" + \
+                "```bash\n" + command + "\n```\n"
+            response = self.ask(context=context, result=result)
             reason, command = self._parse(response)
             logger.success(reason)

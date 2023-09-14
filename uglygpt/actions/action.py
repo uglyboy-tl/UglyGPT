@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+from typing import Optional
+
 from uglygpt.chains import LLMChain
 from uglygpt.base import File
 
+
 @dataclass
 class Action(ABC):
-    role: str = None
-    filename: str = None
+    role: Optional[str | None] = None
+    filename: Optional[str | None] = None
     llm: LLMChain = field(default_factory=LLMChain)
 
     def __post_init__(self):
         if self.role:
             self.llm.llm.set_system(self.role)
 
-    def _ask(self, *args, **kwargs) -> str:
+    def ask(self, *args, **kwargs) -> str:
         response = self.llm(*args, **kwargs)
         return response
 

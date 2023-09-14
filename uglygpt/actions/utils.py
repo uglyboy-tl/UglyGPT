@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from typing import List, Tuple, Dict, Any
 import re
@@ -7,6 +7,7 @@ import ast
 import json
 from loguru import logger
 from uglygpt.chains import LLMChain
+
 
 def code_parse(text: str, lang: str = "python"):
     pattern = rf'```{lang}.*?\s+(.*?)```'
@@ -18,6 +19,7 @@ def code_parse(text: str, lang: str = "python"):
         logger.warning(text)
         raise Exception
     return code
+
 
 def file_list_parse(text: str) -> list[str]:
     # Regular expression pattern to find the tasks list.
@@ -39,6 +41,7 @@ def file_list_parse(text: str) -> list[str]:
         tasks = text.split("\n")
     return tasks
 
+
 def blocks_parse(text: str):
     # 首先根据"##"将文本分割成不同的block
     blocks = text.split("##")
@@ -58,6 +61,7 @@ def blocks_parse(text: str):
             block_dict[block_title.strip()] = block_content.strip()
 
     return block_dict
+
 
 def mapping_parse(text: str, output_mapping: Dict[str, Any]) -> Dict[str, Any]:
     block_dict = blocks_parse(text)
@@ -87,6 +91,7 @@ def mapping_parse(text: str, output_mapping: Dict[str, Any]) -> Dict[str, Any]:
         #         pass
         parsed_data[block] = content
     return parsed_data
+
 
 def fix_llm_json_str(string):
     new_string = string.strip()
@@ -124,6 +129,7 @@ def fix_llm_json_str(string):
                     return match[-1]
 
                 return message
+
 
 def parse_json(string):
     return json.loads(fix_llm_json_str(string))

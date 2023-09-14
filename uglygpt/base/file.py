@@ -4,6 +4,7 @@
 from loguru import logger
 from pathlib import Path
 
+
 def get_project_root():
     """Search upwards to find the project root directory."""
     current_path = Path.cwd()
@@ -15,7 +16,6 @@ def get_project_root():
             raise Exception("Project root not found.")
         current_path = parent_path
 
-#WORKSPACE_ROOT = get_project_root()
 
 class File:
     WORKSPACE_ROOT = get_project_root()

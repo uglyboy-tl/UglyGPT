@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 class _SingletonWrapper:
     """
@@ -16,6 +16,7 @@ class _SingletonWrapper:
         if self._instance is None:
             self._instance = self.__wrapped__(*args, **kwargs)
         return self._instance
+
 
 def singleton(cls):
     """

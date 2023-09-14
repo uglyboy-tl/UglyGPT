@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 import re
 from dataclasses import dataclass
+
 
 @dataclass
 class Prompt(object):

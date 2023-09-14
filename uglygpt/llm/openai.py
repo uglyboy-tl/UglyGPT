@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
 import openai
+from openai.api_resources.abstract.engine_api_resource import EngineAPIResource
 import tiktoken
 from tenacity import (
     retry,
@@ -19,11 +20,13 @@ from uglygpt.base import config
 openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
 
+
 def tiktoken_len(text: str) -> int:
     encoding = tiktoken.encoding_for_model("text-davinci-003")
     return len(
         encoding.encode(text)
     )
+
 
 @dataclass
 class GPT3(LLMProvider):
@@ -38,7 +41,8 @@ class GPT3(LLMProvider):
         tokens = self._num_tokens(prompt)
         max_new_tokens = int(4096) - tokens
         if max_new_tokens <= 0:
-            raise ValueError(f"Prompt is too long. has {tokens} tokens, max is 4096")
+            raise ValueError(
+                f"Prompt is too long. has {tokens} tokens, max is 4096")
         logger.debug(prompt)
         completions = openai.Completion.create(
             model="text-davinci-003",
@@ -46,18 +50,20 @@ class GPT3(LLMProvider):
             max_tokens=max_new_tokens,
             temperature=self.temperature,
         )
-        message = completions.choices[0].text
+        message = completions.choices[0].text  # type: ignore
         logger.debug(message)
         return message
+
 
 @dataclass
 class ChatGPT(LLMProvider):
     """GPT4 LLM provider."""
-    requirements: list[str] = field(default_factory= lambda: ["openai","tictoken"])
+    requirements: list[str] = field(
+        default_factory=lambda: ["openai", "tictoken"])
     model: str = "gpt-3.5-turbo"
     temperature: float = 0.7
     MAX_TOKENS: int = 4096
-    messages: list = field(default_factory= list)
+    messages: list = field(default_factory=list)
 
     def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
         """Returns the number of tokens used by a list of messages."""
@@ -67,19 +73,23 @@ class ChatGPT(LLMProvider):
             logger.trace("model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
         if model == "gpt-3.5-turbo":
-            logger.trace("gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
+            logger.trace(
+                "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
             return self._num_tokens(messages, model="gpt-3.5-turbo-0301")
         elif model == "gpt-4":
-            logger.trace("gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
+            logger.trace(
+                "gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
             return self._num_tokens(messages, model="gpt-4-0314")
         elif model == "gpt-3.5-turbo-0301":
-            tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
+            # every message follows <|start|>{role/name}\n{content}<|end|>\n
+            tokens_per_message = 4
             tokens_per_name = -1  # if there's a name, the role is omitted
         elif model == "gpt-4-0314":
             tokens_per_message = 3
             tokens_per_name = 1
         else:
-            raise NotImplementedError(f"""num_tokens() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+            raise NotImplementedError(
+                f"""num_tokens() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
@@ -98,10 +108,11 @@ class ChatGPT(LLMProvider):
 
     def ask(self, prompt: str) -> str:
         self.messages.append({"role": "user", "content": prompt})
-        tokens = self._num_tokens(messages = self.messages, model=self.model)
+        tokens = self._num_tokens(messages=self.messages, model=self.model)
         max_new_tokens = int(self.MAX_TOKENS) - tokens
         if max_new_tokens <= 0:
-            raise ValueError(f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
+            raise ValueError(
+                f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
         logger.trace(self.messages)
         response = self.completion_with_backoff(
             model=self.model,
@@ -109,13 +120,14 @@ class ChatGPT(LLMProvider):
             max_tokens=max_new_tokens,
             temperature=self.temperature,
         )
-        message = response.choices[0]['message']['content']
-        logger.trace(response.choices[0]['message'])
+        message = response.choices[0]['message']['content']  # type: ignore
+        logger.trace(response.choices[0]['message'])  # type: ignore
         return message
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger,"WARNING"))
-    def completion_with_backoff(self, **kwargs) -> str:
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    def completion_with_backoff(self, **kwargs):
         return openai.ChatCompletion.create(**kwargs)
+
 
 @dataclass
 class GPT4(ChatGPT):

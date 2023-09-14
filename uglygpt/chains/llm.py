@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from typing import Any, Dict, List
-from dataclasses import dataclass,field
+from dataclasses import dataclass, field
 
-from uglygpt.llm import get_llm_provider
+from uglygpt.llm import get_llm_provider, LLMProvider
 from .base import Chain
 from .prompt import Prompt
+
 
 @dataclass
 class LLMChain(Chain):
@@ -21,7 +22,7 @@ class LLMChain(Chain):
     def input_keys(self) -> List[str]:
         return self.prompt.input_variables
 
-    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def _call(self, inputs: Dict[str, Any]) -> str:
         prompt = self.prompt.format(**inputs)
         return self._llm.ask(prompt)
 
@@ -34,6 +35,6 @@ class LLMChain(Chain):
         self._prompt = Prompt(prompt_template)
 
     @property
-    def llm(self):
+    def llm(self) -> LLMProvider:
         """将 llm 只读化，防止被修改"""
         return self._llm

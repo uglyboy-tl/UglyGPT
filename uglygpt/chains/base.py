@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
+
 
 @dataclass
 class Chain(ABC):
@@ -55,7 +56,8 @@ class Chain(ABC):
         """Run the chain as text in, text out or multiple variables, text out."""
         if args and not kwargs:
             if len(args) != 1:
-                raise ValueError("`run` supports only one positional argument.")
+                raise ValueError(
+                    "`run` supports only one positional argument.")
             return self._run(args[0])
 
         if kwargs and not args:
