@@ -4,10 +4,10 @@
 from dataclasses import dataclass
 from loguru import logger
 import subprocess
-import re
 
 from .action import Action
 from .command import Command
+from .utils import parse_json
 
 ROLE = """
 你是一名系统运维工程师，你将根据文档，在 `{deploy_path}` 完成一个项目的部署。
@@ -18,15 +18,15 @@ ROLE = """
 - 你会逐一执行命令行指令，若指令执行失败会有其他人帮助你修复错误，确保任务完成。
 - 你的每条命令都只能在特定目录下执行，所以不要执行切换目录操作，而是直接带路径执行。
 - 如果需要执行项目中的脚本，请调用终端来执行，例如 `x-terminal-emulator -e script.sh`。
-- 请按照 Format example 的格式来描述你的解决思路和命令行指令。
------
-## Format example
----
-## 任务列表
-- 任务1: 描述; 命令: `command1`
-- 任务2: 描述; 命令: `command2`
-...
----
+- 请按照 Format example 中的格式直接返回 JSON 结果，确保你返回的结果可以被 Python json.loads 解析。
+Format example：
+{{"tasks":
+    [
+        {{"name": "{{任务1}}", "code": "{{命令1}}"}},
+        {{"name": "{{任务2}}", "code": "{{命令2}}"}},
+        ...
+    ]
+}}
 """
 
 PROMPT_TEMPLATE = """
@@ -46,17 +46,8 @@ class Deployment(Action):
         self.llm.prompt = PROMPT_TEMPLATE
         return super().__post_init__()
 
-    def _parse(self, result: str):
-        lists = result.split("\n")
-        pattern = r'\s*-\s*(.*?):(.*?);(.*?):\s*`(.*?)`'
-        tasks = []
-        for list in lists:
-            pattern_match = re.search(pattern, list)
-            if pattern_match:
-                name = pattern_match.groups()[1]
-                code = pattern_match.groups()[3]
-                tasks.append({"name":name, "code":code})
-        return tasks
+    def _parse(self, text: str):
+        return parse_json(text)["tasks"]
 
     def _execute_command(self, command: str):
         logger.debug(f"run command: {command}")

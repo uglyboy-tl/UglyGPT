@@ -6,9 +6,10 @@ from loguru import logger
 import subprocess
 import platform
 
-from .action import Action
-from .utils import code_parse
 from uglygpt.chains import LLMChain
+from .action import Action
+from .utils import parse_json
+
 
 ROLE = """
 你是一名系统运维工程师，你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
@@ -19,22 +20,12 @@ ROLE = """
     - 确保你的命令行可以自动执行，不需要人工干预。
     - 不要执行切换目录的操作，因为你的命令行指令都只能在特定目录下执行。
     - 因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果精简。
-- 请按照 Format example 的格式来描述你的解决思路和命令行指令。
-    - 注意：使用'##'来分割章节，而不是'#'，并且'## <章节名>'应在代码和三引号之前写。
+- 请按照 Format example 中的格式直接返回 JSON 结果，其中 `reasoning` 为解决思路，`command` 为即将执行的命令行指令。
+    - 确保你返回的结果可以被 Python json.loads 解析。
     - 如果你的目标已完成或者无法解决，则不需要给出命令行指令；
------
-注意：请按照下面的格式来描述你的解决思路和命令行指令，若目标已完成或者无法解决，可以返回"Done"。
-## Format example
----
-## 解决思路
-解决目标问题的步骤1；
-解决目标问题的步骤2；
-...
-## 即将执行的命令行指令
-```bash
-command
-```
----
+
+Format example：
+{{"reasoning": "{{一步一步解释你的解决思路}}","command": "{{即将执行的命令行指令}}"}}
 """
 
 CONTEXT_TEMPLATE = """
@@ -73,24 +64,10 @@ class Command(Action):
             return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     def _parse(self, text: str):
-        blocks = text.split("##")
-        block_dict = {}
-
-        # 遍历所有的block
-        for block in blocks:
-            # 如果block不为空，则继续处理
-            if block.strip() != "":
-                # 将block的标题和内容分开，并分别去掉前后的空白字符
-                block_title, block_content = block.split("\n", 1)
-                # LLM可能出错，在这里做一下修正
-                if block_title[-1] == ":":
-                    block_title = block_title[:-1]
-                block_dict[block_title.strip()] = block_content.strip()
-
-        reason = block_dict.get("解决思路", None)
-        code = block_dict.get("即将执行的命令行指令", None)
-        return reason, code
-
+        result = parse_json(text)
+        reason = result.get("reasoning", None)
+        command = result.get("command", None)
+        return reason, command
 
     def run(self, objective = None, context = None, command = None):
         logger.info(f'Command Running ..')
@@ -112,9 +89,8 @@ class Command(Action):
         if command is None:
             self.llm.prompt = CONTEXT_TEMPLATE
             response = self._ask(context = context)
-            logger.success(response)
-            reason,code = self._parse(response)
-            command = code_parse(code, lang = "bash")
+            reason, command = self._parse(response)
+            logger.success(reason)
 
         while command:
             logger.debug(f"command: {command}")
@@ -122,13 +98,5 @@ class Command(Action):
             self.llm.prompt = CONTEXT_TEMPLATE + PROMPT_TEMPLATE
             context = "解决思路：\n" + reason + "\n即将执行的命令行指令：\n" + "```bash\n" + command + "\n```\n"
             response = self._ask(context = context, result = result)
-            logger.success(response)
-            if "Done" in response:
-                break
-            reason,code = self._parse(response)
-
-            # TODO: 去掉下面流程中的 try-except
-            try:
-                command = code_parse(code, lang = "bash")
-            except Exception:
-                command = None
+            reason, command = self._parse(response)
+            logger.success(reason)
