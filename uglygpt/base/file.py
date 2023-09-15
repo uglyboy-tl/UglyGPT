@@ -4,7 +4,6 @@
 from loguru import logger
 from pathlib import Path
 
-
 def get_project_root():
     """Search upwards to find the project root directory."""
     current_path = Path.cwd()
@@ -32,3 +31,4 @@ class File:
         with open(cls.WORKSPACE_ROOT / filename, "r") as f:
             data = f.read()
         return data
+

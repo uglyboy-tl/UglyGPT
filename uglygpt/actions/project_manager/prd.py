@@ -131,7 +131,7 @@ OUTPUT_MAPPING = {
 class PRD(Action):
     name: str = "PRD"
     role: str = ROLE
-    filename: str = "docs/prd.md"
+    filename: str = "docs/example/prd.md"
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):

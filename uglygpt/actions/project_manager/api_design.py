@@ -88,7 +88,7 @@ class APIDesign(Action):
         clearly and in detail."""
     name: str = "WriteDesign"
     role: str = ROLE
-    filename: str = "docs/design.md"
+    filename: str = "docs/example/design.md"
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
