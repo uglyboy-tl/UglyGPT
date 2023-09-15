@@ -12,19 +12,48 @@ from uglygpt.base import File
 
 @dataclass
 class Action(ABC):
+    """Base class for actions.
+
+    Attributes:
+        role: The role of the action.
+        filename: The filename associated with the action.
+        llm: The LLMChain object used for the action.
+    """
     role: Optional[str | None] = None
     filename: Optional[str | None] = None
     llm: LLMChain = field(default_factory=LLMChain)
 
     def __post_init__(self):
+        """Post initialization method.
+
+        Sets the system of the LLMChain object if a role is provided.
+        """
         if self.role:
             self.llm.llm.set_system(self.role)
 
     def ask(self, *args, **kwargs) -> str:
+        """Ask a question to the LLMChain object.
+
+        Args:
+            *args: Positional arguments.
+            **kwargs: Keyword arguments.
+
+        Returns:
+            The response from the LLMChain object.
+        """
         response = self.llm(*args, **kwargs)
         return response
 
     def _save(self, data=None, filename=None):
+        """Save data to a file.
+
+        Args:
+            data: The data to be saved.
+            filename: The filename to save the data to.
+
+        Raises:
+            ValueError: If data is not provided and no default filename is set.
+        """
         if not filename:
             if self.filename:
                 filename = self.filename
@@ -35,6 +64,17 @@ class Action(ABC):
         File.save(filename, data)
 
     def _load(self, filename=None):
+        """Load data from a file.
+
+        Args:
+            filename: The filename to load the data from.
+
+        Returns:
+            The loaded data.
+
+        Raises:
+            ValueError: If no filename is provided and no default filename is set.
+        """
         if not filename:
             if self.filename:
                 filename = self.filename
@@ -44,8 +84,22 @@ class Action(ABC):
         return data
 
     def _parse(self, text: str):
+        """Parse text.
+
+        Args:
+            text: The text to be parsed.
+
+        Returns:
+            The parsed text.
+        """
         return text
 
     @abstractmethod
     def run(self, *args, **kwargs):
+        """Abstract method to be implemented by subclasses.
+
+        Args:
+            *args: Positional arguments.
+            **kwargs: Keyword arguments.
+        """
         pass

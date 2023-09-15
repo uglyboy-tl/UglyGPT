@@ -26,16 +26,18 @@ except ImportError:
 
 
 def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
-    if llm_provider_name == "":
-        llm_provider_name = config.llm_provider
     """
     Get the LLM provider.
 
     Args:
-        llm_provider_name: str
+        llm_provider_name: The name of the LLM provider.
 
-    Returns: LLMProvider
+    Returns:
+        The LLMProvider object.
     """
+
+    if llm_provider_name == "":
+        llm_provider_name = config.llm_provider
 
     if llm_provider_name == "gpt3":
         if not GPT3:

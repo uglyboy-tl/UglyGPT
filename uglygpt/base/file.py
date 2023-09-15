@@ -43,8 +43,7 @@ class File:
         file_path = cls.WORKSPACE_ROOT / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         if file_path.exists():
-            backup_path = file_path.with_name(file_path.stem + '_' + datetime.now().strftime('%Y%m%d%H%M%S') + file_path.suffix + '.bak')
-            file_path.rename(backup_path)
+            cls.backup(file_path)
         file_path.write_text(data)
         logger.debug(f"Saving file to {file_path}")
 
@@ -62,3 +61,12 @@ class File:
             data = f.read()
         return data
 
+    @classmethod
+    def backup(cls, file_path: Path):
+        """Backup a file.
+
+        Args:
+            file_path: The path to the file to be backed up.
+        """
+        backup_path = file_path.with_name(file_path.stem + '_' + datetime.now().strftime('%Y%m%d%H%M%S') + file_path.suffix + '.bak')
+        file_path.rename(backup_path)
