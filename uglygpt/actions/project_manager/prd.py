@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from typing import List, Tuple
 from loguru import logger
 
-from .action import Action
-from .utils import mapping_parse
+from ..action import Action
+from ..utils import mapping_parse
 from uglygpt.chains import LLMChain
 
 ROLE = """
