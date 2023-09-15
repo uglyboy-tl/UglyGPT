@@ -6,8 +6,9 @@ from loguru import logger
 from typing import Optional
 
 from uglygpt.chains import LLMChain
+from ..utils import parse_code
 from ..action import Action
-from .utils import code_parse, merge_docstring
+from .util_merge_docstring import merge_docstring
 
 ROLE = '''### Requirements
 1. Add docstrings to the given code following the google style.
@@ -89,7 +90,7 @@ class Docstring(Action):
             The parsed code with merged docstring.
         """
         if text:
-            code = code_parse(text)
+            code = parse_code(text)
         else:
             code = self.code
         new_code =  merge_docstring(self.code, code)

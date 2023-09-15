@@ -6,7 +6,6 @@ from typing import List, Tuple
 from loguru import logger
 
 from ..action import Action
-from ..utils import mapping_parse
 from uglygpt.chains import LLMChain
 
 PROMPT_TEMPLATE = """
@@ -109,9 +108,6 @@ class TasksSplit(Action):
         self.llm = LLMChain(llm_name="chatgpt",
                             prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
-
-    def _parse(self, text: str):
-        return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, prd: str, api_design: str):
         logger.info(f'Writing tasks..')

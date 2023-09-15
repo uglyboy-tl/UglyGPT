@@ -6,7 +6,6 @@ from typing import List, Tuple
 from loguru import logger
 
 from ..action import Action
-from ..utils import mapping_parse
 from uglygpt.chains import LLMChain
 
 ROLE = """
@@ -138,9 +137,6 @@ class PRD(Action):
         self.llm = LLMChain(llm_name="chatgpt",
                             prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
-
-    def _parse(self, text: str):
-        return mapping_parse(text=text, output_mapping=OUTPUT_MAPPING)
 
     def run(self, requirements):
         logger.info(f'撰写PRD...')

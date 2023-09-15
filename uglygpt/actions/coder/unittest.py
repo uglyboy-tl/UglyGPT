@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 
 from ..action import Action
-from ..utils import code_parse
+from ..utils import parse_code
 from uglygpt.chains import LLMChain
 from uglygpt.base import File
 
@@ -62,7 +62,7 @@ class UnitTest(Action):
         Returns:
             The parsed text.
         """
-        return code_parse(text)
+        return parse_code(text)
 
     def run(self, filename: str):
         """Runs the unit tests.
@@ -75,7 +75,6 @@ class UnitTest(Action):
         """
         self.filename = filename
         code = self._load()
-        logger.debug(f"code: {code}")
         source_file_path = File.WORKSPACE_ROOT / self.filename
         logger.info(f'编写单元测试...')
         test_file_name = "test_" + source_file_path.stem + source_file_path.suffix

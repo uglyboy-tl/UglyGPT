@@ -284,26 +284,3 @@ def merge_docstring(code: str, code_with_docstring: str):
     transformer = DocstringTransformer(visitor.docstrings)
     modified_tree = code_tree.visit(transformer)
     return modified_tree.code
-
-def code_parse(text: str, lang: str = "python"):
-    """Parses the code from the given text.
-
-    Args:
-        text: The text containing the code.
-        lang: The language of the code. Defaults to "python".
-
-    Returns:
-        The parsed code.
-    """
-    pattern = rf'```{lang}.*?\s+(.*?)```'
-    match = re.search(pattern, text, re.DOTALL)
-    if match:
-        code = match.group(1)
-    else:
-        match = re.search(pattern, text+"\n```", re.DOTALL)
-        if match:
-            code = match.group(1)
-        else:
-            logger.warning(f"{pattern} not match following text:\n{text}")
-            raise Exception(f"{pattern} not match following text:\n{text}")
-    return code

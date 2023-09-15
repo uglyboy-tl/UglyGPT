@@ -1,47 +1,46 @@
 import unittest
+from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch, mock_open
+
 from uglygpt.base.file import File
 
 class TestFile(unittest.TestCase):
-    """Test case for the File class."""
     def setUp(self):
-        """Set up the test case."""
-        self.test_data = "This is a test file."
+        self.test_data = "This is a test data"
+        self.filename = "test_file.txt"
+        self.file_path = Path.cwd() / self.filename
 
-    def test_save_and_load(self):
-        """Test saving and loading a file."""
-        # Test saving and loading a file
-        filename = "test_file.txt"
-        File.save(filename, self.test_data)
-        loaded_data = File.load(filename)
+    def tearDown(self):
+        if self.file_path.exists():
+            self.file_path.unlink()
+
+    def test_save(self):
+        File.save(self.filename, self.test_data)
+
+        self.assertTrue(self.file_path.exists())
+        with open(self.file_path, "r") as f:
+            saved_data = f.read()
+        self.assertEqual(saved_data, self.test_data)
+
+    def test_load(self):
+        with open(self.file_path, "w") as f:
+            f.write(self.test_data)
+
+        loaded_data = File.load(self.filename)
+
         self.assertEqual(loaded_data, self.test_data)
 
-    def test_save_with_existing_directory(self):
-        """Test saving a file with an existing directory."""
-        # Test saving a file with an existing directory
-        directory = "existing_directory"
-        filename = "test_file.txt"
-        file_path = Path(File.WORKSPACE_ROOT) / directory / filename
+    @patch('uglygpt.base.file.datetime')
+    def test_backup(self, mock_datetime):
+        self.file_path.touch()
+        mock_datetime.now.return_value = datetime(2022, 1, 1, 12, 0, 0)
+        backup_path = self.file_path.with_name(self.file_path.stem + '_20220101120000.txt.bak')
 
-        # Create the existing directory
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        File.backup(self.file_path)
 
-        # Save the file
-        File.save(str(file_path), self.test_data)
-
-        # Check if the file exists
-        self.assertTrue(file_path.exists())
-
-        # Clean up
-        file_path.unlink()
-        file_path.parent.rmdir()
-
-    def test_load_nonexistent_file(self):
-        """Test loading a nonexistent file."""
-        # Test loading a nonexistent file
-        filename = "nonexistent_file.txt"
-        with self.assertRaises(FileNotFoundError):
-            File.load(filename)
+        self.assertTrue(backup_path.exists())
+        backup_path.unlink()
 
 if __name__ == '__main__':
     unittest.main()
