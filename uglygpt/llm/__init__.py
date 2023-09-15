@@ -7,19 +7,19 @@ from uglygpt.base import config
 supported_llm_providers = []
 
 try:
-    from uglygpt.llm.openai import GPT3
+    from uglygpt.llm.gpt3 import GPT3
     supported_llm_providers.append(GPT3)
 except ImportError:
     ChatGPT = None
 
 try:
-    from uglygpt.llm.openai import ChatGPT
+    from uglygpt.llm.chatgpt import ChatGPT
     supported_llm_providers.append(ChatGPT)
 except ImportError:
     ChatGPT = None
 
 try:
-    from uglygpt.llm.openai import GPT4
+    from uglygpt.llm.chatgpt import GPT4
     supported_llm_providers.append(GPT4)
 except ImportError:
     GPT4 = None

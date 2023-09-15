@@ -58,16 +58,36 @@ class ExampleError(Exception):
 
 @dataclass
 class Docstring(Action):
+    """Action to add docstrings to code following the google style.
+
+    Attributes:
+        name: The name of the action.
+        role: The role of the action.
+        llm: The LLMChain object.
+    """
     name: str = "AddDocstring"
     role: str = ROLE
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
+        """Initialize the LLMChain object.
+
+        Returns:
+            The initialized LLMChain object.
+        """
         self.llm = LLMChain(llm_name="chatgpt",
                             prompt_template="```python\n{code}\n```")
         return super().__post_init__()
 
     def _parse(self, text: Optional[str|None] = None):
+        """Parse the given text and merge the docstring with the code.
+
+        Args:
+            text: The text to parse.
+
+        Returns:
+            The parsed code with merged docstring.
+        """
         if text:
             code = code_parse(text)
         else:
@@ -77,12 +97,28 @@ class Docstring(Action):
         return new_code
 
     def run(self, filename: str) -> str:
+        """Run the action on the given file.
+
+        Args:
+            filename: The name of the file to run the action on.
+
+        Returns:
+            The parsed code with merged docstring.
+        """
         self.filename = filename
         response = self.ask(self.code)
         return self._parse(response)
 
     @property
     def code(self):
+        """Get the code from the file.
+
+        Returns:
+            The code from the file.
+
+        Raises:
+            ValueError: If filename is not provided.
+        """
         if hasattr(self, "_code"):
             return self._code
         else:

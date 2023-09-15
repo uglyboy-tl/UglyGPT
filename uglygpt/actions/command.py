@@ -40,16 +40,35 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Command(Action):
+    """Class representing a command action.
+
+    Attributes:
+        role: The role of the system operator engineer.
+        objective: The objective of the command action.
+        llm: The LLMChain object for language model completion.
+    """
     role: str = ROLE
     objective: str = ""
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
+        """Initialize the Command object.
+
+        Create an LLMChain object and call the parent class's __post_init__ method.
+        """
         self.role = ROLE.format(objective=self.objective)
         self.llm = LLMChain(llm_name="gpt4")
         return super().__post_init__()
 
     def _execute_command(self, command: str):
+        """Execute a command.
+
+        Args:
+            command: The command to execute.
+
+        Returns:
+            The output of the command execution.
+        """
         logger.debug(f"run command: {command}")
         try:
             if platform.system() == "Windows":
@@ -70,12 +89,30 @@ class Command(Action):
             return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     def _parse(self, text: str):
+        """Parse the response text.
+
+        Args:
+            text: The response text to parse.
+
+        Returns:
+            The reasoning and command extracted from the response text.
+        """
         result = parse_json(text)
         reason = result.get("reasoning", None)
         command = result.get("command", None)
         return reason, command
 
     def run(self, objective=None, context=None, command=None):
+        """Run the command action.
+
+        Args:
+            objective: The objective of the command action.
+            context: The context of the command action.
+            command: The command to execute.
+
+        Returns:
+            None.
+        """
         logger.info(f'Command Running ..')
         if objective is not None:
             self.objective = objective

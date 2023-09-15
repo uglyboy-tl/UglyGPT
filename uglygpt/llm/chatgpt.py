@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass, field
 import openai
-from openai.api_resources.abstract.engine_api_resource import EngineAPIResource
 import tiktoken
 from tenacity import (
     retry,
@@ -21,43 +20,17 @@ openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
 
 
-def tiktoken_len(text: str) -> int:
-    encoding = tiktoken.encoding_for_model("text-davinci-003")
-    return len(
-        encoding.encode(text)
-    )
-
-
-@dataclass
-class GPT3(LLMProvider):
-    """ChatGPT LLM provider."""
-    temperature: float = 0.7
-
-    def _num_tokens(self, prompt: str) -> int:
-        num_tokens = tiktoken_len(prompt)
-        return num_tokens
-
-    def ask(self, prompt: str) -> str:
-        tokens = self._num_tokens(prompt)
-        max_new_tokens = int(4096) - tokens
-        if max_new_tokens <= 0:
-            raise ValueError(
-                f"Prompt is too long. has {tokens} tokens, max is 4096")
-        logger.debug(prompt)
-        completions = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
-            max_tokens=max_new_tokens,
-            temperature=self.temperature,
-        )
-        message = completions.choices[0].text  # type: ignore
-        logger.debug(message)
-        return message
-
-
 @dataclass
 class ChatGPT(LLMProvider):
-    """GPT4 LLM provider."""
+    """A class representing a chat-based language model using OpenAI's GPT.
+
+    Attributes:
+        requirements: A list of required packages.
+        model: The model to use for the language model.
+        temperature: The temperature parameter for generating responses.
+        MAX_TOKENS: The maximum number of tokens allowed in a conversation.
+        messages: A list of messages in the conversation.
+    """
     requirements: list[str] = field(
         default_factory=lambda: ["openai", "tictoken"])
     model: str = "gpt-3.5-turbo"
@@ -66,7 +39,15 @@ class ChatGPT(LLMProvider):
     messages: list = field(default_factory=list)
 
     def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
-        """Returns the number of tokens used by a list of messages."""
+        """Calculate the number of tokens in a conversation.
+
+        Args:
+            messages: A list of messages in the conversation.
+            model: The model to use for tokenization.
+
+        Returns:
+            The number of tokens in the conversation.
+        """
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
@@ -101,12 +82,24 @@ class ChatGPT(LLMProvider):
         return num_tokens
 
     def set_system(self, msg: str) -> None:
-        """Set the system."""
+        """Set the system message in the conversation.
+
+        Args:
+            msg: The system message.
+        """
         self.messages = []
         if msg:
             self.messages.append({"role": "system", "content": msg})
 
     def ask(self, prompt: str) -> str:
+        """Ask a question and get a response from the language model.
+
+        Args:
+            prompt: The user's prompt.
+
+        Returns:
+            The model's response.
+        """
         self.messages.append({"role": "user", "content": prompt})
         tokens = self._num_tokens(messages=self.messages, model=self.model)
         max_new_tokens = int(self.MAX_TOKENS) - tokens
@@ -126,9 +119,24 @@ class ChatGPT(LLMProvider):
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
+        """Make a completion request to the OpenAI API with exponential backoff.
+
+        Args:
+            **kwargs: Keyword arguments for the completion request.
+
+        Returns:
+            The completion response from the OpenAI API.
+        """
         return openai.ChatCompletion.create(**kwargs)
 
 
 @dataclass
 class GPT4(ChatGPT):
+    """A subclass of ChatGPT that uses the GPT-4 model.
+
+    Attributes:
+        model: The model to use for the language model.
+        MAX_TOKENS: The maximum number of tokens allowed in a conversation.
+    """
     model: str = "gpt-4"
+    MAX_TOKENS: int = 8192

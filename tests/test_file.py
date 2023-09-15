@@ -3,10 +3,13 @@ from pathlib import Path
 from uglygpt.base.file import File
 
 class TestFile(unittest.TestCase):
+    """Test case for the File class."""
     def setUp(self):
+        """Set up the test case."""
         self.test_data = "This is a test file."
 
     def test_save_and_load(self):
+        """Test saving and loading a file."""
         # Test saving and loading a file
         filename = "test_file.txt"
         File.save(filename, self.test_data)
@@ -14,6 +17,7 @@ class TestFile(unittest.TestCase):
         self.assertEqual(loaded_data, self.test_data)
 
     def test_save_with_existing_directory(self):
+        """Test saving a file with an existing directory."""
         # Test saving a file with an existing directory
         directory = "existing_directory"
         filename = "test_file.txt"
@@ -33,6 +37,7 @@ class TestFile(unittest.TestCase):
         file_path.parent.rmdir()
 
     def test_load_nonexistent_file(self):
+        """Test loading a nonexistent file."""
         # Test loading a nonexistent file
         filename = "nonexistent_file.txt"
         with self.assertRaises(FileNotFoundError):

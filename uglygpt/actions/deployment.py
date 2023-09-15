@@ -37,10 +37,20 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Deployment(Action):
+    """Class representing a deployment action.
+
+    Attributes:
+        role: The role of the deployment.
+        deploy_path: The path of the deployment.
+    """
     role: str = ROLE
     deploy_path: str = ""
 
     def __post_init__(self):
+        """Post initialization method.
+
+        Initializes the role and prompt attributes.
+        """
         # 初始化 Role
         self.role = ROLE.format(deploy_path=self.deploy_path)
         # 初始化 Prompt
@@ -48,9 +58,25 @@ class Deployment(Action):
         return super().__post_init__()
 
     def _parse(self, text: str):
+        """Parses the given text.
+
+        Args:
+            text: The text to be parsed.
+
+        Returns:
+            The parsed tasks.
+        """
         return parse_json(text)["tasks"]
 
     def _execute_command(self, command: str):
+        """Executes the given command.
+
+        Args:
+            command: The command to be executed.
+
+        Returns:
+            The result of the command execution.
+        """
         logger.debug(f"run command: {command}")
         try:
             result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
@@ -67,6 +93,14 @@ class Deployment(Action):
             # return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     def run(self, context=""):
+        """Runs the deployment action.
+
+        Args:
+            context: The context of the deployment.
+
+        Returns:
+            The result of the deployment action.
+        """
         response = self.ask(context=context)
         tasks = self._parse(response)
         logger.success(tasks)

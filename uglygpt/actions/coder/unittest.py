@@ -32,19 +32,47 @@ you should correctly import the necessary classes based on these file locations!
 
 @dataclass
 class UnitTest(Action):
+    """Action class for running unit tests.
+
+    Attributes:
+        name: The name of the action.
+        role: The role of the QA engineer.
+        llm: The LLMChain instance.
+    """
     name: str = "UnitTest"
     role: str = ROLE
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
+        """Initializes the UnitTest instance.
+
+        Returns:
+            The initialized UnitTest instance.
+        """
         self.llm = LLMChain(llm_name="chatgpt",
                             prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
 
     def _parse(self, text: str):
+        """Parses the given text.
+
+        Args:
+            text: The text to parse.
+
+        Returns:
+            The parsed text.
+        """
         return code_parse(text)
 
     def run(self, filename: str):
+        """Runs the unit tests.
+
+        Args:
+            filename: The name of the file to test.
+
+        Returns:
+            The response from running the unit tests.
+        """
         self.filename = filename
         code = self._load()
         logger.debug(f"code: {code}")
