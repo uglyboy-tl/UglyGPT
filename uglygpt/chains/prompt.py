@@ -7,10 +7,22 @@ from dataclasses import dataclass
 
 @dataclass
 class Prompt(object):
+    """A class representing a prompt.
+
+    Attributes:
+        template: The template string for the prompt.
+    """
     template: str = ""
 
     def format(self, **kwargs):
-        """Format the prompt with the given kwargs."""
+        """Format the prompt with the given kwargs.
+
+        Args:
+            **kwargs: Keyword arguments to replace placeholders in the template.
+
+        Returns:
+            The formatted prompt string.
+        """
         def replace(match):
             key = match.group(1)
             value = kwargs.get(key, match.group(0))
@@ -25,4 +37,9 @@ class Prompt(object):
 
     @property
     def input_variables(self):
+        """Get a list of input variables in the template.
+
+        Returns:
+            A list of input variables.
+        """
         return re.findall(r"{([^{}\n]+)}", self.template)

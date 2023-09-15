@@ -10,7 +10,19 @@ from .singleton import singleton
 @singleton
 @dataclass
 class Config:
+    """Singleton class for storing configuration settings.
+
+    Attributes:
+        BASE_LOG_DIR: Base directory for log files.
+        openai_api_key: API key for OpenAI.
+        openai_api_base: Base URL for OpenAI API.
+        llm_provider: LLM provider name, default is "gpt4".
+    """
     def __post_init__(self):
+        """Post-initialization method.
+
+        Sets default values for attributes.
+        """
         self.BASE_LOG_DIR = 'logs'
         # API keys
         # OpenAI

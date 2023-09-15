@@ -2,9 +2,9 @@
 # -*-coding:utf-8-*-
 
 class _SingletonWrapper:
-    """
-    A singleton wrapper class. Its instances would be created
-    for each decorated class.
+    """A singleton wrapper class.
+
+    Instances of this class are created for each decorated class.
     """
 
     def __init__(self, cls):
@@ -12,16 +12,17 @@ class _SingletonWrapper:
         self._instance = None
 
     def __call__(self, *args, **kwargs):
-        """Returns a single instance of decorated class"""
+        """Returns a single instance of the decorated class"""
         if self._instance is None:
             self._instance = self.__wrapped__(*args, **kwargs)
         return self._instance
 
 
 def singleton(cls):
-    """
-    A singleton decorator. Returns a wrapper objects. A call on that object
-    returns a single instance object of decorated class. Use the __wrapped__
-    attribute to access decorated class directly in unit tests
+    """A singleton decorator.
+
+    Returns a wrapper object. A call on that object returns a single instance
+    object of the decorated class. Use the __wrapped__ attribute to access the
+    decorated class directly in unit tests.
     """
     return _SingletonWrapper(cls)

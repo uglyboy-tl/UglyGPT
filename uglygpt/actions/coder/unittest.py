@@ -10,7 +10,7 @@ from uglygpt.chains import LLMChain
 from uglygpt.base import File
 
 ROLE = """
-你是一名QA工程师；主要目标是为 Python 3.9 设计、开发和执行符合PEP8规范、结构良好、可维护的测试用例和脚本。你的重点应该是通过系统化的测试来确保整个项目的产品质量。
+你是一名QA工程师；主要目标是为 Python 3.11 设计、开发和执行符合PEP8规范、结构良好、可维护的测试用例和脚本。你的重点应该是通过系统化的测试来确保整个项目的产品质量。
 要求：根据上下文，开发一个全面的测试套件，充分覆盖正在审查的代码文件的所有相关方面。你的测试套件将是整个项目QA的一部分，所以请开发完整、强大和可重用的测试用例。
 - If there are any settings in your tests, ALWAYS SET A DEFAULT VALUE, ALWAYS USE STRONG TYPE AND EXPLICIT VARIABLE.
 - YOU MUST FOLLOW "Data structures and interface definitions". DO NOT CHANGE ANY DESIGN. Make sure your tests respect the existing design and ensure its validity.
@@ -51,7 +51,6 @@ class UnitTest(Action):
         source_file_path = File.WORKSPACE_ROOT / self.filename
         logger.info(f'编写单元测试...')
         test_file_name = "test_" + source_file_path.stem + source_file_path.suffix
-        logger.debug(f"test_file_name: {test_file_name}")
         response = self.ask(code_to_test=code, source_file_path=source_file_path,
                             workspace=File.WORKSPACE_ROOT, test_file_name=test_file_name)
         self._save(self._parse(response), File.WORKSPACE_ROOT / "tests" / test_file_name)
