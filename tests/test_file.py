@@ -6,39 +6,37 @@ class TestFile(unittest.TestCase):
     def setUp(self):
         self.test_data = "This is a test file."
 
-    def test_save(self):
-        # Test saving a file
+    def test_save_and_load(self):
+        # Test saving and loading a file
         filename = "test_file.txt"
         File.save(filename, self.test_data)
-
-        # Check if the file exists
-        file_path = Path.cwd() / filename
-        self.assertTrue(file_path.exists())
-
-        # Check if the file content is correct
-        with open(file_path, "r") as f:
-            saved_data = f.read()
-        self.assertEqual(saved_data, self.test_data)
-
-    def test_load(self):
-        # Create a test file
-        filename = "test_file.txt"
-        file_path = Path.cwd() / filename
-        with open(file_path, "w") as f:
-            f.write(self.test_data)
-
-        # Test loading the file
         loaded_data = File.load(filename)
-
-        # Check if the loaded data is correct
         self.assertEqual(loaded_data, self.test_data)
 
-    def tearDown(self):
-        # Remove the test file
+    def test_save_with_existing_directory(self):
+        # Test saving a file with an existing directory
+        directory = "existing_directory"
         filename = "test_file.txt"
-        file_path = Path.cwd() / filename
-        if file_path.exists():
-            file_path.unlink()
+        file_path = Path(File.WORKSPACE_ROOT) / directory / filename
+
+        # Create the existing directory
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Save the file
+        File.save(str(file_path), self.test_data)
+
+        # Check if the file exists
+        self.assertTrue(file_path.exists())
+
+        # Clean up
+        file_path.unlink()
+        file_path.parent.rmdir()
+
+    def test_load_nonexistent_file(self):
+        # Test loading a nonexistent file
+        filename = "nonexistent_file.txt"
+        with self.assertRaises(FileNotFoundError):
+            File.load(filename)
 
 if __name__ == '__main__':
     unittest.main()

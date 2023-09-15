@@ -102,7 +102,7 @@ OUTPUT_MAPPING = {
 class TasksSplit(Action):
     name: str = "WriteTasks"
     role: str = ROLE
-    filename: str = "docs/example/subtask.md"
+    filename: str = "docs/examples/subtask.md"
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
