@@ -52,7 +52,11 @@ class Command(Action):
     def _execute_command(self, command: str):
         logger.debug(f"run command: {command}")
         try:
-            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
+            if platform.system() == "Windows":
+                result = subprocess.run(command, shell=True, check=True,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='powershell')
+            else:
+                result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
             output = result.stdout.decode().strip()
             logger.success(output)

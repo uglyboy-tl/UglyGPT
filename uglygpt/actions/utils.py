@@ -99,7 +99,7 @@ def fix_llm_json_str(string):
         json.loads(new_string)
         return new_string
     except Exception as e:
-        print("fix_llm_json_str failed 1:", e)
+        logger.warning("fix_llm_json_str failed 1:", e)
         try:
             pattern = r'```json(.*?)```'
             match = re.findall(pattern, new_string, re.DOTALL)
@@ -109,13 +109,13 @@ def fix_llm_json_str(string):
             json.loads(new_string)
             return new_string
         except Exception as e:
-            print("fix_llm_json_str failed 2:", e)
+            logger.warning("fix_llm_json_str failed 2:", e)
             try:
                 new_string = new_string.replace("\n", "\\n")
                 json.loads(new_string)
                 return new_string
             except Exception as e:
-                print("fix_llm_json_str failed 3:", e)
+                logger.warning("fix_llm_json_str failed 3:", e)
                 llm = LLMChain(llm_name="chatgpt")
                 llm.llm.set_system("""Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.
                     ```
