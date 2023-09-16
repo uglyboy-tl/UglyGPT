@@ -37,6 +37,7 @@ class ChatGPT(LLMProvider):
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
     messages: list = field(default_factory=list)
+    count_token: bool = False
 
     def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
         """Calculate the number of tokens in a conversation.
@@ -103,17 +104,24 @@ class ChatGPT(LLMProvider):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
-        tokens = self._num_tokens(messages=self.messages, model=self.model)
-        max_new_tokens = int(self.MAX_TOKENS) - tokens
-        if max_new_tokens <= 0:
-            raise ValueError(
-                f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
-        response = self.completion_with_backoff(
-            model=self.model,
-            messages=self.messages,
-            max_tokens=max_new_tokens,
-            temperature=self.temperature,
-        )
+        if self.count_token:
+            tokens = self._num_tokens(messages=self.messages, model=self.model)
+            max_new_tokens = int(self.MAX_TOKENS) - tokens
+            if max_new_tokens <= 0:
+                raise ValueError(
+                    f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
+            response = self.completion_with_backoff(
+                model=self.model,
+                messages=self.messages,
+                max_tokens=max_new_tokens,
+                temperature=self.temperature,
+            )
+        else:
+            response = self.completion_with_backoff(
+                model=self.model,
+                messages=self.messages,
+                temperature=self.temperature,
+            )
         message = response.choices[0]['message']['content']  # type: ignore
         logger.trace(response.choices[0]['message'])  # type: ignore
         return message
@@ -128,5 +136,5 @@ class ChatGPT(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-        logger.debug(kwargs)
+        logger.trace(kwargs)
         return openai.ChatCompletion.create(**kwargs)

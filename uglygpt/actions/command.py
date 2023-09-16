@@ -20,12 +20,12 @@ ROLE = """
     - 确保你的命令行可以自动执行，不需要人工干预。
     - 不要执行切换目录的操作，因为你的命令行指令都只能在特定目录下执行。
     - 因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果精简。
-- 请按照 Format example 中的格式直接返回 JSON 结果，其中 `reasoning` 为解决思路，`command` 为即将执行的命令行指令。
+- 请按照 Format example 中的格式直接返回 JSON 结果，其中 `THOUGHT` 为解决思路，`ACTION` 为即将执行的命令行指令。
     - 确保你返回的结果可以被 Python json.loads 解析。
     - 如果你的目标已完成或者无法解决，则不需要给出命令行指令；
 
 Format example：
-{{"reasoning": "{{解决思路}}","command": "{{即将执行的命令行指令，若任务已完成则为空}}"}}
+{{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}"}}
 """
 
 @dataclass
@@ -68,8 +68,8 @@ class CommandAct(ReAct):
             The reasoning and command extracted from the response text.
         """
         result = parse_json(text)
-        reason = result.get("reasoning", "")
-        command = result.get("command", "")
+        reason = result.get("THOUGHT", "")
+        command = result.get("ACTION", "")
         return CommandAct(thought=reason, action=command, params={})
 
     @property
@@ -77,11 +77,8 @@ class CommandAct(ReAct):
         return self.action == ""
 
     def __str__(self) -> str:
-        if self.current:
-            return "## 解决思路：\n" + self.thought + "\n\n## 命令行指令：\n" + \
-                "```bash\n" + self.action + "\n```\n\n" + "## 执行结果：\n---" + self.obs + "---\n\n"
-        else:
-            return ""
+            return "## THOUGHT：\n" + self.thought + "\n\n## ACTION：\n" + \
+                "```bash\n" + self.action + "\n```\n\n" + "## OBS：\n---" + self.obs + "---\n\n"
 
 @dataclass
 class Command(Action):
@@ -129,4 +126,4 @@ class Command(Action):
             super().__post_init__()
 
         response = self.ask()
-        logger.success(response)
+        return response

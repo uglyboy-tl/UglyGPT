@@ -32,6 +32,7 @@ class GPT3(LLMProvider):
         default_factory=lambda: ["openai", "tictoken"])
     temperature: float = 0.3
     system_info = ""
+    count_token: bool = True
 
     def _num_tokens(self, prompt: str) -> int:
         """Calculate the number of tokens in a prompt.
@@ -67,20 +68,26 @@ class GPT3(LLMProvider):
             The generated response.
         """
         prompt = f"{self.system_info}\n{prompt}"
-        tokens = self._num_tokens(prompt)
-        max_new_tokens = int(4096) - tokens
-        if max_new_tokens <= 0:
-            raise ValueError(
-                f"Prompt is too long. has {tokens} tokens, max is 4096")
-        logger.debug(prompt)
-        completions = self.completion_with_backoff(
-            model="text-davinci-003",
-            prompt=prompt,
-            max_tokens=max_new_tokens,
-            temperature=self.temperature,
-        )
+        if self.count_token:
+            tokens = self._num_tokens(prompt)
+            max_new_tokens = int(4096) - tokens
+            if max_new_tokens <= 0:
+                raise ValueError(
+                    f"Prompt is too long. has {tokens} tokens, max is 4096")
+            completions = self.completion_with_backoff(
+                model="text-davinci-003",
+                prompt=prompt,
+                max_tokens=max_new_tokens,
+                temperature=self.temperature,
+            )
+        else:
+            completions = self.completion_with_backoff(
+                model="text-davinci-003",
+                prompt=prompt,
+                temperature=self.temperature,
+            )
         message = completions.choices[0].text  # type: ignore
-        logger.debug(message)
+        logger.trace(message)
         return message
 
     @retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
@@ -93,4 +100,5 @@ class GPT3(LLMProvider):
         Returns:
             The response from the API call.
         """
+        logger.trace(kwargs)
         return openai.Completion.create(**kwargs)
