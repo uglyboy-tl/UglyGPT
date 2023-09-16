@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from typing import Any, Dict, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from uglygpt.llm import get_llm_provider, LLMProvider
 from .base import Chain

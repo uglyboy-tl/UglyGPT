@@ -3,3 +3,4 @@ tiktoken
 loguru
 tenacity
 libcst
+pathos

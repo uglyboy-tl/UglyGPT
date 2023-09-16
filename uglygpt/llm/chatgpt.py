@@ -117,7 +117,7 @@ class ChatGPT(LLMProvider):
         logger.trace(response.choices[0]['message'])  # type: ignore
         return message
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    @retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
         """Make a completion request to the OpenAI API with exponential backoff.
 

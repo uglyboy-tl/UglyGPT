@@ -83,7 +83,7 @@ class GPT3(LLMProvider):
         logger.debug(message)
         return message
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    @retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
         """Call the OpenAI Completion API with exponential backoff.
 

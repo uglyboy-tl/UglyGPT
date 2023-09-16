@@ -58,7 +58,7 @@ class Chain(ABC):
             if len(args) != 1:
                 raise ValueError(
                     "`run` supports only one positional argument.")
-            return self._run(args[0])
+            return self._run({self.input_keys[0]:args[0]})
 
         if kwargs and not args:
             return self._run(kwargs)

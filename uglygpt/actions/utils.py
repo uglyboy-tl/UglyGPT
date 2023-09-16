@@ -37,6 +37,14 @@ def parse_code(text: str, lang: str = "python"):
 
 
 def fix_llm_json_str(string):
+    """Fixes the JSON string.
+
+    Args:
+        string: The JSON string to fix.
+
+    Returns:
+        The fixed JSON string.
+    """
     new_string = string.strip()
     try:
         json.loads(new_string)
@@ -75,6 +83,16 @@ def fix_llm_json_str(string):
 
 
 def parse_json(string):
+    """Parses the JSON string.
+
+    Args:
+        string: The JSON string to parse.
+
+    Returns:
+        The parsed JSON object.
+    Raises:
+        json.JSONDecodeError: If the JSON string cannot be decoded.
+    """
     try:
         return json.loads(fix_llm_json_str(string))
     except Exception as e:

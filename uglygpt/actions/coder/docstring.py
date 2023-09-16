@@ -6,9 +6,9 @@ from loguru import logger
 from typing import Optional
 
 from uglygpt.chains import LLMChain
+from uglygpt.utils.merge_docstring import merge_docstring
 from ..utils import parse_code
 from ..action import Action
-from .util_merge_docstring import merge_docstring
 
 ROLE = '''### Requirements
 1. Add docstrings to the given code following the google style.
