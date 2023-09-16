@@ -1,9 +1,11 @@
 from .base import Chain
 from .llm import LLMChain
-from .prompt import Prompt
+from .simple import SimpleChain
+from .map import MapChain
 
 __all__ = [
     "Chain",
     "LLMChain",
-    "Prompt",
+    "SimpleChain",
+    "MapChain",
 ]
