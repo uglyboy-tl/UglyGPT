@@ -105,7 +105,7 @@ class TasksSplit(Action):
     llm: LLMChain = field(init=False)
 
     def __post_init__(self):
-        self.llm = LLMChain(llm_name="chatgpt",
+        self.llm = LLMChain(llm_name="gpt4",
                             prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
 

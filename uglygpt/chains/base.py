@@ -43,14 +43,13 @@ class Chain(ABC):
     def _call(self, inputs: Dict[str, Any]) -> str:
         """Execute the chain."""
 
-    def _run(self, inputs: Dict[str, Any]) -> str:
+    def _check_and_call(self, inputs: Dict[str, Any]) -> str:
         """Execute the chain."""
         inputs = self.prep_inputs(inputs)
         try:
-            outputs = self._call(inputs)
+            return self._call(inputs)
         except (KeyboardInterrupt, Exception) as e:
             raise e
-        return outputs
 
     def __call__(self, *args: Any, **kwargs: Any) -> str:
         """Run the chain as text in, text out or multiple variables, text out."""
@@ -58,13 +57,13 @@ class Chain(ABC):
             if len(args) != 1:
                 raise ValueError(
                     "`run` supports only one positional argument.")
-            return self._run({self.input_keys[0]:args[0]})
+            return self._check_and_call({self.input_keys[0]:args[0]})
 
         if kwargs and not args:
-            return self._run(kwargs)
+            return self._check_and_call(kwargs)
 
         if not kwargs and not args:
-            return self._run({})
+            return self._check_and_call({})
 
         raise ValueError(
             f"`run` supported with either positional arguments or keyword arguments"

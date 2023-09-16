@@ -30,7 +30,7 @@ class GPT3(LLMProvider):
     """
     requirements: list[str] = field(
         default_factory=lambda: ["openai", "tictoken"])
-    temperature: float = 0.7
+    temperature: float = 0.3
     system_info = ""
 
     def _num_tokens(self, prompt: str) -> int:

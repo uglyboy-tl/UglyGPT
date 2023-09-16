@@ -10,19 +10,13 @@ try:
     from uglygpt.llm.gpt3 import GPT3
     supported_llm_providers.append(GPT3)
 except ImportError:
-    ChatGPT = None
+    GPT3 = None
 
 try:
     from uglygpt.llm.chatgpt import ChatGPT
     supported_llm_providers.append(ChatGPT)
 except ImportError:
     ChatGPT = None
-
-try:
-    from uglygpt.llm.chatgpt import GPT4
-    supported_llm_providers.append(GPT4)
-except ImportError:
-    GPT4 = None
 
 
 def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
@@ -46,7 +40,7 @@ def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
                 " to use OpenAI as a LLM provider."
             )
         else:
-            return GPT3(temperature=0.3)
+            return GPT3()
     elif llm_provider_name == "chatgpt":
         if not ChatGPT:
             raise NotImplementedError(
@@ -54,15 +48,23 @@ def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
                 " to use OpenAI as a LLM provider."
             )
         else:
-            return ChatGPT(temperature=0.3)
+            return ChatGPT()
     elif llm_provider_name == "gpt4":
-        if not GPT4:
+        if not ChatGPT:
             raise NotImplementedError(
                 "Error: OpenAILLM is not installed. Please install openai, tiktoken"
                 " to use OpenAI as a LLM provider."
             )
         else:
-            return GPT4(temperature=0.3)
+            return ChatGPT(model="gpt-4", MAX_TOKENS=8192)
+    elif llm_provider_name == "gpt4-32k":
+        if not ChatGPT:
+            raise NotImplementedError(
+                "Error: OpenAILLM is not installed. Please install openai, tiktoken"
+                " to use OpenAI as a LLM provider."
+            )
+        else:
+            return ChatGPT(model="gpt-4-32k", MAX_TOKENS=32768)
     elif llm_provider_name == "huggingface":
         raise NotImplementedError("Huggingface LLM provider not implemented")
     elif llm_provider_name == "bard":

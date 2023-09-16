@@ -34,7 +34,7 @@ class ChatGPT(LLMProvider):
     requirements: list[str] = field(
         default_factory=lambda: ["openai", "tictoken"])
     model: str = "gpt-3.5-turbo"
-    temperature: float = 0.7
+    temperature: float = 0.3
     MAX_TOKENS: int = 4096
     messages: list = field(default_factory=list)
 
@@ -48,11 +48,6 @@ class ChatGPT(LLMProvider):
         Returns:
             The number of tokens in the conversation.
         """
-        try:
-            encoding = tiktoken.encoding_for_model(model)
-        except KeyError:
-            logger.trace("model not found. Using cl100k_base encoding.")
-            encoding = tiktoken.get_encoding("cl100k_base")
         if model == "gpt-3.5-turbo":
             logger.trace(
                 "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
@@ -71,6 +66,11 @@ class ChatGPT(LLMProvider):
         else:
             raise NotImplementedError(
                 f"""num_tokens() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            logger.trace("model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
@@ -100,13 +100,14 @@ class ChatGPT(LLMProvider):
         Returns:
             The model's response.
         """
+        if len(self.messages) > 1:
+            self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
         tokens = self._num_tokens(messages=self.messages, model=self.model)
         max_new_tokens = int(self.MAX_TOKENS) - tokens
         if max_new_tokens <= 0:
             raise ValueError(
                 f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
-        logger.trace(self.messages)
         response = self.completion_with_backoff(
             model=self.model,
             messages=self.messages,
@@ -127,16 +128,5 @@ class ChatGPT(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
+        logger.debug(kwargs)
         return openai.ChatCompletion.create(**kwargs)
-
-
-@dataclass
-class GPT4(ChatGPT):
-    """A subclass of ChatGPT that uses the GPT-4 model.
-
-    Attributes:
-        model: The model to use for the language model.
-        MAX_TOKENS: The maximum number of tokens allowed in a conversation.
-    """
-    model: str = "gpt-4"
-    MAX_TOKENS: int = 8192

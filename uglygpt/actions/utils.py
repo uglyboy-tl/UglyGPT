@@ -26,10 +26,12 @@ def parse_code(text: str, lang: str = "python"):
         match = re.search(pattern, text, re.DOTALL)
         if match:
             code = match.group(1)
+            logger.warning(f"parse_code: {lang} not match following text:\n{text}")
         else:
             match = re.search(pattern, text+"\n```", re.DOTALL)
             if match:
                 code = match.group(1)
+                logger.warning("code in code block not end with ```, we add it automatically.")
             else:
                 logger.warning(f"{pattern} not match following text:\n{text}")
                 raise Exception(f"{pattern} not match following text:\n{text}")
