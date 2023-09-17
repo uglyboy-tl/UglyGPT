@@ -45,10 +45,11 @@ class ReActChain(LLMChain):
     def input_keys(self) -> List[str]:
         return ["history"]
 
-    def __call__(self) -> str:
-        resopnse = self._check_and_call({"history": ""})
-        act = self.cls.parse(resopnse) # type: ignore
-        logger.success(f"\n[Thought]:{act.thought}\n[Action]:{act.action}\n[Params]:{act.params}\n[Obs]:{act.obs}")
+    def __call__(self, act:ReAct|None = None) -> str:
+        if act is None:
+            resopnse = self._check_and_call({"history": ""})
+            act = self.cls.parse(resopnse) # type: ignore
+            logger.success(f"\n[Thought]:{act.thought}\n[Action]:{act.action}\n[Params]:{act.params}\n[Obs]:{act.obs}")
         while act.done == False:
             if len(self._acts) > 0:
                 self._acts[-1].current = False
