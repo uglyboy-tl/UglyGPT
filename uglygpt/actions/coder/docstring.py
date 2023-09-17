@@ -7,8 +7,8 @@ from typing import Optional
 
 from uglygpt.chains import LLMChain
 from uglygpt.utils.merge_docstring import merge_docstring
-from ..utils import parse_code
-from ..action import Action
+from uglygpt.actions.utils import parse_code
+from uglygpt.actions.action import Action
 
 ROLE = '''### Requirements
 1. Add docstrings to the given code following the google style.
