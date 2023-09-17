@@ -8,8 +8,8 @@ from collections import deque
 import re
 
 from uglygpt.chains import LLMChain, ReAct, ReActChain
-from .action import Action
-from .utils import parse_json
+from ..action import Action
+from ..utils import parse_json
 
 
 ROLE = """
