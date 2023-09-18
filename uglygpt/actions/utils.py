@@ -47,7 +47,7 @@ def fix_llm_json_str(string):
     Returns:
         The fixed JSON string.
     """
-    new_string = string.strip()
+    new_string = string
     try:
         json.loads(new_string)
         return new_string

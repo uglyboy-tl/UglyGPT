@@ -7,12 +7,12 @@ import subprocess
 import platform
 
 from uglygpt.chains import LLMChain, ReAct, ReActChain
-from .action import Action
+from .base import Action
 from .utils import parse_json
 
 
 ROLE = """
-你是一名系统运维工程师，你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
+你是一名系统运维工程师，你的系统是 `{os_version}`, 你的目标是：`{objective}`。为了完成这个目标，你需要执行一些命令行指令。
 - 你需要一步一步的描述你的解决思路，每一步都可以对应一个命令行指令（不要一次执行多个命令）。
     - 你会逐一执行这些指令，并可以根据指令的执行结果来修正下一步的操作。
     - 将已经获得的执行结果融合到你的解决思路中，不断完善你的解决思路。
@@ -80,6 +80,13 @@ class CommandAct(ReAct):
             return "## THOUGHT：\n" + self.thought + "\n\n## ACTION：\n" + \
                 "```bash\n" + self.action + "\n```\n\n" + "## OBS：\n---" + self.obs + "---\n\n"
 
+    @property
+    def info(self) -> str:
+        if self.done:
+            return f"[Thought]: {self.thought}"
+        else:
+            return f"[Thought]: {self.thought}\n[CMD]: {self.action}\n[Result]: {self.obs}"
+
 @dataclass
 class Command(Action):
     """Class representing a command action.
@@ -98,7 +105,13 @@ class Command(Action):
 
         Create an ReActChain(LLMChain) object and call the parent class's __post_init__ method.
         """
-        self.role = ROLE.format(objective=self.objective)
+        self.os_version = platform.system()
+        if self.os_version == "Linux":
+            try:
+                self.os_version = platform.freedesktop_os_release()['NAME']
+            except:
+                pass
+        self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
         self.llm = ReActChain(llm_name="gpt4", cls = CommandAct)
         return super().__post_init__()
 
@@ -115,14 +128,14 @@ class Command(Action):
         logger.info(f'Command Running ..')
         if objective is not None:
             self.objective = objective
-            self.role = ROLE.format(objective=objective)
+            self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
             super().__post_init__()
         elif command is not None:
             objective = LLMChain(
                 llm_name="chatgpt", prompt_template="```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")()
             logger.debug(f'Objective: {objective}')
             self.objective = objective
-            self.role = ROLE.format(objective=objective)
+            self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
             super().__post_init__()
 
         response = self.ask()

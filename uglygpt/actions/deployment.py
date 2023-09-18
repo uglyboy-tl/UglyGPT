@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from loguru import logger
 import subprocess
 
-from .action import Action
+from .base import Action
 from .command import Command
 from .utils import parse_json
 

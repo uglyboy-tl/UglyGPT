@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import List
 from loguru import logger
 
-from uglygpt.actions.action import Action
+from uglygpt.actions.base import Action
 from uglygpt.chains import LLMChain
 
 PROMPT_TEMPLATE = """

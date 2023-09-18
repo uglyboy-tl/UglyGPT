@@ -86,7 +86,7 @@ class GPT3(LLMProvider):
                 prompt=prompt,
                 temperature=self.temperature,
             )
-        message = completions.choices[0].text  # type: ignore
+        message = completions.choices[0].text.strip()  # type: ignore
         logger.trace(message)
         return message
 

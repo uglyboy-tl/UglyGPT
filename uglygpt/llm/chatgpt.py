@@ -122,8 +122,8 @@ class ChatGPT(LLMProvider):
                 messages=self.messages,
                 temperature=self.temperature,
             )
-        message = response.choices[0]['message']['content']  # type: ignore
-        logger.trace(response.choices[0]['message'])  # type: ignore
+        logger.trace(response)
+        message = response.choices[0].message.content.strip() # type: ignore
         return message
 
     @retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore

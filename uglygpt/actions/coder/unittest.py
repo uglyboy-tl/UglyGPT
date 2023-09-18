@@ -4,7 +4,7 @@
 from dataclasses import dataclass, field
 from loguru import logger
 
-from uglygpt.actions.action import Action
+from uglygpt.actions.base import Action
 from uglygpt.actions.utils import parse_code
 from uglygpt.chains import LLMChain
 from uglygpt.base import File
