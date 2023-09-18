@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, Type, List
+from typing import Dict, Type, List, Optional
 from .llm import LLMChain
 from loguru import logger
 
 @dataclass
 class ReAct(ABC):
-    thought: str
-    action: str
-    params: Dict[str, str]
+    thought: Optional[str] = None
+    action: Optional[str] = None
+    params: Optional[Dict[str, str]] = None
     current: bool = True
 
     def __post_init__(self):
@@ -42,7 +42,7 @@ class ReAct(ABC):
 @dataclass
 class ReActChain(LLMChain):
     prompt_template: str = "{history}"
-    cls: Type[ReAct]|None = None
+    cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):
         self._acts = []
@@ -52,7 +52,7 @@ class ReActChain(LLMChain):
     def input_keys(self) -> List[str]:
         return ["history"]
 
-    def __call__(self, act:ReAct|None = None) -> str:
+    def __call__(self, act: Optional[ReAct] = None) -> str:
         if act is None:
             resopnse = self._check_and_call({"history": ""})
             act = self.cls.parse(resopnse) # type: ignore
@@ -65,4 +65,4 @@ class ReActChain(LLMChain):
             resopnse = self._check_and_call({"history": history})
             act = self.cls.parse(resopnse)  # type: ignore
             logger.success(act.info)
-        return act.thought
+        return act.info

@@ -39,7 +39,7 @@ class CommandAct(ReAct):
         Returns:
             The output of the command execution.
         """
-        command = self.action
+        command = str(self.action)
         try:
             if platform.system() == "Windows":
                 result = subprocess.run(command, shell=True, check=True,
@@ -70,15 +70,14 @@ class CommandAct(ReAct):
         result = parse_json(text)
         reason = result.get("THOUGHT", "")
         command = result.get("ACTION", "")
-        return CommandAct(thought=reason, action=command, params={})
+        return CommandAct(thought=reason, action=command)
 
     @property
     def done(self) -> bool:
         return self.action == ""
 
     def __str__(self) -> str:
-            return "## THOUGHT：\n" + self.thought + "\n\n## ACTION：\n" + \
-                "```bash\n" + self.action + "\n```\n\n" + "## OBS：\n---" + self.obs + "---\n\n"
+            return f"## THOUGHT：\n{self.thought}\n\n## ACTION：\n```bash\n{self.action}\n```\n\n## OBS：\n---\n{self.obs}\n---\n\n"
 
     @property
     def info(self) -> str:

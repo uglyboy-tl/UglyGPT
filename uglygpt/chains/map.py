@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
-from loguru import logger
 from pathos.multiprocessing import ProcessingPool as Pool
 
 from .base import Chain
@@ -10,7 +9,7 @@ from .llm import LLMChain
 @dataclass
 class MapChain(Chain):
     map_chain: Chain = field(default_factory=LLMChain)
-    reduce_chain: Optional[Chain|None] = None
+    reduce_chain: Optional[Chain] = None
     mapping_key: str = "input"
 
     @property
