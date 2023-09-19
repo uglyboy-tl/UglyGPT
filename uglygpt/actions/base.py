@@ -19,8 +19,8 @@ class Action(ABC):
         filename: The filename associated with the action.
         llm: The LLMChain object used for the action.
     """
-    role: Optional[str] = None
     filename: Optional[str] = None
+    role: Optional[str] = None
     llm: LLMChain = field(default_factory=LLMChain)
 
     def __post_init__(self):

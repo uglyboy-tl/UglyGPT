@@ -3,6 +3,7 @@
 
 import re
 import json
+from typing import Dict
 from loguru import logger
 from uglygpt.chains import LLMChain
 
@@ -99,3 +100,19 @@ def parse_json(string):
         return json.loads(fix_llm_json_str(string))
     except Exception as e:
         raise json.JSONDecodeError(f"parse_json failed: {e}", string, 0)
+
+def parse_markdown(markdown_text: str) -> Dict[str, str]:
+    """
+    Convert markdown text to dictionary.
+
+    Parameters:
+    markdown_text (str): The markdown text.
+
+    Returns:
+    dict: The dictionary with title as key and text as value.
+    """
+    if not isinstance(markdown_text, str):
+        raise ValueError('The input markdown_text must be a string.')
+    pattern = r'(?m)^## (.*?)\n(.*?)(?=^##|\Z)'
+    matches = re.findall(pattern, markdown_text, re.DOTALL)
+    return {title: text.strip() for title, text in matches}

@@ -19,8 +19,8 @@ class LLMChain(Chain):
         llm_name: The name of the language model.
         prompt_template: The template for the prompt.
     """
-    llm_name: str = "gpt4"
-    prompt_template: str = ">>> {prompt}"
+    llm_name: str = "chatgpt"
+    prompt_template: str = "{prompt}"
 
     def __post_init__(self):
         """Initialize the LLMChain object.

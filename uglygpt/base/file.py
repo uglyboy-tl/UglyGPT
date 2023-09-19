@@ -33,7 +33,7 @@ class File:
     WORKSPACE_ROOT = get_project_root()
 
     @classmethod
-    def save(cls, filename, data):
+    def save(cls, filename:str , data: str) -> None:
         """Save data to a file.
 
         Args:
@@ -43,12 +43,12 @@ class File:
         file_path = cls.WORKSPACE_ROOT / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         if file_path.exists():
-            cls.backup(file_path)
+            cls._backup(file_path)
         file_path.write_text(data)
         logger.debug(f"Saving file to {file_path}")
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename: str):
         """Load data from a file.
 
         Args:
@@ -62,7 +62,7 @@ class File:
         return data
 
     @classmethod
-    def backup(cls, file_path: Path):
+    def _backup(cls, file_path: Path):
         """Backup a file.
 
         Args:
