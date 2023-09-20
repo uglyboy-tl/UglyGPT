@@ -3,8 +3,7 @@
 
 from dataclasses import dataclass
 
-from uglygpt.actions.coder.developer import Developer
-from uglygpt.actions.utils import parse_json
+from .developer import Developer
 
 ROLE = """
 你是一名专业的 Python 开发者。你的任务是根据具体的要求，写一段符合PEP8规范的、优雅、易于阅读和维护的Python 3.11代码：
@@ -19,5 +18,6 @@ ROLE = """
 """
 
 @dataclass
-class CodeWriter(Developer):
+class CodeWrite(Developer):
     role: str = ROLE
+    name: str = "代码开发者"

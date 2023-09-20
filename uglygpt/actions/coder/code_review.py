@@ -3,8 +3,7 @@
 
 from dataclasses import dataclass
 
-from uglygpt.actions.coder.developer import Developer
-from uglygpt.actions.utils import parse_json
+from .developer import Developer
 
 ROLE = """
 你是一名专业的软件工程师，你的主要任务是审查代码。你需要确保代码符合PEP8标准，设计优雅且模块化，易于阅读和维护，并且是用Python 3.11（或其他编程语言）编写的。
@@ -24,9 +23,9 @@ ROLE = """
 
 PROMPT_TEMPLATE = """
 ## Context
-### 原始需求
 {context}
-### 源代码
+
+## Code
 ```python
 {code}
 ```
@@ -36,3 +35,4 @@ PROMPT_TEMPLATE = """
 class CodeReviewer(Developer):
     role: str = ROLE
     prompt:str = PROMPT_TEMPLATE
+    name: str = "代码审查者"

@@ -26,7 +26,8 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Developer(Action):
-    prompt = PROMPT_TEMPLATE
+    prompt: str = PROMPT_TEMPLATE
+    name: str = ""
 
     def __post_init__(self):
         if self.role:
@@ -42,6 +43,7 @@ class Developer(Action):
         return reasoning, code
 
     def run(self, *args, **kwargs):
+        logger.info(f"正在执行 {self.name} 的任务...")
         response = self.ask(*args, **kwargs)
         #logger.debug(response)
         reasoning, code = self._parse(response)

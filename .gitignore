@@ -3,12 +3,19 @@
 .venv
 .vscode
 __pycache__/
+docs/examples
+sandbox
 logs
+uglygpt/actions/dev
+uglygpt/archive
+
 
 ``` 一些不需要上传的文件
 ```
 .env
+*.bak
 test.py
+demo.py
 
 ``` 未来可能需要上传的文件夹
 ```
