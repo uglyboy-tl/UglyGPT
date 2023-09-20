@@ -1,14 +1,15 @@
+#!/usr/bin/env python3
+# -*-coding:utf-8-*-
+
 from dataclasses import dataclass, field
 import shutil
 import subprocess
 from pathlib import Path
 from loguru import logger
-from typing import Tuple
 import re
 
 from uglygpt.base import File
 
-SANDBOX_DIR = "sandbox"
 VENV_NAME = ".venv"
 
 class TestFailedError(Exception):
@@ -16,7 +17,7 @@ class TestFailedError(Exception):
 
 @dataclass
 class Sandbox:
-    _dir_name: str = SANDBOX_DIR
+    _dir_name: str = "sandbox"
     _dependencies: list = field(default_factory=list)
 
     def __post_init__(self):
@@ -37,11 +38,10 @@ class Sandbox:
             logger.error(f'Failed to create virtual environment: {e}')
 
     # TODO: 未来需要添加目标文件依赖的其他文件的拷贝，以及其他文件的依赖包的安装
-    def prepare_test(self, path:str) -> Tuple[str, str]:
+    def prepare_test(self, path:str) -> str:
         file_path = self._copy_file(path)
         self._install_dependencies(file_path)
-        test_path = self.dir_path / f"test_{file_path.name}"
-        return self.relative_path(file_path), self.relative_path(test_path)
+        return self.relative_path(file_path)
 
     def run_test(self, test_path: str) -> None:
         path = File.WORKSPACE_ROOT / test_path

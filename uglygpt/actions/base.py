@@ -44,7 +44,7 @@ class Action(ABC):
         response = self.llm(*args, **kwargs)
         return response
 
-    def _save(self, data=None, filename=None):
+    def _save(self, data: Optional[str] = None, filename: Optional[str] = None):
         """Save data to a file.
 
         Args:
@@ -63,7 +63,7 @@ class Action(ABC):
             raise ValueError("data is required")
         File.save(filename, data)
 
-    def _load(self, filename=None):
+    def _load(self, filename: Optional[str] = None):
         """Load data from a file.
 
         Args:

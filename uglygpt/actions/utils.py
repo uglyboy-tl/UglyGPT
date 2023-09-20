@@ -113,6 +113,6 @@ def parse_markdown(markdown_text: str) -> Dict[str, str]:
     """
     if not isinstance(markdown_text, str):
         raise ValueError('The input markdown_text must be a string.')
-    pattern = r'(?m)^## (.*?)\n(.*?)(?=^##|\Z)'
+    pattern = r'(?m)^## (.*?)\n(.*?)(?=^## |\Z)'
     matches = re.findall(pattern, markdown_text, re.DOTALL)
     return {title: text.strip() for title, text in matches}

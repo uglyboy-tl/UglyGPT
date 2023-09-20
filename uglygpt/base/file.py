@@ -70,3 +70,16 @@ class File:
         """
         backup_path = file_path.with_name(file_path.stem + '_' + datetime.now().strftime('%Y%m%d%H%M%S') + file_path.suffix + '.bak')
         file_path.rename(backup_path)
+
+    @classmethod
+    def exists(cls, filename: str) -> bool:
+        """Check if a file exists.
+
+        Args:
+            filename: The name of the file.
+
+        Returns:
+            True if the file exists, False otherwise.
+        """
+        file_path = cls.WORKSPACE_ROOT / filename
+        return file_path.exists()
