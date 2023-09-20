@@ -41,7 +41,6 @@ class ReAct(ABC):
 
 @dataclass
 class ReActChain(LLMChain):
-    prompt_template: str = "{history}"
     cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):
@@ -50,11 +49,11 @@ class ReActChain(LLMChain):
 
     @property
     def input_keys(self) -> List[str]:
-        return ["history"]
+        return ["prompt"]
 
     def __call__(self, act: Optional[ReAct] = None) -> str:
         if act is None:
-            resopnse = self._check_and_call({"history": ""})
+            resopnse = self._check_and_call({"prompt": ""})
             act = self.cls.parse(resopnse) # type: ignore
             logger.success(act.info)
         while act.done == False:
@@ -62,7 +61,7 @@ class ReActChain(LLMChain):
                 self._acts[-1].current = False
             self._acts.append(act)
             history = "\n".join([str(act) for act in self._acts])
-            resopnse = self._check_and_call({"history": history})
+            resopnse = self._check_and_call({"prompt": history})
             act = self.cls.parse(resopnse)  # type: ignore
             logger.success(act.info)
         return act.info
