@@ -12,7 +12,7 @@ from uglygpt.base import File
 @dataclass
 class Coder:
     file_path: str
-    request: str
+    request: str = ""
     review_code: bool = False
     sandbox: Sandbox = field(default_factory=Sandbox)
 
@@ -21,8 +21,11 @@ class Coder:
         self.reviewer = CodeReviewer(self.file_path)
         self.rewriter = CodeRewrite(self.file_path)
         self.tester = TestWriter(self.test_path)
+        self.unittester = TestWriter(self.unittest_path)
 
     def gen_code(self) -> None:
+        if self.request == "":
+            raise ValueError("request is empty, can not generate code.")
         self._code = self.writer.run(self.request)
         self._code = self.reviewer.run(context = self.request, code = self.code)
 
@@ -33,30 +36,54 @@ class Coder:
                 return False
         else:
             logger.info(extra)
-        self._code = self.rewriter.run(context = f"函数原始需求：\n{self.request}", code = self.code, extra = extra)
+        if self.request != "":
+            context = f"函数原始需求：\n{self.request}"
+        else:
+            context = ""
+        self._code = self.rewriter.run(context = context, code = self.code, extra = extra)
         if self.review_code:
-            self._code = self.reviewer.run(context = f"函数原始需求：\n{self.request}", code = self.code)
+            self._code = self.reviewer.run(context = context, code = self.code)
         return True
 
+    def gen_unittest(self) -> None:
+        if self.request != "":
+            context = f"---\n函数原始需求：\n{self.request}\n---"
+        else:
+            context = ""
+        self.unittester.run(context = f"{context}", code = self.code, working_dir = str(File.WORKSPACE_ROOT), source_path = self.file_path, test_path = self.unittest_path)
+        if self.review_code:
+            agent = CodeReviewer(self.unittest_path)
+            agent.run(context = f"这是一个unittest测试文件\n{context}", code = agent._load())
 
-    def prepare_test(self) -> None:
+    def prepare_debug(self) -> None:
         self.sandbox.init()
         self.sandbox.setup_venv()
         code = self.code
-        sandbox_file_path = self.sandbox.prepare_test(self.file_path)
-        context = f"---\n函数原始需求：\n{self.request}\n---\n 只写一个测试用例，只需要验证目标代码能否顺利执行即可，无需验证结果是否正确。"
-        self.tester.run(context = context, code = code, working_dir = self.sandbox.dir, source_path = sandbox_file_path, test_path = self.test_path)
+        sandbox_file_path = self.sandbox.prepare_debug(self.file_path)
+        context = f"---\n函数原始需求：\n{self.request}\n---\n 所有的测试用例只需要验证目标代码中的函数或者类的方法能否顺利执行即可，无需验证结果是否正确。"
+        working_path = Path(self.sandbox.dir)
+        source_path = Path(sandbox_file_path).relative_to(working_path)
+        test_path = Path(self.test_path).relative_to(working_path)
+        self.tester.run(context = context, code = code, working_dir = self.sandbox.dir, source_path = str(source_path), test_path = str(test_path))
+        if self.review_code:
+            agent = CodeReviewer(self.test_path)
+            agent.run(context =f"这是一个unittest测试文件\n{context}", code = agent._load())
 
-    def run_test(self) -> None:
+    def run_debug(self) -> None:
         if not File.exists(self.test_path):
-            self.prepare_test()
+            self.prepare_debug()
+
+        if self.request != "":
+            context = f"函数原始需求：\n{self.request}"
+        else:
+            context = ""
 
         retry = 0
 
         while True:
             try:
                 retry += 1
-                self.sandbox.run_test(self.test_path)
+                self.sandbox.run_debug(self.test_path)
                 break
             except TestFailedError as e:
                 if retry > 3:
@@ -65,16 +92,16 @@ class Coder:
                     if self.change_code():
                         retry = 0
                         if self.review_code:
-                            self._code = self.reviewer.run(context = f"函数原始需求：\n{self.request}", code = self.code)
-                        self.sandbox.prepare_test(self.file_path)
+                            self._code = self.reviewer.run(context = context, code = self.code)
+                        self.sandbox.prepare_debug(self.file_path)
                     else:
                         break
                 else:
                     debug = e.args[0]
-                    self._code = self.rewriter.run(context = f"函数原始需求：\n{self.request}", code = self.code, extra = debug)
+                    self._code = self.rewriter.run(context = context, code = self.code, extra = debug)
                     if self.review_code:
-                        self._code = self.reviewer.run(context = f"函数原始需求：\n{self.request}", code = self.code)
-                    self.sandbox.prepare_test(self.file_path)
+                        self._code = self.reviewer.run(context = context, code = self.code)
+                    self.sandbox.prepare_debug(self.file_path)
             except Exception as e:
                 raise
         if retry > 3:
@@ -85,6 +112,12 @@ class Coder:
         if not hasattr(self, "_test_path"):
             self._test_path = f"{self.sandbox.dir}/test_{Path(self.file_path).name}"
         return self._test_path
+
+    @property
+    def unittest_path(self) -> str:
+        if not hasattr(self, "_unittest_path"):
+            self._unittest_path = f"tests/test_{Path(self.file_path).name}"
+        return self._unittest_path
 
     @property
     def code(self) -> str:

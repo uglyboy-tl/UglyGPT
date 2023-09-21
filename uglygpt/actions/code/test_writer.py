@@ -14,7 +14,7 @@ ROLE = """
 - Think before writing: What should be tested and validated in this document? What edge cases could exist? What might fail?
 - 仔细检查你没有遗漏这个文件中的任何必要的测试用例/脚本。
 - please write appropriate test cases using Python's unittest framework to verify the correctness and robustness of the code。
-- 注意需要根据 `Path` 中的信息，正确的引用源代码中的函数和类。
+- 尤其注意！！！需要根据 `Path` 中的信息，在测试代码中正确的引用源代码中的函数、类。
 {format}
 """
 
@@ -28,9 +28,10 @@ PROMPT_TEMPLATE = """
 ```
 
 ## Path
-- 源代码的路径 `{source_path}`
 - 执行目录 `{working_dir}`
-- 测试代码的路径 `{test_path}`
+- 源代码的路径(相对于执行目录) `{source_path}`
+- 测试代码的路径（相对于执行目录） `{test_path}`
+
 """
 
 

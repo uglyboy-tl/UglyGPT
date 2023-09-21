@@ -113,13 +113,13 @@ class Sandbox:
             logger.error(f'Failed to create virtual environment: {e}')
 
     # TODO: 未来需要添加目标文件依赖的其他文件的拷贝，以及其他文件的依赖包的安装
-    def prepare_test(self, path:str) -> str:
+    def prepare_debug(self, path:str) -> str:
         file_list = self._copy_file(path)
         for file_path in file_list:
             self._install_dependencies(file_path)
         return self.relative_path(file_list[0])
 
-    def run_test(self, test_path: str) -> None:
+    def run_debug(self, test_path: str) -> None:
         path = File.WORKSPACE_ROOT / test_path
         path = path.relative_to(self.dir_path)
         try:

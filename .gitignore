@@ -6,7 +6,7 @@ __pycache__/
 docs/examples
 sandbox
 logs
-uglygpt/actions/dev
+uglygpt/dev
 uglygpt/archive
 
 
