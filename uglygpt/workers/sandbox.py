@@ -10,10 +10,12 @@ from pathlib import Path
 from loguru import logger
 import re
 from typing import List, Optional, Set
+from collections import deque
 
 from uglygpt.base import File
 
 VENV_NAME = ".venv"
+
 
 def get_imports(file_path: str) -> List[str]:
     try:
@@ -87,8 +89,10 @@ def get_dependencies(file_path: str, visited: Optional[Set[str]] = None) -> List
 
     return dependencies
 
+
 class TestFailedError(Exception):
     pass
+
 
 @dataclass
 class Sandbox:
@@ -108,31 +112,34 @@ class Sandbox:
     def setup_venv(self) -> None:
         # Create a virtual environment in the sandbox directory
         try:
-            subprocess.run(['python3', '-m', 'venv', VENV_NAME], cwd=self.dir_path, check=True)
+            subprocess.run(['python3', '-m', 'venv', VENV_NAME],
+                           cwd=self.dir_path, check=True)
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to create virtual environment: {e}')
 
     # TODO: 未来需要添加目标文件依赖的其他文件的拷贝，以及其他文件的依赖包的安装
-    def prepare_debug(self, path:str) -> str:
+    def prepare_test(self, path: str) -> str:
         file_list = self._copy_file(path)
         for file_path in file_list:
             self._install_dependencies(file_path)
         return self.relative_path(file_list[0])
 
-    def run_debug(self, test_name: str) -> None:
+    def run_test(self, test_name: str) -> None:
         test_path = Path(test_name)
         if test_path.is_absolute():
             try:
                 test_path.relative_to(self.dir_path)
             except ValueError:
-                raise ValueError(f"Test path {test_path} is not in the sandbox directory.")
+                raise ValueError(
+                    f"Test path {test_path} is not in the sandbox directory.")
         else:
             test_path = File.WORKSPACE_ROOT / test_name
         if not test_path.exists():
             raise FileNotFoundError(f"Test file {test_path} does not exist.")
         path = test_path.relative_to(self.dir_path)
         try:
-            process = subprocess.Popen(f"{self.test_command} {path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.dir_path)
+            process = subprocess.Popen(f"{self.test_command} {path}", shell=True,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.dir_path)
             stdout, stderr = process.communicate()
 
             if process.returncode != 0:
@@ -145,7 +152,7 @@ class Sandbox:
 
     @property
     def test_command(self) -> str:
-        python_path = self.dir_path/ VENV_NAME / "bin"/ "python"
+        python_path = self.dir_path / VENV_NAME / "bin" / "python"
         return f"{python_path} -m unittest"
 
     def _copy_file(self, file_path: str) -> List[Path]:
@@ -166,12 +173,24 @@ class Sandbox:
     def _install_dependencies(self, file_path: Path) -> None:
         with open(file_path) as file:
             content = file.read()
-        dependencies = re.findall(r'^\s*(?:from|import)\s+([\w]+)(?:\.[\w]+)*', content, re.MULTILINE)
-        new_dependencies = [dependency for dependency in dependencies if dependency not in self._dependencies]
+        dependencies = re.findall(
+            r'^\s*(?:from|import)\s+([\w]+)(?:\.[\w]+)*', content, re.MULTILINE)
+        new_dependencies = deque(
+            [dependency for dependency in dependencies if dependency not in self._dependencies])
 
-        for dependency in new_dependencies:
+        while new_dependencies:
+            dependency = new_dependencies.popleft()
+            if dependency in ['unittest', 'os', 're', 'sys', 'subprocess', 'shutil', 'pathlib', 'logging', 'dataclasses', 'ast', 'typing', 'collections', 'abc', 'json', 'uglygpt']:
+                continue
+            elif dependency.startswith('.'):
+                continue
+            elif dependency == 'bs4':
+                new_dependencies.append('BeautifulSoup4')
+                new_dependencies.append('lxml')
+                continue
             try:
-                subprocess.run([f'{VENV_NAME}/bin/pip', 'install', dependency], cwd=self.dir_path, check=True)
+                subprocess.run(
+                    [f'{VENV_NAME}/bin/pip', 'install', dependency], cwd=self.dir_path, check=True)
                 self._dependencies.append(dependency)
             except subprocess.CalledProcessError as e:
                 logger.error(f'Failed to install dependency {dependency}: {e}')

@@ -45,7 +45,6 @@ class Developer(Action):
     def run(self, *args, **kwargs):
         logger.info(f"正在执行 {self.name} 的任务...")
         response = self.ask(*args, **kwargs)
-        #logger.debug(response)
         reasoning, code = self._parse(response)
         logger.success(reasoning)
         self._save(code)
