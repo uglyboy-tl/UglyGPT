@@ -1,16 +1,91 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
+import os
+import ast
 from dataclasses import dataclass, field
 import shutil
 import subprocess
 from pathlib import Path
 from loguru import logger
 import re
+from typing import List, Optional, Set
 
 from uglygpt.base import File
 
 VENV_NAME = ".venv"
+
+def get_imports(file_path: str) -> List[str]:
+    try:
+        with open(file_path) as f:
+            root = ast.parse(f.read())
+    except SyntaxError:
+        return []
+
+    imports = []
+    for node in ast.walk(root):
+        if isinstance(node, ast.Import):
+            imports.extend(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level > 0:  # relative import
+                relative_module = "." * node.level + (node.module or "")
+                imports.append(relative_module)
+            else:  # absolute import
+                imports.append(node.module)
+
+    return imports
+
+
+def get_module_path(module_name: str, file_path: str) -> Optional[str]:
+    if module_name.startswith('.'):
+        parts = module_name.split('.')
+        module_path = Path(file_path).parent
+        for part in parts:
+            if part == '':
+                module_path = module_path
+            else:
+                module_path = module_path / part
+                if (module_path.with_suffix('.py')).exists():
+                    return str(module_path.with_suffix('.py'))
+                elif (module_path / '__init__.py').exists():
+                    return str(module_path / '__init__.py')
+                elif module_path.exists():
+                    continue
+                else:
+                    return None
+    else:
+        module_path = Path(module_name.replace('.', '/'))
+        if (module_path.with_suffix('.py')).exists():
+            return str(module_path.with_suffix('.py'))
+        elif (module_path / '__init__.py').exists():
+            return str(module_path / '__init__.py')
+        elif module_path.exists():
+            return str(module_path)
+        else:
+            return None
+
+
+def get_dependencies(file_path: str, visited: Optional[Set[str]] = None) -> List[str]:
+    if visited is None:
+        visited = set()
+
+    if file_path in visited:
+        return []
+
+    visited.add(file_path)
+
+    if not file_path.endswith('.py'):
+        return []
+
+    imports = get_imports(file_path)
+
+    dependencies = [file_path]
+    for module_name in imports:
+        module_path = get_module_path(module_name, file_path)
+        if module_path is not None and not Path(module_path).parent.samefile(Path(os.__file__).parent):
+            dependencies.extend(get_dependencies(module_path, visited))
+
+    return dependencies
 
 class TestFailedError(Exception):
     pass
@@ -39,9 +114,10 @@ class Sandbox:
 
     # TODO: 未来需要添加目标文件依赖的其他文件的拷贝，以及其他文件的依赖包的安装
     def prepare_test(self, path:str) -> str:
-        file_path = self._copy_file(path)
-        self._install_dependencies(file_path)
-        return self.relative_path(file_path)
+        file_list = self._copy_file(path)
+        for file_path in file_list:
+            self._install_dependencies(file_path)
+        return self.relative_path(file_list[0])
 
     def run_test(self, test_path: str) -> None:
         path = File.WORKSPACE_ROOT / test_path
@@ -63,19 +139,25 @@ class Sandbox:
         python_path = self.dir_path/ VENV_NAME / "bin"/ "python"
         return f"{python_path} -m unittest"
 
-    def _copy_file(self, file_path: str) -> Path:
-        # Create a new Path object for the new file path
-        new_file_path = self.dir_path / Path(file_path).name
-
-        # Copy the file to the sandbox directory
-        shutil.copy(file_path, new_file_path)
-
-        return new_file_path
+    def _copy_file(self, file_path: str) -> List[Path]:
+        file_list = get_dependencies(file_path)
+        new_list: List[Path] = []
+        if len(file_list) == 1:
+            new_file_path = self.dir_path / Path(file_path).name
+            shutil.copy(Path(file_path), new_file_path)
+            new_list.append(new_file_path)
+        else:
+            for file_path in file_list:
+                new_file_path = self.dir_path / file_path
+                new_file_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(Path(file_path), new_file_path)
+                new_list.append(new_file_path)
+        return new_list
 
     def _install_dependencies(self, file_path: Path) -> None:
         with open(file_path) as file:
             content = file.read()
-        dependencies = re.findall(r'^\s*(?:from|import)\s+([\w.]+)', content, re.MULTILINE)
+        dependencies = re.findall(r'^\s*(?:from|import)\s+([\w]+)(?:\.[\w]+)*', content, re.MULTILINE)
         new_dependencies = [dependency for dependency in dependencies if dependency not in self._dependencies]
 
         for dependency in new_dependencies:
@@ -84,6 +166,7 @@ class Sandbox:
                 self._dependencies.append(dependency)
             except subprocess.CalledProcessError as e:
                 logger.error(f'Failed to install dependency {dependency}: {e}')
+                self._dependencies.append(dependency)
 
     @classmethod
     def relative_path(cls, path: Path) -> str:

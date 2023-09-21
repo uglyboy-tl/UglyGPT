@@ -29,4 +29,4 @@ PROMPT_TEMPLATE = """
 class CodeRewrite(Developer):
     role: str = ROLE
     prompt:str = PROMPT_TEMPLATE
-    name: str = "代码重写者"
+    name: str = "代码改进者"
