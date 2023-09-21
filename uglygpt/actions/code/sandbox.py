@@ -119,9 +119,18 @@ class Sandbox:
             self._install_dependencies(file_path)
         return self.relative_path(file_list[0])
 
-    def run_debug(self, test_path: str) -> None:
-        path = File.WORKSPACE_ROOT / test_path
-        path = path.relative_to(self.dir_path)
+    def run_debug(self, test_name: str) -> None:
+        test_path = Path(test_name)
+        if test_path.is_absolute():
+            try:
+                test_path.relative_to(self.dir_path)
+            except ValueError:
+                raise ValueError(f"Test path {test_path} is not in the sandbox directory.")
+        else:
+            test_path = File.WORKSPACE_ROOT / test_name
+        if not test_path.exists():
+            raise FileNotFoundError(f"Test file {test_path} does not exist.")
+        path = test_path.relative_to(self.dir_path)
         try:
             process = subprocess.Popen(f"{self.test_command} {path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.dir_path)
             stdout, stderr = process.communicate()

@@ -12,7 +12,7 @@ from uglygpt.actions.utils import parse_markdown, parse_code
 FORMAT = """- 请仔细参考 Format example 中的格式返回结果，尤其注意是使用'##'来分割章节，而不是'#'。
 Format example：
 ## Reasoning
-一步一步的解释你解决问题的思路，所有想说的都写在这里，不要写在代码的后面。
+一步一步的解释你解决问题的思路，所有想说的都写在这里，不要写在代码的后面，必须使用中文。
 ## Code
 ```python`
 优化后的最终完整代码

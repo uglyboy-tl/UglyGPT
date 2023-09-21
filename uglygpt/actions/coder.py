@@ -29,6 +29,9 @@ class Coder:
         self._code = self.writer.run(self.request)
         self._code = self.reviewer.run(context = self.request, code = self.code)
 
+    def enhance_code(self) -> None:
+        self._code = self.reviewer.run(context = self.request, code = self.code)
+
     def change_code(self, extra: Optional[str] = None ) -> bool:
         if extra is None:
             extra = input("请输入你觉得需要修改的内容：")

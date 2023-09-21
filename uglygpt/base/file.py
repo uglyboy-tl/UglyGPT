@@ -40,7 +40,9 @@ class File:
             filename: The name of the file.
             data: The data to be saved.
         """
-        file_path = cls.WORKSPACE_ROOT / filename
+        file_path = Path(filename)
+        if not file_path.is_absolute():
+            file_path = cls.WORKSPACE_ROOT / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         if file_path.exists():
             cls._backup(file_path)
@@ -57,7 +59,10 @@ class File:
         Returns:
             The data loaded from the file.
         """
-        with open(cls.WORKSPACE_ROOT / filename, "r") as f:
+        file_path = Path(filename)
+        if not file_path.is_absolute():
+            file_path = cls.WORKSPACE_ROOT / filename
+        with open(file_path, "r") as f:
             data = f.read()
         return data
 
@@ -81,5 +86,7 @@ class File:
         Returns:
             True if the file exists, False otherwise.
         """
-        file_path = cls.WORKSPACE_ROOT / filename
+        file_path = Path(filename)
+        if not file_path.is_absolute():
+            file_path = cls.WORKSPACE_ROOT / filename
         return file_path.exists()

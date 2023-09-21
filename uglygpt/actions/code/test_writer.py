@@ -13,6 +13,7 @@ ROLE = """
 - YOU MUST FOLLOW "Data structures and interface definitions". DO NOT CHANGE ANY DESIGN. Make sure your tests respect the existing design and ensure its validity.
 - Think before writing: What should be tested and validated in this document? What edge cases could exist? What might fail?
 - 仔细检查你没有遗漏这个文件中的任何必要的测试用例/脚本。
+- 测试用例遵循AAA模式。
 - please write appropriate test cases using Python's unittest framework to verify the correctness and robustness of the code。
 - 尤其注意！！！需要根据 `Path` 中的信息，在测试代码中正确的引用源代码中的函数、类。
 {format}
