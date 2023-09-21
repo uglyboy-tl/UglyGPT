@@ -37,7 +37,7 @@ class TestFile(unittest.TestCase):
         mock_datetime.now.return_value = datetime(2022, 1, 1, 12, 0, 0)
         backup_path = self.file_path.with_name(self.file_path.stem + '_20220101120000.txt.bak')
 
-        File.backup(self.file_path)
+        File._backup(self.file_path)
 
         self.assertTrue(backup_path.exists())
         backup_path.unlink()
