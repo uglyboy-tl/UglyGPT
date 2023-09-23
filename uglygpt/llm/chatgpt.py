@@ -105,11 +105,7 @@ class ChatGPT(LLMProvider):
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
         if self.count_token:
-            tokens = self._num_tokens(messages=self.messages, model=self.model)
-            max_new_tokens = int(self.MAX_TOKENS) - tokens
-            if max_new_tokens <= 0:
-                raise ValueError(
-                    f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}")
+            max_new_tokens = self.max_token
             response = self.completion_with_backoff(
                 model=self.model,
                 messages=self.messages,
@@ -138,3 +134,9 @@ class ChatGPT(LLMProvider):
         """
         logger.trace(kwargs)
         return openai.ChatCompletion.create(**kwargs)
+
+    @property
+    def max_token(self):
+        tokens = self._num_tokens(messages=self.messages, model=self.model)
+        assert self.MAX_TOKENS > tokens , f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
+        return self.MAX_TOKENS - tokens

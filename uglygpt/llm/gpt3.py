@@ -31,6 +31,7 @@ class GPT3(LLMProvider):
     requirements: list[str] = field(
         default_factory=lambda: ["openai", "tictoken"])
     temperature: float = 0.3
+    MAX_TOKENS: int = 4096
     system_info = ""
     count_token: bool = True
 
@@ -57,6 +58,7 @@ class GPT3(LLMProvider):
             None
         """
         self.system_info = msg
+        self.prompt = self.system_info
 
     def ask(self, prompt: str) -> str:
         """Generate a response to a prompt.
@@ -67,16 +69,12 @@ class GPT3(LLMProvider):
         Returns:
             The generated response.
         """
-        prompt = f"{self.system_info}\n{prompt}"
+        self.prompt = f"{self.system_info}\n{prompt}"
         if self.count_token:
-            tokens = self._num_tokens(prompt)
-            max_new_tokens = int(4096) - tokens
-            if max_new_tokens <= 0:
-                raise ValueError(
-                    f"Prompt is too long. has {tokens} tokens, max is 4096")
+            max_new_tokens = self.max_token
             completions = self.completion_with_backoff(
                 model="text-davinci-003",
-                prompt=prompt,
+                prompt=self.prompt,
                 max_tokens=max_new_tokens,
                 temperature=self.temperature,
             )
@@ -102,3 +100,9 @@ class GPT3(LLMProvider):
         """
         logger.trace(kwargs)
         return openai.Completion.create(**kwargs)
+
+    @property
+    def max_token(self):
+        tokens = self._num_tokens(self.prompt)
+        assert self.MAX_TOKENS > tokens , f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
+        return self.MAX_TOKENS - tokens
