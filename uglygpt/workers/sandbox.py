@@ -74,20 +74,23 @@ def get_dependencies(file_path: str, visited: Optional[Set[str]] = None) -> List
     if file_path in visited:
         return []
 
-    visited.add(file_path)
-
     if not file_path.endswith('.py'):
         return []
 
     imports = get_imports(file_path)
 
-    dependencies = [file_path]
+    dependencies = []
     for module_name in imports:
         module_path = get_module_path(module_name, file_path)
         if module_path is not None and not Path(module_path).parent.samefile(Path(os.__file__).parent):
             dependencies.extend(get_dependencies(module_path, visited))
 
+    if file_path not in visited:
+        dependencies.append(file_path)
+        visited.add(file_path)
+
     return dependencies
+
 
 
 class TestFailedError(Exception):
