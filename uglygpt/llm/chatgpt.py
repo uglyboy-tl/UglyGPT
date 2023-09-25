@@ -3,13 +3,19 @@
 
 from dataclasses import dataclass, field
 import openai
+from openai.error import (
+    APIError,
+    AuthenticationError,
+    InvalidRequestError
+)
 import tiktoken
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
     before_sleep_log
-)  # for exponential backoff
+)
 from loguru import logger
 
 from .base import LLMProvider
@@ -119,10 +125,10 @@ class ChatGPT(LLMProvider):
                 temperature=self.temperature,
             )
         logger.trace(response)
-        message = response.choices[0].message.content.strip() # type: ignore
+        message = response.choices[0].message.content.strip()  # type: ignore
         return message
 
-    @retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    @retry(retry=not_(retry_if_exception_type(exception_types=(APIError, AuthenticationError, InvalidRequestError))), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
         """Make a completion request to the OpenAI API with exponential backoff.
 
@@ -138,5 +144,5 @@ class ChatGPT(LLMProvider):
     @property
     def max_token(self):
         tokens = self._num_tokens(messages=self.messages, model=self.model)
-        assert self.MAX_TOKENS > tokens , f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
+        assert self.MAX_TOKENS > tokens, f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
         return self.MAX_TOKENS - tokens
