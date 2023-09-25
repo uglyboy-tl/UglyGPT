@@ -20,8 +20,8 @@ class LLMChain(Chain):
         llm_name: The name of the language model.
         prompt_template: The template for the prompt.
     """
-    llm_name: str = "chatgpt"
     prompt_template: str = "{prompt}"
+    llm_name: str = "chatgpt"
     _memory: Optional[Memory] = field(default=None, init=False, repr=False)
 
     def __post_init__(self):

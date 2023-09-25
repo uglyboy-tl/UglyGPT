@@ -27,12 +27,14 @@ def parse_code(text: str, lang: str = "python"):
         match = re.search(pattern, text, re.DOTALL)
         if match:
             code = match.group(1)
-            logger.warning(f"parse_code: {lang} not match following text:\n{text}")
+            logger.warning(
+                f"parse_code: {lang} not match following text:\n{text}")
         else:
             match = re.search(pattern, text+"\n```", re.DOTALL)
             if match:
                 code = match.group(1)
-                logger.warning("code in code block not end with ```, we add it automatically.")
+                logger.warning(
+                    "code in code block not end with ```, we add it automatically.")
             else:
                 logger.warning(f"{pattern} not match following text:\n{text}")
                 raise Exception(f"{pattern} not match following text:\n{text}")
@@ -70,13 +72,9 @@ def fix_llm_json_str(string):
                 return new_string
             except Exception as e:
                 logger.warning("fix_llm_json_str failed 3:", e)
-                llm = LLMChain(llm_name="chatgpt", prompt_template="")
-                llm.llm.set_system("""Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.
-                    ```
-                    """+new_string+"""
-                    ```""")
-
-                message = llm()
+                llm = LLMChain()
+                message = llm(
+                    """Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.\n```\n"""+new_string+"""\n```""")
                 logger.debug(message)
                 pattern = r'```json(.*?)```'
                 match = re.findall(pattern, message, re.DOTALL)
@@ -100,6 +98,7 @@ def parse_json(string):
         return json.loads(fix_llm_json_str(string))
     except Exception as e:
         raise json.JSONDecodeError(f"parse_json failed: {e}", string, 0)
+
 
 def parse_markdown(markdown_text: str) -> Dict[str, str]:
     """

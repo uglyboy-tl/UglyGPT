@@ -114,17 +114,18 @@ class Command(Action):
             None.
         """
         logger.info(f'Command Running ..')
+        act = None
         if objective is not None:
             self.objective = objective
             self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
             super().__post_init__()
         elif command is not None:
-            objective = LLMChain(
-                llm_name="chatgpt", prompt_template="```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")()
+            objective = LLMChain()("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")
             logger.debug(f'Objective: {objective}')
             self.objective = objective
             self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
+            act = CommandAct(action=command)
             super().__post_init__()
 
-        response = self.ask()
+        response = self.ask(act)
         return response

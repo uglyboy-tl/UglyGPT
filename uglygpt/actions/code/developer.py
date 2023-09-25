@@ -34,14 +34,18 @@ class Developer(Action):
     def __post_init__(self):
         if self.role:
             self.role = self.role.format(format=FORMAT)
-        self.llm = LLMChain(llm_name="gpt4", prompt_template=self.prompt)
+        self.llm = LLMChain(self.prompt, "gpt4")
         return super().__post_init__()
 
     def _parse(self, text: str):
         response = parse_markdown(text)
         reasoning = response.get("Reasoning", "")
         code = response.get("Code", "")
-        code = parse_code(code)
+        try:
+            code = parse_code(code)
+        except:
+            logger.error(f"解析代码时出错，Reasoning: {reasoning}")
+            raise
         return reasoning, code
 
     def run(self, *args, **kwargs):

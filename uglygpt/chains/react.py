@@ -55,7 +55,7 @@ class ReActChain(LLMChain):
         if act is None:
             resopnse = self._check_and_call({"prompt": ""})
             act = self.cls.parse(resopnse) # type: ignore
-            logger.success(act.info)
+        logger.success(act.info)
         while act.done == False:
             if len(self._acts) > 0:
                 self._acts[-1].current = False
