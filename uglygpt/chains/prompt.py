@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Prompt(object):
+class Prompt:
     """A class representing a prompt.
 
     Attributes:

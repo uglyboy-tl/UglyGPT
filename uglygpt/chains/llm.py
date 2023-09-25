@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List
-from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
 
 from uglygpt.llm import get_llm_provider, LLMProvider
 from .base import Chain
+from .memory import Memory
 from .prompt import Prompt
 
 
@@ -21,6 +22,7 @@ class LLMChain(Chain):
     """
     llm_name: str = "chatgpt"
     prompt_template: str = "{prompt}"
+    _memory: Optional[Memory] = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
         """Initialize the LLMChain object.
@@ -51,7 +53,10 @@ class LLMChain(Chain):
             The response from the LLM provider.
         """
         prompt = self.prompt.format(**inputs)
-        return self._llm.ask(prompt)
+        response = self._llm.ask(prompt)
+        if self._memory:
+            self._memory.add((prompt, response))
+        return response
 
     @property
     def prompt(self) -> Prompt:
