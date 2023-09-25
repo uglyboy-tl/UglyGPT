@@ -9,16 +9,18 @@ from uglygpt.actions.base import Action
 from uglygpt.actions.utils import parse_markdown, parse_code
 
 
-FORMAT = """- 请仔细参考 Format example 中的格式返回结果，尤其注意是使用'##'来分割章节，而不是'#'。
-Format example：
+FORMAT = """
+请按照以下示例格式返回你的结果：
+格式示例：
+
 ## Reasoning
-一步一步的解释你解决问题的思路，所有想说的都写在这里，不要写在代码的后面，必须使用中文。
+在这部分，你需要用中文一步步地解释你的解决方案，包括你的思考过程和你为什么选择这种方案。所有需要解释的内容都应写在这里，而不是在代码后面。
+
 ## Code
-```python`
-优化后的最终完整代码
+```python
+在这部分，你需要提供你的最终优化后的完整代码。
 ```
 """
-
 PROMPT_TEMPLATE = """
 ## Context
 {context}
