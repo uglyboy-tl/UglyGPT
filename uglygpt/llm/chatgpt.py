@@ -11,7 +11,7 @@ from openai.error import (
 import tiktoken
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_not_exception_type,
     stop_after_attempt,
     wait_random_exponential,
     before_sleep_log
@@ -128,7 +128,7 @@ class ChatGPT(LLMProvider):
         message = response.choices[0].message.content.strip()  # type: ignore
         return message
 
-    @retry(retry=not_(retry_if_exception_type(exception_types=(APIError, AuthenticationError, InvalidRequestError))), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    @retry(retry=retry_if_not_exception_type(exception_types=(APIError, AuthenticationError, InvalidRequestError)), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
         """Make a completion request to the OpenAI API with exponential backoff.
 
