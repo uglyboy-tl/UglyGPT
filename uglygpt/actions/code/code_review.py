@@ -18,6 +18,7 @@ ROLE = """
     - dataclasses
     - loguru
     - tenacity
+    - pathlib
 
 {format}
 """
