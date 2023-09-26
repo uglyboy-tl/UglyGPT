@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+# -*-coding:utf-8-*-
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, Type, List, Optional
 from .llm import LLMChain
 from loguru import logger
+
 
 @dataclass
 class ReAct(ABC):
@@ -39,6 +43,7 @@ class ReAct(ABC):
         else:
             return f"[Thought]: {self.thought}\n[Action]: {self.action}\n[Params]: {self.params}\n[Obs]: {self.obs}"
 
+
 @dataclass
 class ReActChain(LLMChain):
     cls: Optional[Type[ReAct]] = None
@@ -51,17 +56,22 @@ class ReActChain(LLMChain):
     def input_keys(self) -> List[str]:
         return ["prompt"]
 
-    def __call__(self, act: Optional[ReAct] = None) -> str:
-        if act is None:
-            resopnse = self._check_and_call({"prompt": ""})
-            act = self.cls.parse(resopnse) # type: ignore
+    def _process(self, act: ReAct) -> str:
         logger.success(act.info)
-        while act.done == False:
-            if len(self._acts) > 0:
+        while not act.done:
+            if self._acts:
                 self._acts[-1].current = False
             self._acts.append(act)
-            history = "\n".join([str(act) for act in self._acts])
-            resopnse = self._check_and_call({"prompt": history})
-            act = self.cls.parse(resopnse)  # type: ignore
+            inputs = {"prompt": "\n".join(str(a) for a in self._acts)}
+            response = self._call(inputs)
+            act = self.cls.parse(response)  # type: ignore
             logger.success(act.info)
         return act.info
+
+    def __call__(self, act: Optional[ReAct] = None) -> str:
+        if act is None:
+            inputs = {"prompt": ""}
+            inputs = self._prep_inputs(inputs)
+            response = self._call(inputs)
+            act = self.cls.parse(response)  # type: ignore
+        return self._process(act)
