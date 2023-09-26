@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 
 from uglygpt.llm import get_llm_provider, LLMProvider
+from uglygpt.indexes import Memory
 from .base import Chain
-from .memory import Memory
 from .prompt import Prompt
 
 
