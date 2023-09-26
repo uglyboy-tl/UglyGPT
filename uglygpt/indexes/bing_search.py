@@ -3,7 +3,7 @@
 
 import requests
 from loguru import logger
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_fixed, before_sleep_log, RetryError
 from dataclasses import dataclass
 
 from uglygpt.base import config
@@ -18,25 +18,26 @@ class BingSearch(Index):
         assert isinstance(config.bing_subscription_key, str), 'Bing subscription key should be a string'
         assert config.bing_subscription_key, 'Bing subscription key should not be empty'
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
+    def search(self, query: str, n: int = 5) -> list[str]:
+        try:
+            response = self._send_request(query, n)
+            json = response.json()
+            results = json.get('webPages', {}).get('value', [])
+            return [self._format(result) for result in results[:n]] if results else []
+        except (ValueError, requests.RequestException, RetryError) as e:
+            logger.error(f'Error occurred while sending request or parsing response: {e}')
+            return []
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1), before_sleep=before_sleep_log(logger, "WARNING")) # type: ignore
     def _send_request(self, query: str, n: int):
         response = requests.get(
             BING_SEARCH_API_URL,
             headers={'Ocp-Apim-Subscription-Key': config.bing_subscription_key},
-            params={'q': query, 'count': n}
+            params={'q': query, 'count': n},
+            timeout=5
         )
         response.raise_for_status()
         return response
-
-    def search(self, query: str, n: int) -> list[str]:
-        response = self._send_request(query, n)
-        try:
-            json = response.json()
-            results = json.get('webPages', {}).get('value', [])
-            return [self._format(result) for result in results[:n]] if results else []
-        except requests.exceptions.RequestException as e:
-            logger.error(f'Error occurred while sending request to Bing: {e}')
-            raise e
 
     @classmethod
     def _format(cls, result: dict) -> str:
