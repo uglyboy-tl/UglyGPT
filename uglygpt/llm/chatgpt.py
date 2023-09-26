@@ -38,7 +38,7 @@ class ChatGPT(LLMProvider):
         messages: A list of messages in the conversation.
     """
     requirements: list[str] = field(
-        default_factory=lambda: ["openai", "tictoken"])
+        default_factory=lambda: ["openai", "tiktoken"])
     model: str = "gpt-3.5-turbo"
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
@@ -111,7 +111,7 @@ class ChatGPT(LLMProvider):
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
         if self.count_token:
-            max_new_tokens = self.max_token
+            max_new_tokens = self.max_tokens
             response = self.completion_with_backoff(
                 model=self.model,
                 messages=self.messages,
@@ -142,7 +142,7 @@ class ChatGPT(LLMProvider):
         return openai.ChatCompletion.create(**kwargs)
 
     @property
-    def max_token(self):
+    def max_tokens(self):
         tokens = self._num_tokens(messages=self.messages, model=self.model)
         assert self.MAX_TOKENS > tokens, f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
         return self.MAX_TOKENS - tokens

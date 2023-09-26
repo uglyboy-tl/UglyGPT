@@ -35,7 +35,7 @@ class GPT3(LLMProvider):
         temperature: The temperature value for generating responses.
     """
     requirements: list[str] = field(
-        default_factory=lambda: ["openai", "tictoken"])
+        default_factory=lambda: ["openai", "tiktoken"])
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
     system_info = ""
@@ -77,7 +77,7 @@ class GPT3(LLMProvider):
         """
         self.prompt = f"{self.system_info}\n{prompt}"
         if self.count_token:
-            max_new_tokens = self.max_token
+            max_new_tokens = self.max_tokens
             completions = self.completion_with_backoff(
                 model="text-davinci-003",
                 prompt=self.prompt,
@@ -108,7 +108,7 @@ class GPT3(LLMProvider):
         return openai.Completion.create(**kwargs)
 
     @property
-    def max_token(self):
+    def max_tokens(self):
         tokens = self._num_tokens(self.prompt)
         assert self.MAX_TOKENS > tokens, f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
         return self.MAX_TOKENS - tokens

@@ -42,7 +42,7 @@ class LLMProvider(ABC):
 
     @property
     @abstractmethod
-    def max_token(self) -> int:
+    def max_tokens(self) -> int:
         """Return the maximum number of tokens that can be returned at once.
 
         Returns:
