@@ -4,89 +4,63 @@
 from datetime import datetime
 from loguru import logger
 from pathlib import Path
+from shutil import copy2
+from tenacity import retry, stop_after_attempt, wait_fixed
 
-def get_project_root():
-    """Search upwards to find the project root directory.
 
-    Returns:
-        The path to the project root directory.
+class ProjectRootNotFoundError(Exception):
+    pass
 
-    Raises:
-        Exception: If the project root directory is not found.
-    """
-    current_path = Path.cwd()
-    while True:
-        if (current_path / '.git').exists() or (current_path / '.project_root').exists() or (current_path / '.gitignore').exists():
-            return current_path
-        parent_path = current_path.parent
-        if parent_path == current_path:
-            raise Exception("Project root not found.")
-        current_path = parent_path
+
+class FileNotFoundInWorkspaceError(Exception):
+    pass
 
 
 class File:
-    """Class representing a file.
-
-    Attributes:
-        WORKSPACE_ROOT: The path to the project root directory.
-    """
-    WORKSPACE_ROOT = get_project_root()
+    WORKSPACE_ROOT: Path
 
     @classmethod
-    def save(cls, filename:str , data: str) -> None:
-        """Save data to a file.
-
-        Args:
-            filename: The name of the file.
-            data: The data to be saved.
-        """
-        file_path = Path(filename)
-        if not file_path.is_absolute():
-            file_path = cls.WORKSPACE_ROOT / filename
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
+    def save(cls, filename: str, data: str) -> None:
+        file_path = cls._get_filepath(filename)
         if file_path.exists():
             cls._backup(file_path)
+        else:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(data)
-        logger.debug(f"Saving file to {file_path}")
+        logger.debug(f"保存文件至 `{file_path}`")
 
     @classmethod
     def load(cls, filename: str):
-        """Load data from a file.
-
-        Args:
-            filename: The name of the file.
-
-        Returns:
-            The data loaded from the file.
-        """
-        file_path = Path(filename)
-        if not file_path.is_absolute():
-            file_path = cls.WORKSPACE_ROOT / filename
-        with open(file_path, "r") as f:
-            data = f.read()
-        return data
-
-    @classmethod
-    def _backup(cls, file_path: Path):
-        """Backup a file.
-
-        Args:
-            file_path: The path to the file to be backed up.
-        """
-        backup_path = file_path.with_name(file_path.stem + '_' + datetime.now().strftime('%Y%m%d%H%M%S') + file_path.suffix + '.bak')
-        file_path.rename(backup_path)
+        file_path = cls._get_filepath(filename)
+        if not file_path.exists():
+            raise FileNotFoundInWorkspaceError(f"File {filename} not found in workspace.")
+        return file_path.read_text()
 
     @classmethod
     def exists(cls, filename: str) -> bool:
-        """Check if a file exists.
-
-        Args:
-            filename: The name of the file.
-
-        Returns:
-            True if the file exists, False otherwise.
-        """
-        file_path = Path(filename)
-        if not file_path.is_absolute():
-            file_path = cls.WORKSPACE_ROOT / filename
+        file_path = cls._get_filepath(filename)
         return file_path.exists()
+
+    @staticmethod
+    def get_project_root(filename: str) -> Path:
+        current_path = Path(filename).resolve()
+        while True:
+            if (current_path / '.git').exists() or (current_path / '.project_root').exists() or (current_path / '.gitignore').exists():
+                return current_path
+            parent_path = current_path.parent
+            if parent_path == current_path:
+                raise ProjectRootNotFoundError("Project root not found.")
+            current_path = parent_path
+
+    @classmethod
+    def _get_filepath(cls, filename: str) -> Path:
+        file_path = Path(filename)
+        return file_path if file_path.is_absolute() else cls.WORKSPACE_ROOT / filename
+
+    @classmethod
+    def _backup(cls, file_path: Path):
+        backup_path = file_path.with_suffix(file_path.suffix + '.' + datetime.now().strftime('%Y%m%d%H%M%S') + '.bak')
+        copy2(file_path, backup_path)
+
+File.WORKSPACE_ROOT = File.get_project_root(__file__)
