@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Tuple, List
 
-DEFAULT_N = 10
+DEFAULT_N = 5
 
 class Index(ABC):
     default_n: int = DEFAULT_N
