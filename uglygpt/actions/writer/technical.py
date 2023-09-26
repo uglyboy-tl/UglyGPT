@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 
 from uglygpt.actions.base import Action
-from uglygpt.chains import LLMChain
+from uglygpt.chains import LLM
 
 ROLE = """
 假设你是一名经验丰富的技术文档撰写人员，你的工作是撰写技术文档。你即将完成的工作是根据提供的信息和要求，针对目标课题（可能是一个软件、一个插件、一个开源项目之类），撰写一份技术文档。具体要求如下：
@@ -51,11 +51,11 @@ time now: {time_now}
 @dataclass
 class Technical(Action):
     role: str = ROLE
-    llm: LLMChain = field(init=False)
+    llm: LLM = field(init=False)
     name: str = "技术文档撰写"
 
     def __post_init__(self):
-        self.llm = LLMChain(llm_name="chatgpt",
+        self.llm = LLM(llm_name="chatgpt",
                             prompt_template=PROMPT_TEMPLATE)
         return super().__post_init__()
 

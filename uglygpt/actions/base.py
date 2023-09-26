@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 from typing import Optional
 
-from uglygpt.chains import LLMChain
+from uglygpt.chains import LLM
 from uglygpt.base import File
 
 
@@ -21,7 +21,7 @@ class Action(ABC):
     """
     filename: Optional[str] = None
     role: Optional[str] = None
-    llm: LLMChain = field(default_factory=LLMChain)
+    llm: LLM = field(default_factory=LLM)
 
     def __post_init__(self):
         """Post initialization method.

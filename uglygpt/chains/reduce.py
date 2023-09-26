@@ -6,12 +6,12 @@ from typing import Any, Dict, List, Callable
 from loguru import logger
 
 from .base import Chain
-from .llm import LLMChain
+from .llm import LLM
 
 
 @dataclass
 class ReduceChain(Chain):
-    chain: Chain = field(default_factory=LLMChain)
+    chain: Chain = field(default_factory=LLM)
     reduce_keys: List[str] = field(default_factory=lambda: ["input"])
     format: Callable[[str], str] = field(default_factory=lambda: lambda x: x)
 

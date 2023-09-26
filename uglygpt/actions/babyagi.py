@@ -7,7 +7,7 @@ from typing import Deque
 from collections import deque
 import re
 
-from uglygpt.chains import LLMChain, ReAct, ReActChain
+from uglygpt.chains import LLM, ReAct, ReActChain
 from uglygpt.actions.base import Action
 
 
@@ -21,7 +21,7 @@ eg: `1. First task\n2. Second task\n3. Third task`
 @dataclass
 class BabyTasks(ReAct):
     tasks: Deque[str] = field(default_factory=deque)
-    llm: LLMChain = field(default_factory=LLMChain)
+    llm: LLM = field(default_factory=LLM)
 
     def run(self) -> str:
         self.thought = "\n- " + "\n- ".join(self.tasks)
@@ -67,7 +67,7 @@ Based on the result, create new tasks to be completed by the AI system that do n
 class BabyAGI(Action):
     role: str = ROLE
     objective: str = ""
-    llm: LLMChain = field(init=False)
+    llm: LLM = field(init=False)
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)

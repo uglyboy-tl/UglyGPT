@@ -6,7 +6,7 @@ from loguru import logger
 import subprocess
 import platform
 
-from uglygpt.chains import LLMChain, ReAct, ReActChain
+from uglygpt.chains import LLM, ReAct, ReActChain
 from .base import Action
 from .utils import parse_json
 
@@ -86,7 +86,7 @@ class Command(Action):
     """
     role: str = ROLE
     objective: str = ""
-    llm: LLMChain = field(init=False)
+    llm: LLM = field(init=False)
 
     def __post_init__(self):
         """Initialize the Command object.
@@ -120,7 +120,7 @@ class Command(Action):
             self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
             super().__post_init__()
         elif command is not None:
-            objective = LLMChain()("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")
+            objective = LLM()("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")
             logger.debug(f'Objective: {objective}')
             self.objective = objective
             self.role = ROLE.format(objective=self.objective, os_version=self.os_version)

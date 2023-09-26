@@ -4,7 +4,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, Type, List, Optional
-from .llm import LLMChain
+from .llm import LLM
 from loguru import logger
 
 
@@ -45,7 +45,7 @@ class ReAct(ABC):
 
 
 @dataclass
-class ReActChain(LLMChain):
+class ReActChain(LLM):
     cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):

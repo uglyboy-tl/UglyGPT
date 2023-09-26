@@ -5,7 +5,7 @@ import re
 import json
 from typing import Dict
 from loguru import logger
-from uglygpt.chains import LLMChain
+from uglygpt.chains import LLM
 
 
 def parse_code(text: str, lang: str = "python"):
@@ -72,7 +72,7 @@ def fix_llm_json_str(string):
                 return new_string
             except Exception as e:
                 logger.warning("fix_llm_json_str failed 3:", e)
-                llm = LLMChain()
+                llm = LLM()
                 message = llm(
                     """Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.\n```\n"""+new_string+"""\n```""")
                 logger.debug(message)

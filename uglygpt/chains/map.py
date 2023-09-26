@@ -7,12 +7,12 @@ from pathos.multiprocessing import ProcessingPool as Pool
 import json
 
 from .base import Chain
-from .llm import LLMChain
+from .llm import LLM
 
 
 @dataclass
 class MapChain(Chain):
-    chain: Chain = field(default_factory=LLMChain)
+    chain: Chain = field(default_factory=LLM)
     map_keys: List[str] = field(default_factory=lambda: ["input"])
 
     @property

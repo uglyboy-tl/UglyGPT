@@ -6,12 +6,12 @@ from dataclasses import dataclass, field
 
 from uglygpt.llm import get_llm_provider, LLMProvider
 from uglygpt.indexes import Memory
-from .base import Chain
+from ..base import Chain
 from .prompt import Prompt
 
 
 @dataclass
-class LLMChain(Chain):
+class LLM(Chain):
     """A class representing an LLM chain.
 
     This class inherits from the Chain class and implements the logic for interacting with a language model.

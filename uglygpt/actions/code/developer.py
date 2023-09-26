@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from loguru import logger
 
-from uglygpt.chains import LLMChain
+from uglygpt.chains import LLM
 from uglygpt.actions.base import Action
 from uglygpt.actions.utils import parse_markdown, parse_code
 
@@ -34,7 +34,7 @@ class Developer(Action):
     def __post_init__(self):
         if self.role:
             self.role = self.role.format(format=FORMAT)
-        self.llm = LLMChain(self.prompt, "gpt4")
+        self.llm = LLM(self.prompt, "gpt4")
         return super().__post_init__()
 
     def _parse(self, text: str):
