@@ -8,7 +8,7 @@ from typing import Tuple, List
 DEFAULT_N = 10
 
 class Index(ABC):
-    defaule_n: int = DEFAULT_N
+    default_n: int = DEFAULT_N
 
     @abstractmethod
     def search(self, query: str, n: int) -> List[str]:

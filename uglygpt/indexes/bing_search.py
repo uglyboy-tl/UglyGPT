@@ -18,7 +18,7 @@ class BingSearch(Index):
         assert isinstance(config.bing_subscription_key, str), 'Bing subscription key should be a string'
         assert config.bing_subscription_key, 'Bing subscription key should not be empty'
 
-    def search(self, query: str, n: int = Index.defaule_n) -> list[str]:
+    def search(self, query: str, n: int = Index.default_n) -> list[str]:
         try:
             response = self._send_request(query, n)
             json = response.json()

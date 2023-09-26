@@ -15,7 +15,7 @@ ARXIV_SEARCH_API_URL = 'http://export.arxiv.org/api/query'
 @dataclass
 class ArxivIndex(Index):
 
-    def search(self, query: str, n: int = Index.defaule_n) -> List[str]:
+    def search(self, query: str, n: int = Index.default_n) -> List[str]:
         try:
             response = self._send_request(query, n)
             xml = response.text
