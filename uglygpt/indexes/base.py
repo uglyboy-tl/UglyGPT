@@ -5,8 +5,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Tuple, List
 
-@dataclass
+DEFAULT_N = 10
+
 class Index(ABC):
+    defaule_n: int = DEFAULT_N
 
     @abstractmethod
     def search(self, query: str, n: int) -> List[str]:
@@ -17,7 +19,6 @@ class Index(ABC):
             return self.search(query, 1)[0]
         except:
             return ""
-
 
 @dataclass
 class Memory(Index, ABC):

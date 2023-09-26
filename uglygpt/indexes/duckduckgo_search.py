@@ -12,7 +12,7 @@ DUCKDUCKGO_SEARCH_API_URL = "https://api.duckduckgo.com"
 
 @dataclass
 class DuckDuckGo(Index):
-    def search(self, query: str, n: int = 5) -> list[str]:
+    def search(self, query: str, n: int = Index.defaule_n) -> list[str]:
         try:
             response = self._send_request(query)
             json = response.json()
