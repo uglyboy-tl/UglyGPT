@@ -11,6 +11,7 @@ from uglygpt.chains import LLM, ReAct, ReActChain
 from .base import Action
 from .utils import parse_json
 
+DEBUG = False
 
 ROLE = """
 假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令，CWD 为命令的执行目录。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
@@ -21,6 +22,8 @@ ROLE = """
 @dataclass
 class CommandAct(ReAct):
     def run(self) -> str:
+        if self.action == "":
+            return "Done"
         """Execute a command.
 
         Args:
@@ -31,8 +34,13 @@ class CommandAct(ReAct):
         """
         command = str(self.action)
         cwd: Optional[str] = None
+        msg = f"即将执行命令：{command}，按 'y' 或 回车 确认，按 'n' 取消："
         if self.params is not None:
             cwd = self.params.get("cwd", "")
+            msg = f"即将在目录 '{cwd}' 执行命令：{command}，按 'y' 或 回车 确认，按 'n' 取消："
+        # Debug 模式下，需要手动确认执行命令
+        if DEBUG and input(msg) not in ["y", ""]:
+            return "Command execution cancelled."
         try:
             if platform.system() == "Windows":
                 result = subprocess.run(command, shell=True, check=True,
