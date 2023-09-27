@@ -21,7 +21,10 @@ class Index(ABC):
             return ""
 
 @dataclass
-class Memory(Index, ABC):
+class DB(Index, ABC):
+    @abstractmethod
+    def init(self):
+        pass
 
     @abstractmethod
     def add(self, chat: Tuple[str, str]):

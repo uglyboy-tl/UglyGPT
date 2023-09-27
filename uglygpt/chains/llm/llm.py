@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 
 from uglygpt.llm import get_llm_provider, LLMProvider
-from uglygpt.indexes import Memory
 from ..base import Chain
 from .prompt import Prompt
+from .memory import Memory
 
 
 @dataclass
@@ -55,7 +55,7 @@ class LLM(Chain):
         prompt = self.prompt.format(**inputs)
         response = self._llm.ask(prompt)
         if self._memory:
-            self._memory.add((prompt, response))
+            self._memory.update((prompt, response))
         return response
 
     @property
