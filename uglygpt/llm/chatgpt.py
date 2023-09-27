@@ -43,7 +43,7 @@ class ChatGPT(LLMProvider):
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
     messages: list = field(default_factory=list)
-    count_token: bool = False
+    use_max_tokens: bool = False
 
     def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
         """Calculate the number of tokens in a conversation.
@@ -110,7 +110,7 @@ class ChatGPT(LLMProvider):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
-        if self.count_token:
+        if self.use_max_tokens:
             max_new_tokens = self.max_tokens
             response = self.completion_with_backoff(
                 model=self.model,
