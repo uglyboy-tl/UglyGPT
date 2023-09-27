@@ -39,7 +39,7 @@ class GPT3(LLMProvider):
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
     system_info = ""
-    count_token: bool = True
+    use_max_tokens: bool = True
 
     def _num_tokens(self, prompt: str) -> int:
         """Calculate the number of tokens in a prompt.
@@ -76,7 +76,7 @@ class GPT3(LLMProvider):
             The generated response.
         """
         self.prompt = f"{self.system_info}\n{prompt}"
-        if self.count_token:
+        if self.use_max_tokens:
             max_new_tokens = self.max_tokens
             completions = self.completion_with_backoff(
                 model="text-davinci-003",
