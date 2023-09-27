@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 import subprocess
 import platform
+from typing import Optional
 
 from uglygpt.chains import LLM, ReAct, ReActChain
 from .base import Action
@@ -12,10 +13,10 @@ from .utils import parse_json
 
 
 ROLE = """
-假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。请不要执行任何改变目录的操作，因为你的命令行指令都只能在特定的目录下执行。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
+假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令，CWD 为命令的执行目录。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
 
 格式示例：
-{{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}"}}
+{{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}","CWD": "{{命令的执行目录，this is not required}}"}}
 """
 @dataclass
 class CommandAct(ReAct):
@@ -29,13 +30,16 @@ class CommandAct(ReAct):
             The output of the command execution.
         """
         command = str(self.action)
+        cwd: Optional[str] = None
+        if self.params is not None:
+            cwd = self.params.get("cwd", "")
         try:
             if platform.system() == "Windows":
                 result = subprocess.run(command, shell=True, check=True,
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='powershell')
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='powershell', cwd=cwd)
             else:
                 result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash', cwd=cwd)
             output = result.stdout.decode().strip()
             if output != "":
                 return output
@@ -59,6 +63,9 @@ class CommandAct(ReAct):
         result = parse_json(text)
         reason = result.get("THOUGHT", "")
         command = result.get("ACTION", "")
+        cwd = result.get("CWD", "")
+        if cwd:
+            return CommandAct(thought=reason, action=command, params={"cwd": cwd})
         return CommandAct(thought=reason, action=command)
 
     @property
@@ -66,14 +73,14 @@ class CommandAct(ReAct):
         return self.action == ""
 
     def __str__(self) -> str:
-            return f"## THOUGHT：\n{self.thought}\n\n## ACTION：\n```bash\n{self.action}\n```\n\n## OBS：\n---\n{self.obs}\n---\n\n"
+            return f"## THOUGHT：\n{self.thought}\n\n## ACTION：\n```bash\n{self.action}\n```{'(' + self.params['cwd'] + ')' if self.params else ''}\n\n## OBS：\n---\n{self.obs}\n---\n\n"
 
     @property
     def info(self) -> str:
         if self.done:
             return f"[Thought]: {self.thought}"
         else:
-            return f"[Thought]: {self.thought}\n[CMD]: {self.action}\n[Result]: {self.obs}"
+            return f"[Thought]: {self.thought}\n[CMD]: {self.action}{'(' + self.params['cwd'] + ')' if self.params else ''}\n[Result]: {self.obs}"
 
 @dataclass
 class Command(Action):
