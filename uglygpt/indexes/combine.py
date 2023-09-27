@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from loguru import logger
 
-from uglygpt.chains import LLMChain
+from uglygpt.chains import LLM
 from .base import Index
 from .duckduckgo_search import DuckDuckGo
 from .bing_search import BingSearch
@@ -16,7 +16,7 @@ from .wiki import WikipediaSearch
 class CombineSearch(Index):
     index_names: list[str] = field(default_factory=list)
     _indexes: list[Index] = field(default_factory=list)
-    llm: LLMChain = field(init=False)
+    llm: LLM = field(init=False)
 
     def __post_init__(self):
         for index_name in self.index_names:
