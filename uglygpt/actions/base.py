@@ -20,14 +20,18 @@ class Action(ABC):
         llm: The LLMChain object used for the action.
     """
     filename: Optional[str] = None
+    llm_name: str = "chatgpt"
+    prompt: str = "{prompt}"
     role: Optional[str] = None
-    llm: LLM = field(default_factory=LLM)
+    llm: LLM = field(init=False)
 
     def __post_init__(self):
         """Post initialization method.
 
         Sets the system of the LLMChain object if a role is provided.
         """
+        if not hasattr(self, "llm"):
+            self.llm = LLM(self.prompt, self.llm_name)
         if self.role:
             self.llm.llm.set_system(self.role)
 

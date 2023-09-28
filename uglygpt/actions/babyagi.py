@@ -67,7 +67,6 @@ Based on the result, create new tasks to be completed by the AI system that do n
 class BabyAGI(Action):
     role: str = ROLE
     objective: str = ""
-    llm: LLM = field(init=False)
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)

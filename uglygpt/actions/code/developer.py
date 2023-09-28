@@ -28,13 +28,13 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Developer(Action):
+    llm_name: str = "gpt4"
     prompt: str = PROMPT_TEMPLATE
     name: str = ""
 
     def __post_init__(self):
         if self.role:
             self.role = self.role.format(format=FORMAT)
-        self.llm = LLM(self.prompt, "gpt4")
         return super().__post_init__()
 
     def _parse(self, text: str):

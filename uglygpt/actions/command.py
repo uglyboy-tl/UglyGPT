@@ -101,7 +101,6 @@ class Command(Action):
     """
     role: str = ROLE
     objective: str = ""
-    llm: LLM = field(init=False)
 
     def __post_init__(self):
         """Initialize the Command object.
