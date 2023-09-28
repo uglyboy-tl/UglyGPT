@@ -21,7 +21,7 @@ class File:
 
     @classmethod
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-    def save(cls, filename: str, data: str) -> None:
+    def save(cls, filename: str|Path, data: str) -> None:
         file_path = cls._get_filepath(filename)
         if file_path.exists():
             cls._backup(file_path)
@@ -31,20 +31,23 @@ class File:
         logger.debug(f"保存文件至 `{file_path}`")
 
     @classmethod
-    def load(cls, filename: str):
+    def load(cls, filename: str|Path):
         file_path = cls._get_filepath(filename)
         if not file_path.exists():
             raise FileNotFoundInWorkspaceError(f"File {filename} not found in workspace.")
         return file_path.read_text()
 
     @classmethod
-    def exists(cls, filename: str) -> bool:
+    def exists(cls, filename: str|Path) -> bool:
         file_path = cls._get_filepath(filename)
         return file_path.exists()
 
     @staticmethod
-    def get_project_root(filename: str) -> Path:
-        current_path = Path(filename).resolve()
+    def get_project_root(filename: str|Path) -> Path:
+        if isinstance(filename, str):
+            current_path = Path(filename).resolve()
+        else:
+            current_path = filename.resolve()
         while True:
             if (current_path / '.git').exists() or (current_path / '.project_root').exists() or (current_path / '.gitignore').exists():
                 return current_path
@@ -54,8 +57,11 @@ class File:
             current_path = parent_path
 
     @classmethod
-    def _get_filepath(cls, filename: str) -> Path:
-        file_path = Path(filename)
+    def _get_filepath(cls, filename: str|Path) -> Path:
+        if isinstance(filename, str):
+            file_path = Path(filename)
+        else:
+            file_path = filename
         return file_path if file_path.is_absolute() else cls.WORKSPACE_ROOT / filename
 
     @classmethod
