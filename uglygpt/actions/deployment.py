@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from loguru import logger
 import subprocess
+import platform
 
 from .base import Action
 from .command import Command
@@ -14,6 +15,7 @@ ROLE = """
 你需要将文档中的步骤拆解成任务列表，并完成这些任务，部分要求如下：
 - 任务列表中，每一个任务都可以对应一个命令行指令（不要一次执行多个命令）。
 - 确保你的命令行可以自动执行，不需要人工干预。
+- 每个命令都需要制定执行命令的目录，确保你的命令可以在正确的目录下执行。
 - 因为你能获取的信息有字数限制，所以使用的命令行指令中尽量保证获得的结果精简。
 - 你会逐一执行命令行指令，若指令执行失败会有其他人帮助你修复错误，确保任务完成。
 - 你的每条命令都只能在特定目录下执行，所以不要执行切换目录操作，而是直接带路径执行。
@@ -22,8 +24,8 @@ ROLE = """
 Format example：
 {{"tasks":
     [
-        {{"name": "{{任务1}}", "code": "{{命令1}}"}},
-        {{"name": "{{任务2}}", "code": "{{命令2}}"}},
+        {{"name": "{{任务1}}", "code": "{{命令1}}", "cwd": "{{命令1的执行目录}}"}},
+        {{"name": "{{任务2}}", "code": "{{命令2}}", "cwd": "{{命令2的执行目录}}"}},
         ...
     ]
 }}
@@ -44,6 +46,7 @@ class Deployment(Action):
         deploy_path: The path of the deployment.
     """
     role: str = ROLE
+    prompt: str = PROMPT_TEMPLATE
     deploy_path: str = ""
 
     def __post_init__(self):
@@ -53,8 +56,6 @@ class Deployment(Action):
         """
         # 初始化 Role
         self.role = ROLE.format(deploy_path=self.deploy_path)
-        # 初始化 Prompt
-        self.llm.prompt = PROMPT_TEMPLATE
         return super().__post_init__()
 
     def _parse(self, text: str):
@@ -68,7 +69,7 @@ class Deployment(Action):
         """
         return parse_json(text)["tasks"]
 
-    def _execute_command(self, command: str):
+    def _execute_command(self, command: str, cwd: str):
         """Executes the given command.
 
         Args:
@@ -79,8 +80,12 @@ class Deployment(Action):
         """
         logger.debug(f"run command: {command}")
         try:
-            result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+            if platform.system() == "Windows":
+                result = subprocess.run(command, shell=True, check=True,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='powershell', cwd=cwd)
+            else:
+                result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash', cwd=cwd)
             output = result.stdout.decode().strip()
             logger.success(output)
             if output != "":
@@ -106,7 +111,7 @@ class Deployment(Action):
         logger.success(tasks)
         for task in tasks:
             try:
-                result = self._execute_command(task["code"])
+                result = self._execute_command(task["code"], task["cwd"])
             except:
                 command = Command(objective=task["name"])
                 result = command.run(command=task["code"])
