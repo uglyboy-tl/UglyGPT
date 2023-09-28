@@ -3,8 +3,10 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
-from pathos.multiprocessing import ProcessingPool as Pool
 import json
+
+from pathos.multiprocessing import ProcessingPool as Pool
+from loguru import logger
 
 from .base import Chain
 from .llm import LLM
@@ -54,6 +56,7 @@ class MapChain(Chain):
                 result = self.chain(**new_input)
             except Exception as e:
                 result = "Error"
+            logger.debug(f"MapChain: {input['index']} finished")
             return {"index": input["index"], "result": result}
         return func
 
