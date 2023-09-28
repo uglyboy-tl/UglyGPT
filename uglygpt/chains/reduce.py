@@ -24,7 +24,8 @@ class ReduceChain(Chain):
         for reduce_key in self.reduce_keys:
             self._validate_reduce_key(reduce_key, inputs)
         assert "history" in self.input_keys, f"ReduceChain expects history to be in input_keys"
-        inputs["history"] = ""
+        if not hasattr(inputs, "history"):
+            inputs["history"] = ""
         super()._validate_inputs(inputs)
 
     def _validate_reduce_key(self, reduce_key: str, inputs: Dict[str, Any]) -> None:
@@ -33,15 +34,15 @@ class ReduceChain(Chain):
         assert len(inputs[reduce_key]) == self.num, f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
-        result = ""
+        result = inputs["history"]
         for i in range(self.num):
             result = self._process_input(i, inputs, result)
-            logger.debug(f"result: {result}")
+            logger.debug(f"result:\n{result}")
         return result
 
     def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
         new_input = inputs.copy()
-        new_input.pop("history", None)
+        new_input.pop("history")
         new_input["history"] = self.format(history)
         new_input.update({reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
         return self.chain(**new_input)
