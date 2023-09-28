@@ -8,31 +8,30 @@ from uglygpt.actions.base import Action
 from uglygpt.chains import ReduceChain
 
 
-ROLE="""
-你是一个程序架构分析师，正在分析一个源代码项目。
-你已经阅读了一些文件的分析报告，现在要继续阅读另一批文件的分析报告，并进行更加综合的分析：
-- 根据已有的分析结果，进行更加综合的分析，尽量将已有的分析结果进行整合，获得更加全面的分析结果；
-- 请留意文件之间的相互关系，可以参考已知的文件的分析来增强对新文件的分析，也可以根据新文件的分析来更新已有文件的分析；
-- 可以根据新内容来更新已有的分析结果，但是不要删除已有的分析结果；
-- 你的回答必须简单明了，尽可能只保留必要的信息。
+ROLE = """
+作为一个程序架构分析师，你现在需要继续阅读和分析另一批项目文件的报告。请根据这些新的信息，对你已经形成的分析报告进行修订和优化。这些新的分析结果可能包含一些细节信息，例如某个功能的具体实现，你需要筛选出有价值的信息。请记住，你的分析应以已有的报告为大纲进行，不要随意删除已有的内容。你的回答应当从全局的视角来看待整个项目，同时，你的回答应当简单明了，便于理解。
 """
+
 PROMPT_TEMPLATE = """
-通过过去的分析，你已经通过一些文件的分析报告了解了一些情况，如下:
-{history}
-请继续分析其他文件的分析报告，从而更全面地理解整个项目。报告如下：
-{analysis}
------
+现在，请你阅读并分析项目中的部分具体文件，这些文件的分析报告如下：
+'''{analysis}'''
+
+你已有的分析报告如下：
+'''{history}'''
+
 {request}
 """
 
+DEFAULT_REQUEST = "请在分析后，总结并强调项目的核心内容，特别是项目想要解决的主要问题以及采取的主要解决方案。你应该对这些核心方法和业务逻辑进行详细的介绍。同时，如果遇到与核心功能或核心业务逻辑相关的文件，你应该适当地介绍其功能和作用。确保你的总结清晰、简洁，并能从全局角度理解整个项目。"
+
 @dataclass
 class AnalysisProject(Action):
-    filename: str = "docs/examples/project_analysis.md"
+    filename: str = "docs/examples/analysis_project.md"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
-    def run(self, analysis: List[str], request: str = "用一张Markdown表格输出你的分析结果，列出每个文件实现功能的解读。"):
+    def run(self, analysis: List[str], request: str = DEFAULT_REQUEST, history: str = ""):
         reduce = ReduceChain(chain=self.llm, reduce_keys=["analysis"])
-        response = reduce(analysis=analysis, request=request)
+        response = reduce(analysis=analysis, request=request, history=history)
         self._save(response)
         return response
