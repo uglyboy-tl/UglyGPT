@@ -50,7 +50,10 @@ class MapChain(Chain):
         def func(input):
             new_input: Dict = {k: v for k, v in inputs.items() if k not in self.map_keys}
             new_input.update({mapping_key: input[mapping_key] for mapping_key in self.map_keys})
-            result = self.chain(**new_input)
+            try:
+                result = self.chain(**new_input)
+            except Exception as e:
+                result = "Error"
             return {"index": input["index"], "result": result}
         return func
 
