@@ -121,7 +121,6 @@ class ChatGPT(LLMProvider):
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
             if "maximum context length" in str(e):
-                logger.warning(e)
                 if self.model == "gpt-3.5-turbo":
                     kwargs["model"] = "gpt-3.5-turbo-16k"
                 elif self.model == "gpt-4":
