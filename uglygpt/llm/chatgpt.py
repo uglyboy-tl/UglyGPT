@@ -6,12 +6,14 @@ import openai
 from openai.error import (
     APIError,
     AuthenticationError,
-    InvalidRequestError
+    InvalidRequestError,
+    APIConnectionError
 )
+from requests.exceptions import SSLError
 import tiktoken
 from tenacity import (
     retry,
-    retry_if_not_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_random_exponential,
     before_sleep_log
@@ -24,6 +26,18 @@ from uglygpt.base import config
 # Initialize the OpenAI API client
 openai.api_key = config.openai_api_key
 openai.api_base = config.openai_api_base
+
+def not_notry_exception(exception: Exception):
+    if isinstance(exception, APIError):
+        return False
+    elif isinstance(exception, AuthenticationError):
+        return False
+    elif isinstance(exception, InvalidRequestError):
+        return False
+    elif isinstance(exception, APIConnectionError) and exception.__cause__ is not None and isinstance(exception.__cause__, SSLError):
+        return False
+    else:
+        return True
 
 
 @dataclass
@@ -135,7 +149,7 @@ class ChatGPT(LLMProvider):
         message = response.choices[0].message.content.strip()  # type: ignore
         return message
 
-    @retry(retry=retry_if_not_exception_type(exception_types=(APIError, AuthenticationError, InvalidRequestError)), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
         """Make a completion request to the OpenAI API with exponential backoff.
 
