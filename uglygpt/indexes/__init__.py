@@ -3,6 +3,7 @@ from .bing_search import BingSearch
 from .arxiv import ArxivIndex
 from .wiki import WikipediaSearch
 from .duckduckgo_search import DuckDuckGo
+from .bm25 import BM25
 
 __all__ = [
     'Index',
@@ -10,5 +11,6 @@ __all__ = [
     'BingSearch',
     'ArxivIndex',
     'WikipediaSearch',
-    'DuckDuckGo'
+    'DuckDuckGo',
+    'BM25',
 ]
