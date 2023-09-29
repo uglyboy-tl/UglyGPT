@@ -120,7 +120,7 @@ class BM25(DB):
             score += tf_idf_value * score_part
         return score
 
-    def search(self, query: str, n: int) -> List[str]:
+    def search(self, query: str, n: int = DB.default_n) -> List[str]:
         if not query or self._data.is_empty():
             return []
 
