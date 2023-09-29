@@ -76,20 +76,14 @@ class GPT3(LLMProvider):
             The generated response.
         """
         self.prompt = f"{self.system_info}\n{prompt}"
+        kwargs = {
+            "model": "text-davinci-003",
+            "prompt": self.prompt,
+            "temperature": self.temperature,
+        }
         if self.use_max_tokens:
-            max_new_tokens = self.max_tokens
-            completions = self.completion_with_backoff(
-                model="text-davinci-003",
-                prompt=self.prompt,
-                max_tokens=max_new_tokens,
-                temperature=self.temperature,
-            )
-        else:
-            completions = self.completion_with_backoff(
-                model="text-davinci-003",
-                prompt=prompt,
-                temperature=self.temperature,
-            )
+            kwargs["max_tokens"] = self.max_tokens
+        completions = self.completion_with_backoff(**kwargs)
         message = completions.choices[0].text.strip()  # type: ignore
         logger.trace(message)
         return message

@@ -110,20 +110,28 @@ class ChatGPT(LLMProvider):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
+        kwargs = {
+            "model": self.model,
+            "messages": self.messages,
+            "temperature": self.temperature,
+        }
         if self.use_max_tokens:
-            max_new_tokens = self.max_tokens
-            response = self.completion_with_backoff(
-                model=self.model,
-                messages=self.messages,
-                max_tokens=max_new_tokens,
-                temperature=self.temperature,
-            )
-        else:
-            response = self.completion_with_backoff(
-                model=self.model,
-                messages=self.messages,
-                temperature=self.temperature,
-            )
+            kwargs["max_tokens"] = self.max_tokens
+        try:
+            response = self.completion_with_backoff(**kwargs)
+        except InvalidRequestError as e:
+            if "maximum context length" in str(e):
+                logger.warning(e)
+                if self.model == "gpt-3.5-turbo":
+                    kwargs["model"] = "gpt-3.5-turbo-16k"
+                elif self.model == "gpt-4":
+                    kwargs["model"] = "gpt-4-32k"
+                response = self.completion_with_backoff(**kwargs)
+            else:
+                raise e
+        except Exception as e:
+            raise e
+
         logger.trace(response)
         message = response.choices[0].message.content.strip()  # type: ignore
         return message
