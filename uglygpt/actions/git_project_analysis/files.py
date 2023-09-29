@@ -34,6 +34,7 @@ PROMPT_TEMPLATE = """
 """
 
 DEFAULT_REQUEST = "请对以下项目文件进行分析"
+OPTIONAL_REQUEST = "这是关于项目的一些信息{message},请结合相关内容对以下项目文件进行分析"
 
 @dataclass
 class AnalysisEveryFile(Action):
@@ -100,7 +101,9 @@ class AnalysisEveryFile(Action):
         return result
 
 
-    def run(self, path: str, request: str = DEFAULT_REQUEST, filter: Optional[Dict[str, str] | Dict[Path, str]] = None) -> str:
+    def run(self, path: str, request: str = DEFAULT_REQUEST, filter: Optional[Dict[str, str] | Dict[Path, str]] = None, message: Optional[str] = None) -> str:
+        if message is not None:
+            request = OPTIONAL_REQUEST.format(message=message)
         chain = MapChain(self.llm, map_keys=["file_name", "code"])
         directory_path = Path(path)
 
