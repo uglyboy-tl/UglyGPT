@@ -126,6 +126,8 @@ class ChatGPT(LLMProvider):
                     kwargs["model"] = "gpt-3.5-turbo-16k"
                 elif self.model == "gpt-4":
                     kwargs["model"] = "gpt-4-32k"
+                logger.warning(
+                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)} tokens. Trying again with {kwargs['model']}.")
                 response = self.completion_with_backoff(**kwargs)
             else:
                 raise e
