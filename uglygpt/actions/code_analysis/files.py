@@ -62,7 +62,7 @@ class AnalysisEveryFile(Action):
 
         return files, file_dict
 
-    def read_files(self, files: List[Path], file_dict: Optional[Dict]) -> Tuple[List[Path], List[str], List[str]]:
+    def read_files(self, files: List[Path], file_dict: Optional[Dict]) -> Tuple[List[str], List[str], List[str]]:
         code = []
         invalid_files = []
         additional = []
@@ -85,16 +85,18 @@ class AnalysisEveryFile(Action):
         for file in invalid_files:
             files.remove(file)
 
-        return files, code, additional
-
-    def get_analysis(self, analysis: List[str], files: List[Path]):
-        result = dict()
         project_root = File.get_project_root(files[0])
+        short_name_files = [str(file.relative_to(project_root)) for file in files]
+        return short_name_files, code, additional
+
+    def get_analysis(self, analysis: List[str], files: List[str]):
+        result = dict()
+
         for i, file in enumerate(files):
             if analysis[i] == "Error":
                 logger.warning(f"文件 {file} 分析失败")
                 continue
-            result[str(file.relative_to(project_root))] = analysis[i]
+            result[file] = analysis[i]
         return result
 
 
