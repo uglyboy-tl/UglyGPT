@@ -27,5 +27,5 @@ class DB(Index, ABC):
         pass
 
     @abstractmethod
-    def add(self, chat: Tuple[str, str]):
+    def add(self, text: str):
         pass
