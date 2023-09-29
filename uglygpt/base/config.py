@@ -31,6 +31,8 @@ class Config:
         self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4")
         # Bing Search
         self.bing_subscription_key = os.getenv("BING_SUBSCRIPTION_KEY")
+        # Stop Words Dictionary
+        self.stop_words_path = os.getenv("STOP_WORDS_PATH", "sources/baidu_stopwords.txt")
 
 
 config = Config()
