@@ -43,7 +43,7 @@ class ChatGPT(LLMProvider):
     temperature: float = 0.3
     MAX_TOKENS: int = 4096
     messages: list = field(default_factory=list)
-    use_max_tokens: bool = False
+    use_max_tokens: bool = True
 
     def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
         """Calculate the number of tokens in a conversation.
@@ -115,11 +115,11 @@ class ChatGPT(LLMProvider):
             "messages": self.messages,
             "temperature": self.temperature,
         }
-        if self.use_max_tokens:
-            kwargs["max_tokens"] = self.max_tokens
         try:
+            if self.use_max_tokens:
+                kwargs["max_tokens"] = self.max_tokens
             response = self.completion_with_backoff(**kwargs)
-        except InvalidRequestError as e:
+        except Exception as e:
             if "maximum context length" in str(e):
                 logger.warning(e)
                 if self.model == "gpt-3.5-turbo":
@@ -131,8 +131,6 @@ class ChatGPT(LLMProvider):
                 response = self.completion_with_backoff(**kwargs)
             else:
                 raise e
-        except Exception as e:
-            raise e
 
         logger.trace(response)
         message = response.choices[0].message.content.strip()  # type: ignore
@@ -153,6 +151,7 @@ class ChatGPT(LLMProvider):
 
     @property
     def max_tokens(self):
-        tokens = self._num_tokens(messages=self.messages, model=self.model)
-        assert self.MAX_TOKENS > tokens, f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
-        return self.MAX_TOKENS - tokens
+        tokens = self._num_tokens(messages=self.messages, model=self.model) + 1000 # add 1000 tokens for answers
+        if not self.MAX_TOKENS > tokens:
+            raise Exception(f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
+        return self.MAX_TOKENS - tokens + 1000

@@ -103,6 +103,7 @@ class GPT3(LLMProvider):
 
     @property
     def max_tokens(self):
-        tokens = self._num_tokens(self.prompt)
-        assert self.MAX_TOKENS > tokens, f"Prompt is too long. has {tokens} tokens, max is {self.MAX_TOKENS}"
-        return self.MAX_TOKENS - tokens
+        tokens = self._num_tokens(self.prompt) + 1000  # add 1000 tokens for answers
+        if not self.MAX_TOKENS > tokens:
+            raise Exception(f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
+        return self.MAX_TOKENS - tokens + 1000
