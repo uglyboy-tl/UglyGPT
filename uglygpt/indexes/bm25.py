@@ -127,7 +127,6 @@ class BM25:
 
 @dataclass
 class BM25DB(DB):
-    path: str
     _data: BM25 = field(init=False)
 
     def __post_init__(self):
