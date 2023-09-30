@@ -22,6 +22,8 @@ class Index(ABC):
 
 @dataclass
 class DB(Index, ABC):
+    path: str
+
     @abstractmethod
     def init(self):
         pass

@@ -9,7 +9,7 @@ import json
 import string
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Set
+from typing import List, Set, Tuple
 
 import jieba
 from loguru import logger
@@ -23,6 +23,10 @@ stop_words = set(
     line.strip() for line in
     Path(config.stop_words_path).read_text(encoding='utf-8').splitlines()
 )
+
+
+class PathNotFoundError(Exception):
+    pass
 
 
 @dataclass
@@ -53,15 +57,16 @@ class BM25:
 
     def calculate_bm25_score(self, i: int, query: str) -> float:
         score = 0
-        preprocessed_query = self.preprocess_text(query)
-        for word in preprocessed_query.split():
+        preprocessed_query = self.preprocess_text(query).split()
+        for word in preprocessed_query:
             if word not in self.word_sets[i]:
                 continue
             key = f"{word}_{i}"
             tf_idf_value = self.tf_idf_values.get(key, 0)
             tf_value = self.tf_values.get(key, 1e-9)
             text_len = self.text_lens[i]
-            avg_len = self.sum_len / len(self.preprocessed_texts) if self.preprocessed_texts else 1
+            avg_len = self.sum_len / \
+                len(self.preprocessed_texts) if self.preprocessed_texts else 1
             score_part = (
                 (self.k1 + 1) /
                 (tf_value + self.k1 * (1 - self.b + self.b * text_len / avg_len))
@@ -69,47 +74,45 @@ class BM25:
             score += tf_idf_value * score_part
         return score
 
-    def search(self, query: str, n: int = DB.default_n) -> List[str]:
+    def search(self, query: str, n: int = DB.default_n) -> List[Tuple[str, float]]:
         if not query or self.is_empty():
             return []
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            scores = list(executor.map(self.calculate_bm25_score, range(len(self.texts)), itertools.repeat(query)))
+            scores = list(executor.map(self.calculate_bm25_score,
+                            range(len(self.texts)), itertools.repeat(query)))
         scores = list(zip(self.texts, scores))
         top_n_scores = heapq.nlargest(n, scores, key=lambda x: x[1])
-        return [text for text, _ in top_n_scores]
+        return top_n_scores
 
-    def add(self, text: str):
-        if not text:
-            return "Text cannot be empty."
+    def add(self, text: str) -> None:
         if text in self.texts:
-            return "Text already exists."
-        id = len(self.texts)
+            logger.warning(f"Text already exists: {text}")
+            return
+        text_id = len(self.texts)
         self.texts.append(text)
         preprocessed_text = self.preprocess_text(text)
+        preprocessed_text_split = preprocessed_text.split()
         self.preprocessed_texts.append(preprocessed_text)
         self.text_collection = TextCollection(self.preprocessed_texts)
-        self.sum_len += len(preprocessed_text.split())
-        self.word_sets.append(set(preprocessed_text.split()))
-        self.text_lens.append(len(preprocessed_text.split()))
-        for word in self.word_sets[id]:
-            key = f"{word}_{id}"
+        self.sum_len += len(preprocessed_text_split)
+        self.word_sets.append(set(preprocessed_text_split))
+        self.text_lens.append(len(preprocessed_text_split))
+        for word in self.word_sets[text_id]:
+            key = f"{word}_{text_id}"
             self.tf_idf_values[key] = self.text_collection.tf_idf(word, text)
             self.tf_values[key] = self.text_collection.tf(word, text)
-        if self.file_path:
-            asyncio.run(self._save())
 
-    async def _save(self):
+    async def save(self) -> None:
         text_collection = self.text_collection
         del self.text_collection
-        self.word_sets = [list(v) for v in self.word_sets] # type: ignore
+        self.word_sets = [list(v) for v in self.word_sets]  # type: ignore
         with open(self.file_path, 'w') as f:
             json.dump(self.__dict__, f)
         self.text_collection = text_collection
         self.word_sets = [set(v) for v in self.word_sets]
 
     @classmethod
-    def load(cls, file_path: str):
+    def load(cls, file_path: str) -> 'BM25':
         with open(file_path, 'r') as f:
             data = json.load(f)
         del data['file_path']
@@ -124,28 +127,38 @@ class BM25:
 
 @dataclass
 class BM25DB(DB):
-    file_path: str
+    path: str
     _data: BM25 = field(init=False)
 
     def __post_init__(self):
-        if self.file_path and Path(self.file_path).exists():
-            try:
-                self._data = BM25.load(self.file_path)
-            except Exception as e:  # TODO: 无法导入也有可能可被修复，所以这里还需要更多的判断。
-                logger.error(e)
-                logger.warning(f"无法导入 {self.file_path}，将重新初始化")
-                self.init()
-        else:
-            Path(self.file_path).touch()
-            self.init()
+        self._load()
 
     def search(self, query: str, n: int = DB.default_n) -> List[str]:
-        return self._data.search(query, n)
+        top_n_scores = self._data.search(query, n)
+        return [text for text, _ in top_n_scores]
 
-    def add(self, text: str):
-        self._data.add(text)
-
-    def init(self):
-        if hasattr(self, '_data') and self._data and self._data.is_empty():
+    def add(self, text: str) -> None:
+        if not text:
+            logger.warning("Text cannot be empty.")
             return
-        self._data = BM25(self.file_path)
+        self._data.add(text)
+        self._save()
+
+    def init(self) -> None:
+        if not hasattr(self, '_data') or not self._data or self._data.is_empty():
+            self._data = BM25(self.path)
+
+    def _save(self) -> None:
+        if not self.path:
+            raise PathNotFoundError("Path not found, unable to save.")
+        asyncio.run(self._data.save())
+
+    def _load(self) -> None:
+        if self.path and Path(self.path).exists():
+            try:
+                self._data = BM25.load(self.path)
+                return
+            except json.JSONDecodeError as e:
+                logger.error(e)
+                raise
+        self.init()
