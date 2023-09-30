@@ -3,7 +3,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import Dict, List
 
 DEFAULT_N = 5
 
@@ -29,5 +29,5 @@ class DB(Index, ABC):
         pass
 
     @abstractmethod
-    def add(self, text: str):
+    def add(self, text: str, metadata: Dict[str, str]):
         pass

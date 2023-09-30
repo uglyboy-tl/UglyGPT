@@ -9,7 +9,7 @@ import json
 import string
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Dict
 
 import jieba
 from loguru import logger
@@ -33,6 +33,7 @@ class PathNotFoundError(Exception):
 class BM25:
     file_path: str
     texts: List[str] = field(default_factory=list)
+    metadatas: List[Dict[str, str]] = field(default_factory=list)
     k1: float = 1.5
     b: float = 0.75
     text_collection: TextCollection = field(init=False)
@@ -84,12 +85,13 @@ class BM25:
         top_n_scores = heapq.nlargest(n, scores, key=lambda x: x[1])
         return top_n_scores
 
-    def add(self, text: str) -> None:
+    def add(self, text: str, metadata: Dict[str, str] = {}) -> None:
         if text in self.texts:
             logger.warning(f"Text already exists: {text}")
             return
         text_id = len(self.texts)
         self.texts.append(text)
+        self.metadatas.append(metadata)
         preprocessed_text = self.preprocess_text(text)
         preprocessed_text_split = preprocessed_text.split()
         self.preprocessed_texts.append(preprocessed_text)
@@ -136,11 +138,11 @@ class BM25DB(DB):
         top_n_scores = self._data.search(query, n)
         return [text for text, _ in top_n_scores]
 
-    def add(self, text: str) -> None:
+    def add(self, text: str, metadata: Dict[str, str] = {}) -> None:
         if not text:
             logger.warning("Text cannot be empty.")
             return
-        self._data.add(text)
+        self._data.add(text, metadata)
         self._save()
 
     def init(self) -> None:
