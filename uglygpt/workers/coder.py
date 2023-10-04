@@ -28,6 +28,7 @@ class Coder:
     def gen_code(self) -> None:
         if self.request == "":
             raise ValueError("request is empty, can not generate code.")
+        logger.info(f"生成代码的原始需求：\n{self.request}")
         self._code = self.writer.run(self.request)
         self._code = self.reviewer.run(context = self.request, code = self.code)
 
@@ -40,7 +41,7 @@ class Coder:
             if extra == "":
                 return False
         else:
-            logger.info(extra)
+            logger.info("改进代码的具体要求\n{extra}")
         if self.request != "":
             context = f"函数原始需求：\n{self.request}"
         else:
