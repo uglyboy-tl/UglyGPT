@@ -3,3 +3,5 @@ tiktoken
 loguru
 tenacity
 pathos
+jieba
+NLTK

@@ -31,11 +31,10 @@ class PathNotFoundError(Exception):
 
 @dataclass
 class BM25:
-    file_path: str
-    texts: List[str] = field(default_factory=list)
-    metadatas: List[Dict[str, str]] = field(default_factory=list)
     k1: float = 1.5
     b: float = 0.75
+    texts: List[str] = field(default_factory=list)
+    metadatas: List[Dict[str, str]] = field(default_factory=list)
     text_collection: TextCollection = field(init=False)
     preprocessed_texts: List[str] = field(default_factory=list)
     word_sets: List[Set[str]] = field(default_factory=list)
@@ -76,7 +75,7 @@ class BM25:
         return score
 
     def search(self, query: str, n: int = DB.default_n) -> List[Tuple[str, float]]:
-        if not query or self.is_empty():
+        if not query or self.is_empty:
             return []
         with concurrent.futures.ThreadPoolExecutor() as executor:
             scores = list(executor.map(self.calculate_bm25_score,
@@ -104,27 +103,9 @@ class BM25:
             self.tf_idf_values[key] = self.text_collection.tf_idf(word, text)
             self.tf_values[key] = self.text_collection.tf(word, text)
 
-    async def save(self) -> None:
-        text_collection = self.text_collection
-        del self.text_collection
-        self.word_sets = [list(v) for v in self.word_sets]  # type: ignore
-        with open(self.file_path, 'w') as f:
-            json.dump(self.__dict__, f)
-        self.text_collection = text_collection
-        self.word_sets = [set(v) for v in self.word_sets]
-
-    @classmethod
-    def load(cls, file_path: str) -> 'BM25':
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-        del data['file_path']
-        data['word_sets'] = [set(v) for v in data['word_sets']]
-        instance = cls(file_path, **data)
-        instance.text_collection = TextCollection(instance.preprocessed_texts)
-        return instance
-
+    @property
     def is_empty(self):
-        return len(self.texts) == 0
+        return not self.texts
 
 
 @dataclass
@@ -143,21 +124,31 @@ class BM25DB(DB):
             logger.warning("Text cannot be empty.")
             return
         self._data.add(text, metadata)
-        self._save()
+        asyncio.run(self._save())
 
     def init(self) -> None:
-        if not hasattr(self, '_data') or not self._data or self._data.is_empty():
-            self._data = BM25(self.path)
+        if not hasattr(self, '_data') or not self._data or not self._data.is_empty:
+            self._data = BM25()
 
-    def _save(self) -> None:
+    async def _save(self) -> None:
         if not self.path:
             raise PathNotFoundError("Path not found, unable to save.")
-        asyncio.run(self._data.save())
+        data = self._data.__dict__.copy()
+        text_collection = data.pop('text_collection')
+        data['word_sets'] = [list(v) for v in data['word_sets']]
+        with open(self.path, 'w') as f:
+            json.dump(data, f)
+        self._data.text_collection = text_collection
+        self._data.word_sets = [set(v) for v in data['word_sets']]
 
     def _load(self) -> None:
         if self.path and Path(self.path).exists():
             try:
-                self._data = BM25.load(self.path)
+                with open(self.path, 'r') as f:
+                    data = json.load(f)
+                data['word_sets'] = [set(v) for v in data['word_sets']]
+                self._data = BM25(**data)
+                self._data.text_collection = TextCollection(self._data.preprocessed_texts)
                 return
             except json.JSONDecodeError as e:
                 logger.error(e)
