@@ -14,7 +14,6 @@ ROLE = """
 - 在编写代码时，优先使用以下Python工具：
     - dataclasses
     - loguru
-    - tenacity
     - pathlib
 
 {format}
