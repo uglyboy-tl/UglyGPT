@@ -2,9 +2,8 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Callable, Iterable
+from typing import Any, Dict, List, Callable
 from loguru import logger
-from itertools import tee, islice
 
 from .base import Chain
 from .llm import LLM
@@ -21,7 +20,7 @@ class ReduceChain(Chain):
         return self.chain.input_keys
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
-        #self.num = len(inputs[self.reduce_keys[0]])
+        self.num = len(inputs[self.reduce_keys[0]])
         for reduce_key in self.reduce_keys:
             self._validate_reduce_key(reduce_key, inputs)
         assert "history" in self.input_keys, f"ReduceChain expects history to be in input_keys"
@@ -31,22 +30,19 @@ class ReduceChain(Chain):
 
     def _validate_reduce_key(self, reduce_key: str, inputs: Dict[str, Any]) -> None:
         assert reduce_key in self.input_keys, f"ReduceChain expects {reduce_key} to be in input_keys"
-        assert isinstance(inputs[reduce_key], Iterable), f"ReduceChain expects {reduce_key} to be an iterable"
-        #assert len(list(islice(inputs[reduce_key], self.num))) == self.num, f"ReduceChain expects {reduce_key} to be an iterable with the same length"
+        assert isinstance(inputs[reduce_key], List), f"ReduceChain expects {reduce_key} to be a list of strings"
+        assert len(inputs[reduce_key]) == self.num, f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
         result = inputs["history"]
-        while True:
-            try:
-                inputs = {key: tee(value, 1)[0] if key in self.reduce_keys else value for key, value in inputs.items()}
-                result = self._process_input(inputs, result)
-                logger.debug(f"result:\n{result}")
-            except StopIteration:
-                return result
+        for i in range(self.num):
+            result = self._process_input(i, inputs, result)
+            logger.debug(f"result:\n{result}")
+        return result
 
-    def _process_input(self, inputs: Dict[str, Any], history: str) -> str:
+    def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
         new_input = inputs.copy()
         new_input.pop("history")
         new_input["history"] = self.format(history)
-        new_input.update({reduce_key: next(inputs[reduce_key]) for reduce_key in self.reduce_keys})
+        new_input.update({reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
         return self.chain(**new_input)
