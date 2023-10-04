@@ -42,7 +42,8 @@ class ReduceChain(Chain):
 
     def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
         new_input = inputs.copy()
-        new_input.pop("history")
-        new_input["history"] = self.format(history)
+        if index > 0:
+            new_input.pop("history")
+            new_input["history"] = self.format(history)
         new_input.update({reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
         return self.chain(**new_input)
