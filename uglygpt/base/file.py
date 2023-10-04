@@ -57,6 +57,27 @@ class File:
             current_path = parent_path
 
     @classmethod
+    def path_to_filename(cls, filename: str|Path) -> str:
+        # 创建一个 Path 对象
+        p = cls._get_filepath(filename)
+        # 获取相对于 workspace_root 的路径
+        relative_p = p.relative_to(File.WORKSPACE_ROOT)
+        # 将路径分割成各个部分
+        parts = relative_p.parts
+        # 对每个部分处理
+        new_parts = []
+        for part in parts:
+            # 如果是最后一部分（即文件名），并且包含一个点，则去掉后缀
+            if part == parts[-1] and '.' in part:
+                part = Path(part).stem
+            # 将所有的单下划线替换成双下划线
+            temp = part.replace('_', '__')
+            # 添加到新的部分列表中
+            new_parts.append(temp)
+        # 将所有的部分用单下划线连接，然后添加后缀 '.log'
+        return '_'.join(new_parts)
+
+    @classmethod
     def _get_filepath(cls, filename: str|Path) -> Path:
         if isinstance(filename, str):
             file_path = Path(filename)
