@@ -158,16 +158,3 @@ class BM25DB(DB):
     def is_empty(self):
         return not self.texts
 
-
-@dataclass
-class BM25SQLite(BM25DB):
-    table_prefix: str = 'bm25'
-
-    def _create_table(self) -> None:
-        pass
-
-    async def _save(self) -> None:
-        pass
-
-    def _load(self) -> None:
-        pass
