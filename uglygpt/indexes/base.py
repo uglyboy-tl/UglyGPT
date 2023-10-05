@@ -23,6 +23,13 @@ class Index(ABC):
 @dataclass
 class DB(Index, ABC):
     path: str
+    start_init: bool = False
+
+    def __post_init__(self):
+        if self.start_init:
+            self.init()
+        else:
+            self._load()
 
     @abstractmethod
     def init(self):
@@ -31,3 +38,6 @@ class DB(Index, ABC):
     @abstractmethod
     def add(self, text: str, metadata: Dict[str, str]):
         pass
+
+    def _load(self):
+        self.init()

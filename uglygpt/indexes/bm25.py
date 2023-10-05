@@ -43,10 +43,6 @@ class BM25:
     tf_values: dict = field(default_factory=dict)
     sum_len: float = field(default=0)
 
-    def __post_init__(self):
-        for text in list(self.texts):
-            self.add(text)
-
     def preprocess_text(self, text: str) -> str:
         words = jieba.cut(text)
         words = [
@@ -113,7 +109,7 @@ class BM25DB(DB):
     _data: BM25 = field(init=False)
 
     def __post_init__(self):
-        self._load()
+        super().__post_init__()
 
     def search(self, query: str, n: int = DB.default_n) -> List[str]:
         top_n_scores = self._data.search(query, n)
