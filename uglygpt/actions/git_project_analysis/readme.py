@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 from dataclasses import dataclass
-from pathlib import Path
-import json
-
-from loguru import logger
 
 from uglygpt.actions.base import Action
 
