@@ -33,8 +33,6 @@ class PathNotFoundError(Exception):
 class BM25:
     k1: float = 1.5
     b: float = 0.75
-    texts: List[str] = field(default_factory=list)
-    metadatas: List[Dict[str, str]] = field(default_factory=list)
     text_collection: TextCollection = field(init=False)
     preprocessed_texts: List[str] = field(default_factory=list)
     word_sets: List[Set[str]] = field(default_factory=list)
@@ -70,23 +68,17 @@ class BM25:
             score += tf_idf_value * score_part
         return score
 
-    def search(self, query: str, n: int = DB.default_n) -> List[Tuple[str, float]]:
-        if not query or self.is_empty:
-            return []
+    def search(self, query: str, n: int = DB.default_n) -> List[Tuple[int, float]]:
+        num = len(self.text_lens)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             scores = list(executor.map(self.calculate_bm25_score,
-                            range(len(self.texts)), itertools.repeat(query)))
-        scores = list(zip(self.texts, scores))
+                                        range(num), itertools.repeat(query)))
+        scores = list(zip(range(num), scores))
         top_n_scores = heapq.nlargest(n, scores, key=lambda x: x[1])
         return top_n_scores
 
-    def add(self, text: str, metadata: Dict[str, str] = {}) -> None:
-        if text in self.texts:
-            logger.warning(f"Text already exists: {text}")
-            return
-        text_id = len(self.texts)
-        self.texts.append(text)
-        self.metadatas.append(metadata)
+    def add(self, text: str) -> None:
+        text_id = len(self.text_lens)
         preprocessed_text = self.preprocess_text(text)
         preprocessed_text_split = preprocessed_text.split()
         self.preprocessed_texts.append(preprocessed_text)
@@ -99,37 +91,43 @@ class BM25:
             self.tf_idf_values[key] = self.text_collection.tf_idf(word, text)
             self.tf_values[key] = self.text_collection.tf(word, text)
 
-    @property
-    def is_empty(self):
-        return not self.texts
-
 
 @dataclass
 class BM25DB(DB):
+    texts: List[str] = field(default_factory=list)
+    metadatas: List[Dict[str, str]] = field(default_factory=list)
     _data: BM25 = field(init=False)
 
-    def __post_init__(self):
-        super().__post_init__()
-
     def search(self, query: str, n: int = DB.default_n) -> List[str]:
+        if not query or self.is_empty:
+            return []
         top_n_scores = self._data.search(query, n)
-        return [text for text, _ in top_n_scores]
+        return [self.texts[i] for i, _ in top_n_scores]
 
     def add(self, text: str, metadata: Dict[str, str] = {}) -> None:
         if not text:
             logger.warning("Text cannot be empty.")
             return
-        self._data.add(text, metadata)
+        if text in self.texts:
+            logger.warning(f"Text already exists: {text}")
+            return
+        self.texts.append(text)
+        self.metadatas.append(metadata)
+        self._data.add(text)
         asyncio.run(self._save())
 
     def init(self) -> None:
-        if not hasattr(self, '_data') or not self._data or not self._data.is_empty:
+        if not hasattr(self, '_data') or not self._data or not self.is_empty:
             self._data = BM25()
+            self.texts = []
+            self.metadatas = []
 
     async def _save(self) -> None:
         if not self.path:
             raise PathNotFoundError("Path not found, unable to save.")
         data = self._data.__dict__.copy()
+        data["texts"] = self.texts
+        data["metadatas"] = self.metadatas
         text_collection = data.pop('text_collection')
         data['word_sets'] = [list(v) for v in data['word_sets']]
         with open(self.path, 'w') as f:
@@ -143,10 +141,33 @@ class BM25DB(DB):
                 with open(self.path, 'r') as f:
                     data = json.load(f)
                 data['word_sets'] = [set(v) for v in data['word_sets']]
+                self.texts = data.pop('texts')
+                self.metadatas = data.pop('metadatas')
                 self._data = BM25(**data)
-                self._data.text_collection = TextCollection(self._data.preprocessed_texts)
+                self._data.text_collection = TextCollection(
+                    self._data.preprocessed_texts)
+                logger.debug(self._data)
+                logger.debug(self.texts)
                 return
             except json.JSONDecodeError as e:
                 logger.error(e)
                 raise
         self.init()
+
+    @property
+    def is_empty(self):
+        return not self.texts
+
+
+@dataclass
+class BM25SQLite(BM25DB):
+    table_prefix: str = 'bm25'
+
+    def _create_table(self) -> None:
+        pass
+
+    async def _save(self) -> None:
+        pass
+
+    def _load(self) -> None:
+        pass
