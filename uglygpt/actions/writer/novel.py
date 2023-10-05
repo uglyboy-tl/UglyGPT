@@ -67,7 +67,7 @@ class Novel(Action):
     def ask(self, *args, **kwargs) -> str:
         response = self.reduce(*args, **kwargs)
         self._parse(response)
-        return "\n".join(self.db._data.texts)
+        return "\n".join(self.db.texts)
 
     def run(self, *args, **kwargs):
         return self.ask(*args, **kwargs)
