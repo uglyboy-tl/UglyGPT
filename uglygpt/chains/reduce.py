@@ -37,6 +37,7 @@ class ReduceChain(Chain):
         result = inputs["history"]
         for i in range(self.num):
             result = self._process_input(i, inputs, result)
+            logger.debug(f"ReduceChain: {i} finished")
         return result
 
     def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
