@@ -69,11 +69,11 @@ class ChatGPT(LLMProvider):
         Returns:
             The number of tokens in the conversation.
         """
-        if model == "gpt-3.5-turbo":
+        if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
             logger.trace(
                 "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
             return self._num_tokens(messages, model="gpt-3.5-turbo-0301")
-        elif model == "gpt-4":
+        elif model == "gpt-4" or model == "gpt-4-32k":
             logger.trace(
                 "gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
             return self._num_tokens(messages, model="gpt-4-0314")

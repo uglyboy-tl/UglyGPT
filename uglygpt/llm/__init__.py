@@ -49,6 +49,14 @@ def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
             )
         else:
             return ChatGPT()
+    elif llm_provider_name == "chatgpt-16k":
+        if not ChatGPT:
+            raise NotImplementedError(
+                "Error: OpenAILLM is not installed. Please install openai, tiktoken"
+                " to use OpenAI as a LLM provider."
+            )
+        else:
+            return ChatGPT(model="gpt-3.5-turbo-16k", MAX_TOKENS=16384)
     elif llm_provider_name == "gpt4":
         if not ChatGPT:
             raise NotImplementedError(
