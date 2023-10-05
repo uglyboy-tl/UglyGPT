@@ -81,8 +81,8 @@ class Deployment(Action):
         logger.debug(f"run command: {command}")
         try:
             if platform.system() == "Windows":
-                result = subprocess.run(command, shell=True, check=True,
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='powershell', cwd=cwd)
+                result = subprocess.run(["powershell", "-Command", command], shell=True, check=True,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
             else:
                 result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash', cwd=cwd)
