@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-import asyncio
 import concurrent.futures
 import heapq
 import itertools
@@ -114,7 +113,7 @@ class BM25DB(DB):
         self.texts.append(text)
         self.metadatas.append(metadata)
         self._data.add(text)
-        asyncio.run(self._save())
+        self._save()
 
     def init(self) -> None:
         if not hasattr(self, '_data') or not self._data or not self.is_empty:
@@ -122,7 +121,7 @@ class BM25DB(DB):
             self.texts = []
             self.metadatas = []
 
-    async def _save(self) -> None:
+    def _save(self) -> None:
         if not self.path:
             raise PathNotFoundError("Path not found, unable to save.")
         data = self._data.__dict__.copy()
