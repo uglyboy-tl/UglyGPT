@@ -42,4 +42,5 @@ class Prompt:
         Returns:
             A list of input variables.
         """
-        return re.findall(r"{([^{}\n]+)}", self.template)
+        return re.findall(r"(?<!{){([^{}\n]+)}(?!})", self.template)
+
