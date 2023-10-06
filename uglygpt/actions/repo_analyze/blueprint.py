@@ -37,7 +37,7 @@ PROMPT_TEMPLATE = """
 
 
 @dataclass
-class AnalysisBlueprint(Action):
+class Blueprint(Action):
     filename: str = "docs/examples/analysis_blueprint.json"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE

@@ -41,7 +41,7 @@ class Coder:
             if extra == "":
                 return False
         else:
-            logger.info("改进代码的具体要求\n{extra}")
+            logger.info(f"改进代码的具体要求\n{extra}")
         if self.request != "":
             context = f"函数原始需求：\n{self.request}"
         else:

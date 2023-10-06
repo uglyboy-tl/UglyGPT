@@ -37,8 +37,8 @@ DEFAULT_REQUEST = "请对以下项目文件进行分析"
 OPTIONAL_REQUEST = "这是关于项目的一些信息{message},请结合相关内容对以下项目文件进行分析"
 
 @dataclass
-class AnalysisEveryFile(Action):
-    filename: str = "docs/examples/analysis_files.json"
+class AllCodes(Action):
+    filename: str = "docs/examples/analysis_allcodes.json"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
@@ -71,9 +71,9 @@ class AnalysisEveryFile(Action):
         for file in files:
             try:
                 content = file.read_text()
-                if file.suffix in EXTENSION_MAPPING:
+                if file.suffix.lower() in EXTENSION_MAPPING:
                     code.append(
-                        f"```{EXTENSION_MAPPING[file.suffix]}\n{content}\n```")
+                        f"```{EXTENSION_MAPPING[file.suffix.lower()]}\n{content}\n```")
                 else:
                     logger.warning(f"文件 {file} 类型未知，不进行额外处理")
                     code.append(f"```content```")

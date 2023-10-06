@@ -19,7 +19,7 @@ PROMPT_TEMPLATE = """
 DEFAULT_REQUEST = "请根据 README.md 文件，总结项目的核心内容，尤其是项目想解决的核心问题，以及如何解决的（核心方法）。核心方法和业务逻辑部分可以更加详细地介绍。"
 
 @dataclass
-class AnalysisREADME(Action):
+class README(Action):
     filename: str = "docs/examples/analysis_readme.md"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
