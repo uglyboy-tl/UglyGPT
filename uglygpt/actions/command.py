@@ -7,9 +7,8 @@ import subprocess
 import platform
 from typing import Optional
 
-from uglygpt.chains import LLM, ReAct, ReActChain
+from uglygpt.chains import LLM, ReAct, ReActChain, parse_json
 from .base import Action
-from .utils import parse_json
 
 DEBUG = False
 

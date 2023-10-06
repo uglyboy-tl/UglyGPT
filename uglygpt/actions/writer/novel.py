@@ -6,8 +6,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 
 from uglygpt.actions.base import Action
-from uglygpt.actions.utils import parse_json
-from uglygpt.chains import ReduceChain
+from uglygpt.chains import ReduceChain, parse_json
 from uglygpt.indexes import BM25DB
 
 ROLE="""

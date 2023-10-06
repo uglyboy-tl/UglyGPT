@@ -8,7 +8,7 @@ import platform
 
 from .base import Action
 from .command import Command
-from .utils import parse_json
+from uglygpt.chains import parse_json
 
 ROLE = """
 你是一名系统运维工程师，你将根据文档，在 `{deploy_path}` 完成一个项目的部署。

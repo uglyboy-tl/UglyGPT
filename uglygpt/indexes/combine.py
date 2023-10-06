@@ -8,8 +8,7 @@ from typing import List
 
 from loguru import logger
 
-from uglygpt.actions.utils import parse_json
-from uglygpt.chains import LLM
+from uglygpt.chains import LLM, parse_json
 from .base import Index
 from .bing_search import BingSearch
 from .arxiv import ArxivIndex
@@ -18,7 +17,6 @@ from .arxiv import ArxivIndex
 class CombineSearch(Index):
     index_names: list[str] = field(default_factory=list)
     _indexes: list[Index] = field(default_factory=list)
-    llm: LLM = field(init=False)
 
     def __post_init__(self):
         for index_name in self.index_names:

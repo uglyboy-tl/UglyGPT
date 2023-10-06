@@ -6,7 +6,7 @@ import json
 from loguru import logger
 
 from uglygpt.actions.base import Action
-from uglygpt.actions.utils import parse_json
+from uglygpt.chains import parse_json
 from .utils import get_directory_structure
 
 ROLE = """

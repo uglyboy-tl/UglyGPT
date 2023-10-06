@@ -41,7 +41,7 @@ def parse_code(text: str, lang: str = "python"):
     return code
 
 
-def fix_llm_json_str(string):
+def fix_llm_json_str(string: str):
     """Fixes the JSON string.
 
     Args:
@@ -50,7 +50,8 @@ def fix_llm_json_str(string):
     Returns:
         The fixed JSON string.
     """
-    new_string = string
+    new_string = re.sub(r',\s*}', '}', string)
+    new_string = re.sub(r',\s*]', ']', new_string)
     try:
         json.loads(new_string)
         return new_string
