@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from uglygpt.actions.code import CodeWrite, CodeReviewer, TestWriter, CodeRewrite
-from uglygpt.workers.sandbox import Sandbox, TestFailedError
+from uglygpt.workflow.sandbox import Sandbox, TestFailedError
 from uglygpt.base import File
 
 @dataclass
