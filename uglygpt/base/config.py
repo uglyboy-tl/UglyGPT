@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from .singleton import singleton
 
+os.umask(22)
 
 @singleton
 @dataclass
