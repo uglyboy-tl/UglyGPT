@@ -5,23 +5,15 @@ import concurrent.futures
 import heapq
 import itertools
 import json
-import string
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Set, Tuple, Dict
 
-import jieba
 from loguru import logger
 
 from .base import DB
-from uglygpt.base import config
-
-
-stop_words = set(
-    line.strip() for line in
-    Path(config.stop_words_path).read_text(encoding='utf-8').splitlines()
-)
+from uglygpt.utils.nlp import segment
 
 
 class PathNotFoundError(Exception):
@@ -39,24 +31,17 @@ class BM25:
     idf_values: dict = field(default_factory=dict)
     sum_len: float = field(default=0)
 
-    def preprocess_text(self, text: str) -> str:
-        words = jieba.cut(text)
-        words = [
-            word for word in words
-            if word not in stop_words and word not in string.punctuation
-        ]
-        return ' '.join(words)
-
     def calculate_tf(self, word: str, text: str) -> float:
         return text.split().count(word) / len(text.split())
 
     def calculate_idf(self, word: str) -> float:
-        matches = len([True for text in self.preprocessed_texts if word in text.split()])
+        matches = len(
+            [True for text in self.preprocessed_texts if word in text.split()])
         return math.log(len(self.preprocessed_texts) / matches) if matches else 0.0
 
     def calculate_bm25_score(self, i: int, query: str) -> float:
         score = 0
-        preprocessed_query = self.preprocess_text(query).split()
+        preprocessed_query = segment(query).split()
         for word in preprocessed_query:
             if word not in self.word_sets[i]:
                 continue
@@ -85,7 +70,7 @@ class BM25:
 
     def add(self, text: str) -> None:
         text_id = len(self.text_lens)
-        preprocessed_text = self.preprocess_text(text)
+        preprocessed_text = segment(text)
         preprocessed_text_split = preprocessed_text.split()
         self.preprocessed_texts.append(preprocessed_text)
         self.sum_len += len(preprocessed_text_split)
