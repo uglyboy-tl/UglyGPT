@@ -42,6 +42,10 @@ class AllCodes(Action):
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
+    def __post_init__(self):
+        self.llm = MapChain(self.prompt, self.llm_name, map_keys=["file_name", "code"])
+        return super().__post_init__()
+
     def filter_files(self, directory_path: Path, filter: Optional[Dict[str, str] | Dict[Path, str]] = None) -> Tuple[List[Path], Optional[Dict[Path, str]]]:
         image_extensions = set(IMAGE_EXTENSIONS)
         media_extensions = set(MEDIA_EXTENSIONS)
@@ -104,7 +108,6 @@ class AllCodes(Action):
     def run(self, path: str, request: str = DEFAULT_REQUEST, filter: Optional[Dict[str, str] | Dict[Path, str]] = None, message: Optional[str] = None) -> str:
         if message is not None:
             request = OPTIONAL_REQUEST.format(message=message)
-        chain = MapChain(self.llm, map_keys=["file_name", "code"])
         directory_path = Path(path)
 
         files, file_dict = self.filter_files(directory_path, filter)
@@ -112,7 +115,7 @@ class AllCodes(Action):
 
         assert len(files) > 0, "没有符合过滤器要求的文件"
 
-        response = chain(file_name=files, code=code, additional=additional, request=request)
+        response = self.ask(file_name=files, code=code, additional=additional, request=request)
         analysis_list = json.loads(response)
         if len(analysis_list) != len(files):
             logger.error("处理结果的数量和文件数量不相等")

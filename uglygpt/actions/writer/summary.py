@@ -17,7 +17,7 @@ PROMPT_TEMPLATE = """
 '''{history}'''
 如果需要，我们有机会使用下面的更多上下文来改进现有的摘要。
 '''{input}'''
-根据新的上下文，优化原来的摘要。
+根据新的上下文，优化原来的摘要。若原来的摘要不存在，则生成一个新的摘要。
 如果这个上下文对你来说并不有用，那么就返回原来的摘要。
 """
 
@@ -26,12 +26,15 @@ class Summary(Action):
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
+    def __post_init__(self):
+        self.llm = ReduceChain(self.prompt, self.llm_name)
+        return super().__post_init__()
+
     def run(self):
-        chain = ReduceChain(self.llm)
         data = self._load()
         parts = re.split('(?m)^(###(?!#))', data)
         parts = [parts[i-1] + parts[i] if i > 0 else parts[i] for i in range(0, len(parts), 2)]
-        result = chain(input=parts)
+        result = self.ask(input=parts)
         return result
         #logger.success(result)
 

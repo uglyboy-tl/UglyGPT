@@ -17,7 +17,7 @@ PROMPT_TEMPLATE = """
 我们已经提供了一个到某个点的分析报告：
 '''{history}'''
 如果需要，我们有机会使用下面的更多上下文来改进现有的分析报告。
-'''{analysis}'''
+'''{input}'''
 根据新的上下文，优化原来的分析报告。
 如果这个上下文对你来说并不有用，那么就返回原来的分析报告。
 
@@ -41,8 +41,11 @@ class Conclusion(Action):
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
+    def __post_init__(self):
+        self.llm = ReduceChain(self.prompt, self.llm_name)
+        return super().__post_init__()
+
     def run(self, analysis: List[str], format: str = DEFAULT_FORMAT, history: str = ""):
-        reduce = ReduceChain(chain=self.llm, reduce_keys=["analysis"])
-        response = reduce(analysis=analysis, format=format, history=history)
+        response = self.ask(input=analysis, format=format, history=history)
         self._save(response)
         return response

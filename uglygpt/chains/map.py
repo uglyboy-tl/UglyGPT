@@ -8,18 +8,12 @@ import json
 from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
 
-from .base import Chain
 from .llm import LLM
 
 
 @dataclass
-class MapChain(Chain):
-    chain: Chain = field(default_factory=LLM)
+class MapChain(LLM):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
-
-    @property
-    def input_keys(self) -> List[str]:
-        return self.chain.input_keys
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.map_keys[0]])
@@ -28,9 +22,8 @@ class MapChain(Chain):
         super()._validate_inputs(inputs)
 
     def _validate_map_key(self, map_key, inputs):
-        assert map_key in self.input_keys, f"MapChain expects {map_key} to be in input_keys"
-        assert isinstance(inputs[map_key], List), f"MapChain expects {map_key} to be a list of strings"
-        assert len(inputs[map_key]) == self.num, f"MapChain expects {map_key} to be a list of strings with the same length"
+        assert map_key in self.input_keys and isinstance(inputs[map_key], List) and len(inputs[map_key]) == self.num, \
+            f"MapChain expects {map_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
         inputs_list = self._generate_inputs_list(inputs)
@@ -52,11 +45,14 @@ class MapChain(Chain):
         def func(input):
             new_input: Dict = {k: v for k, v in inputs.items() if k not in self.map_keys}
             new_input.update({mapping_key: input[mapping_key] for mapping_key in self.map_keys})
+            prompt = self.prompt.format(**new_input)
             try:
-                result = self.chain(**new_input)
+                result = self._llm.ask(prompt)
             except Exception as e:
                 result = "Error"
             logger.debug(f"MapChain: {input['index']} finished")
+            if hasattr(self, '_memory'):
+                self._memory.update((prompt, result))
             return {"index": input["index"], "result": result}
         return func
 

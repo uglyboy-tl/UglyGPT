@@ -27,7 +27,7 @@ PROMPT_TEMPLATE = """
 {history}
 
 输入指示：
-{input_instruction}
+{input}
 
 现在开始写作，严格按照格式示例中的输出格式组织你的输出。
 
@@ -47,10 +47,10 @@ class Novel(Action):
     db: BM25DB = field(init=False)
 
     def __post_init__(self):
-        super().__post_init__()
-        self.reduce = ReduceChain(self.llm, reduce_keys=["input_instruction"], format=self._parse)
+        self.llm = ReduceChain(self.prompt, self.llm_name, format=self._parse)
         self.db = BM25DB("docs/examples/novel.json",True)
         self.db.init()
+        return super().__post_init__()
 
     def _parse(self, response:str) -> str:
         data = parse_json(response)
@@ -63,10 +63,7 @@ class Novel(Action):
         history = f"""输入记忆：\n{short_memory}\n\n输入段落：\n{input_paragraph}\n\n输入相关段落：\n{input_long_term_memory}"""
         return history
 
-    def ask(self, *args, **kwargs) -> str:
-        response = self.reduce(*args, **kwargs)
-        self._parse(response)
-        return "\n".join(self.db.texts)
-
     def run(self, *args, **kwargs):
-        return self.ask(*args, **kwargs)
+        reponse = self.ask(*args, **kwargs)
+        self._parse(reponse)
+        return "\n".join(self.db.texts)

@@ -5,19 +5,13 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Callable
 from loguru import logger
 
-from .base import Chain
 from .llm import LLM
 
 
 @dataclass
-class ReduceChain(Chain):
-    chain: Chain = field(default_factory=LLM)
+class ReduceChain(LLM):
     reduce_keys: List[str] = field(default_factory=lambda: ["input"])
     format: Callable[[str], str] = field(default_factory=lambda: lambda x: x)
-
-    @property
-    def input_keys(self) -> List[str]:
-        return self.chain.input_keys
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.reduce_keys[0]])
@@ -38,7 +32,7 @@ class ReduceChain(Chain):
         for i in range(self.num):
             result = self._process_input(i, inputs, result)
             logger.debug(f"ReduceChain: {i} finished")
-            #logger.debug(f"ReduceChain: {result}")
+            logger.debug(f"ReduceChain: {result}")
         return result
 
     def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
@@ -47,4 +41,4 @@ class ReduceChain(Chain):
             new_input.pop("history")
             new_input["history"] = self.format(history)
         new_input.update({reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
-        return self.chain(**new_input)
+        return super()._call(new_input)
