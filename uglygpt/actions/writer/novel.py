@@ -26,9 +26,10 @@ PROMPT_TEMPLATE = """
 这些是输入：
 {history}
 
-输入指示：
+## 输入指示：
 {input}
 
+-----
 现在开始写作，严格按照格式示例中的输出格式组织你的输出。
 
 非常重要！更新后的记忆只应储存关键信息。更新后的记忆绝不能超过500个单词！
@@ -60,7 +61,7 @@ class Novel(Action):
         input_long_term_memory = '\n'.join(
             [f"相关段落 {i+1} :" + selected_memory for i, selected_memory in enumerate(long_memory)])
         self.db.add(input_paragraph)
-        history = f"""输入记忆：\n{short_memory}\n\n输入段落：\n{input_paragraph}\n\n输入相关段落：\n{input_long_term_memory}"""
+        history = f"""## 输入记忆：\n{short_memory}\n\n## 输入段落：\n{input_paragraph}\n\n## 输入相关段落：\n{input_long_term_memory}"""
         return history
 
     def run(self, *args, **kwargs):

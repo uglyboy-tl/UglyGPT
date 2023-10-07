@@ -78,7 +78,7 @@ class BM25:
         self.text_lens.append(len(preprocessed_text_split))
         for word in self.word_sets[text_id]:
             key = f"{word}_{text_id}"
-            self.tf_values[key] = self.calculate_tf(word, text)
+            self.tf_values[key] = self.calculate_tf(word, preprocessed_text)
             if word not in self.idf_values:
                 self.idf_values[word] = self.calculate_idf(word)
 
