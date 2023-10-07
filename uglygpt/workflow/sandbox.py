@@ -15,7 +15,8 @@ from collections import deque
 from uglygpt.base import File
 
 VENV_NAME = ".venv"
-
+WORKING_DIR = Path("/home/uglyboy/Code")
+#WORKING_DIR = File.WORKSPACE_ROOT
 
 def get_imports(file_path: str) -> List[str]:
     try:
@@ -100,10 +101,10 @@ class TestFailedError(Exception):
 @dataclass
 class Sandbox:
     _dir_name: str = "sandbox"
-    _dependencies: list = field(default_factory=list)
 
     def __post_init__(self):
-        self.dir_path = File.WORKSPACE_ROOT / self._dir_name
+        self.dir_path = WORKING_DIR / self._dir_name
+        self._dependencies = []
 
     def init(self) -> None:
         # If the sandbox directory exists, delete all files and subdirectories
@@ -116,11 +117,17 @@ class Sandbox:
         # Create a virtual environment in the sandbox directory
         try:
             subprocess.run(['python3', '-m', 'venv', VENV_NAME],
-                           cwd=self.dir_path, check=True)
+                            cwd=self.dir_path, check=True)
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to create virtual environment: {e}')
 
-    # TODO: 未来需要添加目标文件依赖的其他文件的拷贝，以及其他文件的依赖包的安装
+    def update_pip(self) -> None:
+        try:
+            subprocess.run(
+                [f'{VENV_NAME}/bin/pip', 'install', '-U', 'pip', 'setuptools'], cwd=self.dir_path, check=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f'Failed to update pip and setuptools: {e}')
+
     def prepare_test(self, path: str) -> str:
         file_list = self._copy_file(path)
         for file_path in file_list:
@@ -136,7 +143,7 @@ class Sandbox:
                 raise ValueError(
                     f"Test path {test_path} is not in the sandbox directory.")
         else:
-            test_path = File.WORKSPACE_ROOT / test_name
+            test_path = WORKING_DIR / test_name
         if not test_path.exists():
             raise FileNotFoundError(f"Test file {test_path} does not exist.")
         path = test_path.relative_to(self.dir_path)
@@ -201,7 +208,7 @@ class Sandbox:
 
     @classmethod
     def relative_path(cls, path: Path) -> str:
-        path = path.relative_to(File.WORKSPACE_ROOT)
+        path = path.relative_to(WORKING_DIR)
         return str(path)
 
     @property
