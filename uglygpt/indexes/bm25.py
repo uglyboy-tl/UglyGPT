@@ -6,13 +6,13 @@ import heapq
 import itertools
 import json
 import string
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Set, Tuple, Dict
 
 import jieba
 from loguru import logger
-from nltk.text import TextCollection
 
 from .base import DB
 from uglygpt.base import config
@@ -32,12 +32,11 @@ class PathNotFoundError(Exception):
 class BM25:
     k1: float = 1.5
     b: float = 0.75
-    text_collection: TextCollection = field(init=False)
     preprocessed_texts: List[str] = field(default_factory=list)
     word_sets: List[Set[str]] = field(default_factory=list)
     text_lens: List[int] = field(default_factory=list)
-    tf_idf_values: dict = field(default_factory=dict)
     tf_values: dict = field(default_factory=dict)
+    idf_values: dict = field(default_factory=dict)
     sum_len: float = field(default=0)
 
     def preprocess_text(self, text: str) -> str:
@@ -48,6 +47,13 @@ class BM25:
         ]
         return ' '.join(words)
 
+    def calculate_tf(self, word: str, text: str) -> float:
+        return text.split().count(word) / len(text.split())
+
+    def calculate_idf(self, word: str) -> float:
+        matches = len([True for text in self.preprocessed_texts if word in text.split()])
+        return math.log(len(self.preprocessed_texts) / matches) if matches else 0.0
+
     def calculate_bm25_score(self, i: int, query: str) -> float:
         score = 0
         preprocessed_query = self.preprocess_text(query).split()
@@ -55,8 +61,9 @@ class BM25:
             if word not in self.word_sets[i]:
                 continue
             key = f"{word}_{i}"
-            tf_idf_value = self.tf_idf_values.get(key, 0)
             tf_value = self.tf_values.get(key, 1e-9)
+            idf_value = self.idf_values.get(word, 0)
+            tf_idf_value = tf_value * idf_value
             text_len = self.text_lens[i]
             avg_len = self.sum_len / \
                 len(self.preprocessed_texts) if self.preprocessed_texts else 1
@@ -81,14 +88,14 @@ class BM25:
         preprocessed_text = self.preprocess_text(text)
         preprocessed_text_split = preprocessed_text.split()
         self.preprocessed_texts.append(preprocessed_text)
-        self.text_collection = TextCollection(self.preprocessed_texts)
         self.sum_len += len(preprocessed_text_split)
         self.word_sets.append(set(preprocessed_text_split))
         self.text_lens.append(len(preprocessed_text_split))
         for word in self.word_sets[text_id]:
             key = f"{word}_{text_id}"
-            self.tf_idf_values[key] = self.text_collection.tf_idf(word, text)
-            self.tf_values[key] = self.text_collection.tf(word, text)
+            self.tf_values[key] = self.calculate_tf(word, text)
+            if word not in self.idf_values:
+                self.idf_values[word] = self.calculate_idf(word)
 
 
 @dataclass
@@ -127,11 +134,9 @@ class BM25DB(DB):
         data = self._data.__dict__.copy()
         data["texts"] = self.texts
         data["metadatas"] = self.metadatas
-        text_collection = data.pop('text_collection')
         data['word_sets'] = [list(v) for v in data['word_sets']]
         with open(self.path, 'w') as f:
             json.dump(data, f)
-        self._data.text_collection = text_collection
         self._data.word_sets = [set(v) for v in data['word_sets']]
 
     def _load(self) -> None:
@@ -143,10 +148,6 @@ class BM25DB(DB):
                 self.texts = data.pop('texts')
                 self.metadatas = data.pop('metadatas')
                 self._data = BM25(**data)
-                self._data.text_collection = TextCollection(
-                    self._data.preprocessed_texts)
-                logger.debug(self._data)
-                logger.debug(self.texts)
                 return
             except json.JSONDecodeError as e:
                 logger.error(e)
@@ -156,4 +157,3 @@ class BM25DB(DB):
     @property
     def is_empty(self):
         return not self.texts
-

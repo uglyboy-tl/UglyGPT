@@ -4,4 +4,3 @@ loguru
 tenacity
 pathos
 jieba
-NLTK
