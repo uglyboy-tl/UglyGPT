@@ -16,6 +16,7 @@ uglygpt/archive
 *.bak
 test.py
 demo.py
+coding.py
 
 ``` 未来可能需要上传的文件夹
 ```
