@@ -24,6 +24,7 @@ class Action(ABC):
     prompt: str = "{prompt}"
     role: Optional[str] = None
     llm: LLM = field(init=False)
+    is_append_mode: bool = False
 
     def __post_init__(self):
         """Post initialization method.
@@ -65,6 +66,8 @@ class Action(ABC):
                 return
         if not data:
             raise ValueError("data is required")
+        if self.is_append_mode:
+            File.append(filename, data)
         File.save(filename, data)
 
     def _load(self, filename: Optional[str] = None):
