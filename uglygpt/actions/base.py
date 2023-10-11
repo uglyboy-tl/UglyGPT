@@ -68,7 +68,8 @@ class Action(ABC):
             raise ValueError("data is required")
         if self.is_append_mode:
             File.append(filename, data)
-        File.save(filename, data)
+        else:
+            File.save(filename, data)
 
     def _load(self, filename: Optional[str] = None):
         """Load data from a file.
