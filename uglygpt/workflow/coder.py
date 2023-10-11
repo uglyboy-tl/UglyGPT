@@ -23,7 +23,10 @@ class Coder:
         self.rewriter = CodeRewrite(self.file_path)
         self.tester = TestWriter(self.test_path)
         self.unittester = TestWriter(self.unittest_path)
-        logger.add(f"logs/{File.path_to_filename(self.file_path)}.log", level="INFO", rotation="1 week", retention="10 days", compression="zip")
+        try:
+            logger.add(f"logs/{File.path_to_filename(self.file_path)}.log", level="INFO", rotation="1 week", retention="10 days", compression="zip")
+        except:
+            logger.add(f"{Path(self.file_path).with_suffix('.log')}", level="INFO", rotation="1 week", retention="10 days")
 
     def gen_code(self) -> None:
         if self.request == "":
