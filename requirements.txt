@@ -4,3 +4,4 @@ loguru
 tenacity
 pathos
 jieba
+beautifulsoup4
