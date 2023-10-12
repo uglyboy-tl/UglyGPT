@@ -13,6 +13,7 @@ from typing import List, Optional, Set
 from collections import deque
 
 from uglygpt.base import File
+from .default_files import Makefile, Service
 
 VENV_NAME = ".venv"
 WORKING_DIR = Path("/home/uglyboy/Code")
@@ -113,20 +114,43 @@ class Sandbox:
         # Create the sandbox directory
         self.dir_path.mkdir(parents=True, exist_ok=True)
 
-    def setup_venv(self) -> None:
+    def setup_venv(self, requirements: str="") -> None:
         # Create a virtual environment in the sandbox directory
+        requirements_file = self.dir_path / "requirements.txt"
+        requirements_file.touch()
+        requirements = requirements.replace(" ", "\n")
+        with open(requirements_file, "w") as f:
+            f.write(requirements)
         try:
             subprocess.run(['python3', '-m', 'venv', VENV_NAME],
                             cwd=self.dir_path, check=True)
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to create virtual environment: {e}')
 
-    def update_pip(self) -> None:
         try:
             subprocess.run(
                 [f'{VENV_NAME}/bin/pip', 'install', '-U', 'pip', 'setuptools'], cwd=self.dir_path, check=True)
         except subprocess.CalledProcessError as e:
             logger.error(f'Failed to update pip and setuptools: {e}')
+
+        try:
+            subprocess.run(
+                [f'{VENV_NAME}/bin/pip', 'install', '-r', 'requirements.txt'], cwd=self.dir_path, check=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f'Failed to install requirements: {e}')
+
+    def build_service(self) -> None:
+        # 创建一个 .service 文件，用于 systemd 的服务
+        install_path = Path("/usr/lib") / self._dir_name
+        data = Service.format(path=install_path)
+        service_name = self._dir_name.lower()
+        with open(self.dir_path / service_name, "w") as f:
+            f.write(data)
+        # 创建一个 Makefile 文件，用于安装和卸载 systemd 的服务
+        data = Makefile.format(name=self._dir_name, path=install_path, service_name=service_name)
+        with open(self.dir_path / "Makefile", "w") as f:
+            f.write(data)
+
 
     def prepare_test(self, path: str) -> str:
         file_list = self._copy_file(path)
@@ -159,11 +183,6 @@ class Sandbox:
             logger.info(f"Test passed successfully. Stdout: {stdout}")
         except Exception as e:
             raise
-
-    @property
-    def test_command(self) -> str:
-        python_path = self.dir_path / VENV_NAME / "bin" / "python"
-        return f"{python_path} -m unittest"
 
     def _copy_file(self, file_path: str) -> List[Path]:
         file_list = get_dependencies(file_path)
@@ -206,11 +225,16 @@ class Sandbox:
                 logger.error(f'Failed to install dependency {dependency}: {e}')
                 self._dependencies.append(dependency)
 
-    @classmethod
-    def relative_path(cls, path: Path) -> str:
-        path = path.relative_to(WORKING_DIR)
-        return str(path)
+    @property
+    def test_command(self) -> str:
+        python_path = self.dir_path / VENV_NAME / "bin" / "python"
+        return f"{python_path} -m unittest"
 
     @property
     def dir(self):
         return self._dir_name
+
+    @classmethod
+    def relative_path(cls, path: Path) -> str:
+        path = path.relative_to(WORKING_DIR)
+        return str(path)
