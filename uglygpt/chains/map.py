@@ -49,6 +49,7 @@ class MapChain(LLM):
             try:
                 result = self._llm.ask(prompt)
             except Exception as e:
+                logger.warning(f"MapChain: {input['index']} failed with error: {e}")
                 result = "Error"
             logger.debug(f"MapChain: {input['index']} finished")
             if hasattr(self, '_memory'):
