@@ -143,10 +143,16 @@ class GithubTrending():
             # 先更新数据库
             self._fetch_summarizer()
             # 更新分类，并获得分类结果
-            category_list.update(self._fetch_category())
+            _dict = self._fetch_category()
+            for k,v in _dict.items():
+                if k in category_list.keys():
+                    category_list[k].extend(v)
+                else:
+                    category_list[k] = v
             i += 1
-            logger.info("Sleeping 5 seconds...")
-            sleep(5)
+            #logger.info("Sleeping 5 seconds...")
+            #sleep(5)
+        self._repo_names = repo_names
 
         # 生成 markdown
         markdown_txt = ""
