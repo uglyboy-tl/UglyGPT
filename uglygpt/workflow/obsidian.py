@@ -143,7 +143,7 @@ class GithubTrending():
                     continue
                 name = urllib.parse.quote(repo_name, safe='')
                 url = f"https://www.github.com/{repo_name}"
-                markdown_txt += f"- [ ] [{repo_name}]({name}) - {self._repo_descriptions[repo_name]} [![](https://img.shields.io/badge/Github-black)]({url}) \n\n"
+                markdown_txt += f"- [ ] [{repo_name}]({url}) - {self._repo_descriptions[repo_name]} [![](https://img.shields.io/badge/Click-Like-blue)]({name}) \n\n"
                 for line in self._data[repo_name].split("\n"):
                     markdown_txt += f"> {line}\n"
                 markdown_txt += "\n"
