@@ -22,7 +22,7 @@ class File:
     @classmethod
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
     def save(cls, filename: str|Path, data: str) -> None:
-        file_path = cls._get_filepath(filename)
+        file_path = cls.to_path(filename)
         if file_path.exists():
             cls._backup(file_path)
         else:
@@ -32,7 +32,7 @@ class File:
 
     @classmethod
     def append(cls, filename: str|Path, data: str) -> None:
-        file_path = cls._get_filepath(filename)
+        file_path = cls.to_path(filename)
         if file_path.exists():
             cls._backup(file_path)
         else:
@@ -43,15 +43,20 @@ class File:
 
     @classmethod
     def load(cls, filename: str|Path):
-        file_path = cls._get_filepath(filename)
+        file_path = cls.to_path(filename)
         if not file_path.exists():
             raise FileNotFoundInWorkspaceError(f"File {filename} not found in workspace.")
         return file_path.read_text()
 
     @classmethod
     def exists(cls, filename: str|Path) -> bool:
-        file_path = cls._get_filepath(filename)
+        file_path = cls.to_path(filename)
         return file_path.exists()
+
+    @classmethod
+    def datetime(cls, filename: str|Path) -> datetime:
+        file_path = cls.to_path(filename)
+        return datetime.fromtimestamp(file_path.stat().st_mtime)
 
     @staticmethod
     def get_project_root(filename: str|Path) -> Path:
@@ -69,7 +74,7 @@ class File:
 
     @classmethod
     def path_to_filename(cls, filename: str|Path) -> str:
-        p = cls._get_filepath(filename)
+        p = cls.to_path(filename)
         relative_p = p.relative_to(File.WORKSPACE_ROOT)
         parts = relative_p.parts
         new_parts = []
@@ -81,7 +86,7 @@ class File:
         return '_'.join(new_parts)
 
     @classmethod
-    def _get_filepath(cls, filename: str|Path) -> Path:
+    def to_path(cls, filename: str|Path) -> Path:
         if isinstance(filename, str):
             file_path = Path(filename)
         else:
