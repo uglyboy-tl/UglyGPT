@@ -37,7 +37,7 @@ class GithubTrending():
     def __post_init__(self):
         self.summarizer = ReadmeSummarizer(self.filename)
         self.category = Category(self.filename)
-        self.finished = KVCache(self.filename, "Finished")
+        self.finished = KVCache(self.filename, "Finished", 30)
         self.config = KVCache(self.filename, "Config")
 
         self._repo_names = []
