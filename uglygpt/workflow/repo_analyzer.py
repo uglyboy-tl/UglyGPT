@@ -35,7 +35,7 @@ class RepoAnalyzer:
         self.repo_info = self.repo.repo_info
         self.blueprint = Blueprint(str(parent/"blueprint.json"))
         self.readme = README(str(parent/"readme.md"))
-        self.allcodes = AllCodes(str(parent/"allcodes.json"))
+        self.allcodes = AllCodes(str(parent/"allcodes.json"), table=self.repo_name)
         self.conclusion = Conclusion(str(parent/"conclusion.md"))
 
     def analyze(self) -> None:

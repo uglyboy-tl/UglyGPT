@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import json
 from typing import Dict, List, Optional, Tuple
@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from loguru import logger
 
 from uglygpt.base import File
-from uglygpt.actions.base import Action
+from uglygpt.actions.mapsqlite import MapSqlite
 from uglygpt.chains import MapChain
 from .utils import generate_dict, IMAGE_EXTENSIONS, MEDIA_EXTENSIONS, IGNORE_EXTENSIONS, EXTENSION_MAPPING
 
@@ -37,14 +37,12 @@ DEFAULT_REQUEST = "请对以下项目文件进行分析"
 OPTIONAL_REQUEST = "这是关于项目的一些信息{message},请结合相关内容对以下项目文件进行分析"
 
 @dataclass
-class AllCodes(Action):
-    filename: str = "docs/examples/analysis_allcodes.json"
+class AllCodes(MapSqlite):
+    filename: str = "resource/analysis_allcodes.db"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
+    map_keys: List[str] = field(default_factory=lambda: ["file_name", "code"])
 
-    def __post_init__(self):
-        self.llm = MapChain(self.prompt, self.llm_name, map_keys=["file_name", "code"])
-        return super().__post_init__()
 
     def filter_files(self, directory_path: Path, filter: Optional[Dict[str, str] | Dict[Path, str]] = None) -> Tuple[List[Path], Optional[Dict[Path, str]]]:
         image_extensions = set(IMAGE_EXTENSIONS)
@@ -67,7 +65,7 @@ class AllCodes(Action):
 
         return files, file_dict
 
-    def read_files(self, files: List[Path], file_dict: Optional[Dict]) -> Tuple[List[str], List[str], List[str]]:
+    def fetch_files_data(self, files: List[Path], file_dict: Optional[Dict]) -> Tuple[List[str], List[str], List[str]]:
         code = []
         invalid_files = []
         additional = []
@@ -94,33 +92,36 @@ class AllCodes(Action):
         short_name_files = [str(file.relative_to(project_root)) for file in files]
         return short_name_files, code, additional
 
-    def get_analysis(self, analysis: List[str], files: List[str]):
-        result = dict()
-
-        for i, file in enumerate(files):
-            if analysis[i] == "Error":
-                logger.warning(f"文件 {file} 分析失败")
-                continue
-            result[file] = analysis[i]
-        return result
+    def new_filter(self, files: List[str], code: List[str], additional: List[str], data: Dict[str, str]):
+        new_files = [i for i in files]
+        new_code = [i for i in code]
+        new_additional = [i for i in additional]
+        for i in range(len(files)):
+            if files[i] in data.keys():
+                new_files.pop(i)
+                new_code.pop(i)
+                new_additional.pop(i)
+        return new_files, new_code, new_additional
 
 
     def run(self, path: str, request: str = DEFAULT_REQUEST, filter: Optional[Dict[str, str] | Dict[Path, str]] = None, message: Optional[str] = None) -> str:
         if message is not None:
             request = OPTIONAL_REQUEST.format(message=message)
-        directory_path = Path(path)
+        directory_path = File.to_path(path)
 
+        self.table = directory_path.name
+        self._reset_cache()
         files, file_dict = self.filter_files(directory_path, filter)
-        files, code, additional = self.read_files(files, file_dict)
+        files, code, additional = self.fetch_files_data(files, file_dict)
+        _data = self._load(files)
+        new_files, code, additional = self.new_filter(files, code, additional, _data)
 
         assert len(files) > 0, "没有符合过滤器要求的文件"
 
-        response = self.ask(file_name=files, code=code, additional=additional, request=request)
-        analysis_list = json.loads(response)
-        if len(analysis_list) != len(files):
-            logger.error("处理结果的数量和文件数量不相等")
+        analysis_list = self.ask(file_name=new_files, code=code, additional=additional, request=request)
+        analysis = {k:v for k,v in zip(files, analysis_list) if v != "Error"}
+        _data.update(analysis)
+        self._save(analysis)
 
-        analysis = self.get_analysis(analysis_list, files)
-        response = json.dumps(analysis, indent=4, ensure_ascii=False)
-        self._save(response)
+        response = json.dumps(_data, indent=4, ensure_ascii=False)
         return response
