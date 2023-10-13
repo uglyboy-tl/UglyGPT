@@ -4,6 +4,7 @@
 .vscode
 __pycache__/
 docs/examples
+docs/md
 sandbox
 logs
 uglygpt/dev
@@ -14,6 +15,9 @@ uglygpt/archive
 ```
 .env
 *.bak
+*.db
+*.log
+*.sql
 test.py
 demo.py
 coding.py
