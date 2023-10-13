@@ -56,6 +56,8 @@ class File:
     @classmethod
     def datetime(cls, filename: str|Path) -> datetime:
         file_path = cls.to_path(filename)
+        if not file_path.exists():
+            return datetime.fromtimestamp(0)
         return datetime.fromtimestamp(file_path.stat().st_mtime)
 
     @staticmethod
