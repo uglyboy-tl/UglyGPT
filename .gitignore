@@ -5,11 +5,8 @@
 __pycache__/
 docs/examples
 docs/md
-sandbox
 logs
 uglygpt/dev
-uglygpt/archive
-
 
 ``` 一些不需要上传的文件
 ```
@@ -18,9 +15,7 @@ uglygpt/archive
 *.db
 *.log
 *.sql
-test.py
-demo.py
-coding.py
+/*.py
 
 ``` 未来可能需要上传的文件夹
 ```
