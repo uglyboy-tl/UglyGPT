@@ -40,7 +40,13 @@ class GithubTrending():
         text = GithubAPI.fetch_trending_file()
         for language in ["All Languages", "Python", "Typescript", "Rust", "Html", "Css"]:
             self._fetch_trending_repos(text, language)
+
+        # 去重
+        _set = set(self._repo_names)
+        self._repo_names = list(_set)
+        # 去除已经完成的
         self._remove_finished_repos()
+        # 加载数据库
         self._data = self.summarizer._load(self._repo_names)
 
     def _check_finished(self):
