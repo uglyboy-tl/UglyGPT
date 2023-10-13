@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+import urllib.parse
 import re
 
 from loguru import logger
@@ -43,9 +44,9 @@ class GithubTrending():
 
     def _check_finished(self):
         logger.info("Updating The Finished Repos...")
+        self._set_finished_with_favourite()
         self._set_finished_with_stars()
         self._set_finished_with_markdown()
-        self._set_finished_with_favourite()
         self.config.set({"Date": datetime.now().strftime("%Y-%m-%d")})
 
     def _remove_finished_repos(self):
@@ -61,12 +62,35 @@ class GithubTrending():
         markdown_text = File.load(self.output)
         pattern = r"- \[x\] \[(?P<name>.+?)\]"
         matches = re.findall(pattern, markdown_text, re.MULTILINE)
-
-        data = {k: "Marked" for k in matches}
+        old = self.finished.get(matches)
+        data = {k: "Marked" for k in matches if k not in old.keys()}
         self.finished.set(data)
 
     def _set_finished_with_favourite(self):
-        pass
+        dir_path = File.to_path(self.output).parent
+        favourite_List = []
+        file_index = {}
+        for file in dir_path.iterdir():
+            if file.is_file():
+                file_name = file.name
+                if file_name.count('%2F') == 1:
+                    name = urllib.parse.unquote(file_name)[:-3]
+                    favourite_List.append(name)
+                    if file.stat().st_size == 0:
+                        file_index[name] = file
+        dict = self.summarizer._load(favourite_List)
+        data = {}
+        for name in favourite_List:
+            if name not in dict.keys():
+                continue
+            data[name] = "Liked"
+            if name in file_index.keys():
+                context = "## " + name + "\n\n"
+                for line in dict[name].split("\n"):
+                    context += f"> {line}\n"
+                context += "\n"
+                File.save(file_index[name], context)
+        self.finished.set(data)
 
     def _fetch_trending_repos(self, text: str, language: str = "All Languages"):
         markdown = parse_markdown(text)
@@ -117,8 +141,9 @@ class GithubTrending():
             for repo_name in category_list[category]:
                 if repo_name not in self._data.keys():
                     continue
+                name = urllib.parse.quote(repo_name, safe='')
                 url = f"https://www.github.com/{repo_name}"
-                markdown_txt += f"- [ ] [{repo_name}]({url}) - {self._repo_descriptions[repo_name]}\n\n"
+                markdown_txt += f"- [ ] [{repo_name}]({name}) - {self._repo_descriptions[repo_name]} [![](https://img.shields.io/badge/Github-black)]({url}) \n\n"
                 for line in self._data[repo_name].split("\n"):
                     markdown_txt += f"> {line}\n"
                 markdown_txt += "\n"
