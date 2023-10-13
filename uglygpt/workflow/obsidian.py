@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import urllib.parse
 import re
+from time import sleep
 
 from loguru import logger
 
@@ -12,8 +13,8 @@ from uglygpt.base import File
 from uglygpt.chains import parse_markdown
 from uglygpt.utils.github_api import GithubAPI
 from uglygpt.utils.sqlite import KVCache
-from uglygpt.actions.infermation.summarizer import ReadmeSummarizer
-from uglygpt.actions.infermation.category import Category
+from uglygpt.actions.obsidian.summarizer import ReadmeSummarizer
+from uglygpt.actions.obsidian.category import Category
 
 
 @dataclass
@@ -37,7 +38,7 @@ class GithubTrending():
             self._check_finished()
 
         text = GithubAPI.fetch_trending_file()
-        for language in ["All Languages", "Python", "Typescript"]:
+        for language in ["All Languages", "Python", "Typescript", "Rust", "Html", "Css"]:
             self._fetch_trending_repos(text, language)
         self._remove_finished_repos()
         self._data = self.summarizer._load(self._repo_names)
@@ -108,14 +109,18 @@ class GithubTrending():
 
         new_repo_names = [
             repo_name for repo_name in self._repo_names if repo_name not in self._data.keys()]
+        index = [i for i in new_repo_names]
+        #new_repo_names = self._repo_names
 
-        for repo_name in new_repo_names:
+        for repo_name in index:
             readme = GithubAPI.fetch_readme(repo_name)
             if readme:
                 if len(readme) > 40000:
                     readme = readme[:40000]
                 readme_list.append(readme)
                 description_list.append(self._repo_descriptions[repo_name])
+            else:
+                new_repo_names.remove(repo_name)
 
         datas = self.summarizer.run(
             new_repo_names, readme_list, description_list)
@@ -129,14 +134,25 @@ class GithubTrending():
     def output_markdown(self, filename: str | None = None):
         if filename:
             self.output = filename
-        # 先更新数据库
-        self._fetch_summarizer()
-        # 更新分类，并获得分类结果
-        category_list = self._fetch_category()
+        # 增加循环，每次执行 20 个，避免并发太快
+        repo_names = [i for i in self._repo_names]
+        i = 0
+        category_list = {}
+        while  i*20 < len(repo_names):
+            self._repo_names = repo_names[i*20:i*20+20]
+            # 先更新数据库
+            self._fetch_summarizer()
+            # 更新分类，并获得分类结果
+            category_list.update(self._fetch_category())
+            i += 1
+            logger.info("Sleeping 5 seconds...")
+            sleep(5)
 
         # 生成 markdown
         markdown_txt = ""
         for category in ["AI", "后端", "前端", "资料", "其他"]:
+            if category not in category_list.keys():
+                continue
             markdown_txt += f"## {category}\n\n"
             for repo_name in category_list[category]:
                 if repo_name not in self._data.keys():

@@ -27,6 +27,7 @@ class ReadmeSummarizer(MapSqlite):
     map_keys: List[str] = field(default_factory=lambda: ["readme", "description"])
 
     def run(self, name: List[str], readme_list: List[str], description_list: List[str]):
+        logger.info("Running ReadmeSummarizer...")
         datas = self.ask(readme=readme_list, description=description_list)
         result = {k:v for k,v in zip(name, datas) if v != "Error"}
         self._save(result)

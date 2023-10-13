@@ -35,12 +35,15 @@ class Category(MapSqlite):
     map_keys: List[str] = field(default_factory=lambda: ["description"])
 
     def run(self, names: List[str], data: Dict[str, str]):
+        logger.info("Running Category...")
         _datas = self._load(names)
         new_names = [name for name in names if name not in _datas.keys()]
+        index = [i for i in new_names]
 
         description_list = []
-        for name in new_names:
+        for name in index:
             if name not in data.keys():
+                new_names.remove(name)
                 continue
             description = data[name]
             description_list.append(description)
