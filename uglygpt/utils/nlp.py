@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*-coding:utf-8-*-
 
 import string
 from pathlib import Path
@@ -10,7 +12,9 @@ stop_words = set(
     Path("resource/baidu_stopwords.txt").read_text(encoding='utf-8').splitlines()
 )
 punt_list = set(['?', '!', ';', '？', '！', '。', '；', '……', '…', '\n'])
-allow_speech_tags = set(['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng'])
+allow_speech_tags = set(['an', 'i', 'j', 'l', 'n', 'nr',
+                        'nrfg', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng'])
+
 
 def segment(text: str) -> str:
     # 结巴分词
@@ -18,16 +22,17 @@ def segment(text: str) -> str:
     # 词性筛选
     jieba_result = [w for w in jieba_result if w.flag in allow_speech_tags]
     # 去除特殊符号
-    words = [w.word.strip() for w in jieba_result if w.flag!='x']
+    words = [w.word.strip() for w in jieba_result if w.flag != 'x']
     # 去除停用词
     words = [
         word for word in words
-        if word not in stop_words and word not in string.punctuation and len(word)>1
+        if word not in stop_words and word not in string.punctuation and len(word) > 1
     ]
     # 英文
     words = [word.lower() for word in words]
 
     return ' '.join(words)
+
 
 def cut_sentences(text: str) -> List[str]:
     """
