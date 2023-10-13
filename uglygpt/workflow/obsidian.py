@@ -16,6 +16,16 @@ from uglygpt.utils.sqlite import KVCache
 from uglygpt.actions.obsidian.summarizer import ReadmeSummarizer
 from uglygpt.actions.obsidian.category import Category
 
+FRONT_MATTER = """---
+description: {description}
+date created: {time}
+url: {url}
+category: {category}
+tags:
+  - github
+date modified: {time}
+---
+"""
 
 @dataclass
 class GithubTrending():
@@ -92,7 +102,14 @@ class GithubTrending():
                 continue
             data[name] = "Liked"
             if name in file_index.keys():
-                context = "## " + name + "\n\n"
+                description = self._repo_descriptions.get(name, "")
+                category = self.category.cache.get(name).get(name, "Other")
+                context = FRONT_MATTER.format(
+                    description=description,
+                    time=datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    url=f"https://www.github.com/{name}", category=category
+                )
+                context += "## " + name + "\n\n"
                 for line in dict[name].split("\n"):
                     context += f"> {line}\n"
                 context += "\n"
@@ -161,7 +178,11 @@ class GithubTrending():
         self._repo_names = repo_names
 
         # 生成 markdown
-        markdown_txt = ""
+        markdown_txt = FRONT_MATTER.format(
+            description="Github Trending 项目解读",
+            time=datetime.now().strftime("%Y-%m-%d %H:%M"),
+            url="", category="Github"
+        )
         for category in ["AI", "后端", "前端", "资料", "其他"]:
             if category not in category_list.keys():
                 continue
