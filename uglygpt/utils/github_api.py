@@ -31,7 +31,11 @@ class GithubAPI:
     @classmethod
     def fetch_readme(cls, repo_name: str) -> str | None:
         url = f"repos/{repo_name}/readme"
-        response = cls._github_api(url)
+        try:
+            response = cls._github_api(url)
+        except requests.exceptions.HTTPError as err:
+            logger.warning(f"Repo {repo_name} has no README.")
+            return None
         if response.status_code == 200:
             content = base64.b64decode(
                 response.json()['content']).decode('utf-8')
