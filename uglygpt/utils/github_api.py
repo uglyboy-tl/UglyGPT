@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 import base64
 from datetime import datetime
 from typing import Generator
+from urllib.parse import urlparse
 
 import requests
 from loguru import logger
@@ -57,7 +58,9 @@ class GithubAPI:
                 yield item["full_name"]
             if 'rel="next"' not in link:
                 break
-            url = link.split(';')[0].strip('<>')
+            full_url = link.split(';')[0].strip('<>')
+            parsed = urlparse(full_url)
+            url = (parsed.path + "?" + parsed.query).lstrip('/')
 
     @classmethod
     def fetch_trending_file(cls) -> str:
