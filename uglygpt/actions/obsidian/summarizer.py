@@ -29,6 +29,11 @@ class ReadmeSummarizer(MapSqlite):
     def run(self, name: List[str], readme_list: List[str], description_list: List[str]):
         logger.info("Running ReadmeSummarizer...")
         datas = self.ask(readme=readme_list, description=description_list)
-        result = {k:v for k,v in zip(name, datas) if v != "Error"}
+        result ={}
+        for k,v in zip(name, datas):
+            if v == "Error":
+                logger.error(f"Error when summarizing {k}")
+                continue
+            result[k] = v
         self._save(result)
         return result
