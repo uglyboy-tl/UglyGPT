@@ -48,7 +48,7 @@ class GithubTrending():
             self._check_finished()
 
         text = GithubAPI.fetch_trending_file()
-        for language in ["All Languages", "Python", "Typescript", "Rust", "Html", "Css"]:
+        for language in ["All Languages", "Python", "Typescript", "Rust", "Go", "Html", "Css"]:
             self._fetch_trending_repos(text, language)
 
         # 去重
