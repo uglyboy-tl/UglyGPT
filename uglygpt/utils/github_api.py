@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Generator
 from urllib.parse import urlparse
 
@@ -66,8 +66,8 @@ class GithubAPI:
     def fetch_trending_file(cls) -> str:
         file_name = "docs/md/trending.md"
         if File.datetime(file_name).date() < datetime.today().date():
-            date = datetime.now().strftime("%Y-%m-%d")
-            url = f"repos/uglyboy-tl/uglyboy-tl/contents/trending/{date}.md"
+            date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            url = f"repos/uglyboy-tl/Data/contents/trending/{date}.md"
             try:
                 response = cls._github_api(url)
             except requests.exceptions.HTTPError as err:
