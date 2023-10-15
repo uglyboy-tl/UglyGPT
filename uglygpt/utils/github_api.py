@@ -67,9 +67,8 @@ class GithubAPI:
         file_name = "docs/md/trending.md"
         if File.datetime(file_name).date() < datetime.today().date():
             date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-            url = f"repos/uglyboy-tl/Data/contents/trending/{date}.md"
             try:
-                response = cls._github_api(url)
+                content = cls.fetch_file("uglyboy-tl/Data", f"trending/{date}.md")
             except requests.exceptions.HTTPError as err:
                 logger.warning("Github Trending is not updated yet.")
                 return File.load(file_name)
@@ -77,11 +76,26 @@ class GithubAPI:
                 logger.error(f"An error occurred: {e}")
                 raise
 
-            if response.status_code == 200:
-                content = base64.b64decode(
-                    response.json()['content']).decode('utf-8')
+            if content:
                 File.save(file_name, content)
                 return content
-            else:
-                raise Exception("Github Trending is not updated yet.")
         return File.load(file_name)
+
+    @classmethod
+    def fetch_file(cls, repo_name: str, file_path: str) -> str:
+        url = f"repos/{repo_name}/contents/{file_path}"
+        try:
+            response = cls._github_api(url)
+        except requests.exceptions.HTTPError as err:
+            logger.error(f"Repo {repo_name} has no {file_path}.")
+            raise
+        except requests.exceptions.RequestException as e:
+            logger.error(f"An error occurred: {e}")
+            raise
+
+        if response.status_code == 200:
+            content = base64.b64decode(
+                response.json()['content']).decode('utf-8')
+            return content
+        else:
+            return ""
