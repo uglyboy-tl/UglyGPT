@@ -25,18 +25,22 @@ class KVCache:
         self._conn = sqlite3.connect(path)
         self._cur = self._conn.cursor()
 
-    def get(self, keys: List[str] | str | None) -> Dict[str, str]:
+    def get(self, keys: List[str] | str | None, condition: str | None = None) -> Dict[str, str]:
         if keys is None:
-            self._cur.execute(
-                f"SELECT key, value FROM {self.table} WHERE date('now', 'localtime') < date(timestamp, '+? day')", (self.expirationIntervalInDays,))
+            query_sql = f"SELECT key, value FROM {self.table} WHERE date('now', 'localtime') < date(timestamp, '+? day')"
+            if condition is not None:
+                query_sql += f" and {condition}"
+            self._cur.execute(query_sql, (self.expirationIntervalInDays,))
             return {row[0]: row[1] for row in self._cur.fetchall()}
         if isinstance(keys, str):
             keys = [keys]
 
         placeholders = ', '.join('?' for _ in keys)
         params = keys + [str(self.expirationIntervalInDays)]
-        self._cur.execute(
-            f"SELECT key, value FROM {self.table} WHERE key IN ({placeholders}) and date('now', 'localtime') < date(timestamp, '+' || ? || ' day')", params)
+        query_sql = f"SELECT key, value FROM {self.table} WHERE key IN ({placeholders}) and date('now', 'localtime') < date(timestamp, '+' || ? || ' day')"
+        if condition is not None:
+            query_sql += f" and {condition}"
+        self._cur.execute(query_sql, params)
 
         return {row[0]: row[1] for row in self._cur.fetchall()}
 
