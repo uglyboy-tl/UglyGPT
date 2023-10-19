@@ -5,7 +5,7 @@ import string
 from pathlib import Path
 from typing import List
 
-import jieba.posseg as pseg
+import jieba_fast.posseg as pseg
 
 stop_words = set(
     line.strip() for line in

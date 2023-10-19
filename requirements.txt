@@ -3,5 +3,5 @@ tiktoken
 loguru
 tenacity
 pathos
-jieba
+jieba-fast
 beautifulsoup4
