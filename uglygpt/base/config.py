@@ -38,4 +38,6 @@ class Config:
         self.stop_words_path = os.getenv("STOP_WORDS_PATH", "sources/baidu_stopwords.txt")
 
 
+        self.feishu_webhook = os.getenv("FEISHU_WEBHOOK")
+        self.feishu_secret = os.getenv("FEISHU_SECRET")
 config = Config()
