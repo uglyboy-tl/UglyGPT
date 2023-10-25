@@ -30,7 +30,7 @@ description: {description}
 
 @dataclass
 class GithubTrending():
-    output: str = "/home/uglyboy/Code/Obsidian/📥 收件箱/Github 趋势.md"
+    output: str = "/srv/Base/Home/uglyboy/文档/Temp/Github 趋势.md"
     filename: str = "resource/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
