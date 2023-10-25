@@ -17,19 +17,20 @@ from uglygpt.actions.obsidian.summarizer import ReadmeSummarizer
 from uglygpt.actions.obsidian.category import Category
 
 FRONT_MATTER = """---
-description: {description}
-date created: {time}
+date: {time}
+lastmod: {time}
 url: {url}
 category: {category}
 tags:
   - github
-date modified: {time}
+description: {description}
+
 ---
 """
 
 @dataclass
 class GithubTrending():
-    output: str = "/home/uglyboy/Documents/Obsidian/📥 收件箱/Github 趋势.md"
+    output: str = "/home/uglyboy/Code/Obsidian/📥 收件箱/Github 趋势.md"
     filename: str = "resource/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
