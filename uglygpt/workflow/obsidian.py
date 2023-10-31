@@ -62,7 +62,7 @@ class GithubTrending():
 
     def _check_finished(self):
         logger.info("Updating The Finished Repos...")
-        self._set_finished_with_favourite()
+        #self._set_finished_with_favourite()
         self._set_finished_with_stars()
         self._set_finished_with_markdown()
         self.config.set({"Date": datetime.now().strftime("%Y-%m-%d")})
