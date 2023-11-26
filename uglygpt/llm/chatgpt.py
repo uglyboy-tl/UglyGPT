@@ -73,7 +73,7 @@ class ChatGPT(LLMProvider):
             logger.trace(
                 "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
             return self._num_tokens(messages, model="gpt-3.5-turbo-0301")
-        elif model == "gpt-4" or model == "gpt-4-32k":
+        elif model == "gpt-4" or model == "gpt-4-32k" or model == "gpt-4-1106-preview":
             logger.trace(
                 "gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
             return self._num_tokens(messages, model="gpt-4-0314")
@@ -167,4 +167,7 @@ class ChatGPT(LLMProvider):
         tokens = self._num_tokens(messages=self.messages, model=self.model) + 1000 # add 1000 tokens for answers
         if not self.MAX_TOKENS > tokens:
             raise Exception(f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
-        return self.MAX_TOKENS - tokens + 1000
+        max_tokens = self.MAX_TOKENS - tokens + 1000
+        if self.model == "gpt-4-1106-preview":
+            return 4096 if max_tokens > 4096 else max_tokens
+        return max_tokens

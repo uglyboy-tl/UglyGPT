@@ -20,6 +20,7 @@ LLM_PROVIDERS = {
     "chatgpt-16k": (ChatGPT, {"model": "gpt-3.5-turbo-16k", "MAX_TOKENS": 16384}),
     "gpt4": (ChatGPT, {"model": "gpt-4", "MAX_TOKENS": 8192}),
     "gpt4-32k": (ChatGPT, {"model": "gpt-4-32k", "MAX_TOKENS": 32768}),
+    "gpt4-turbo": (ChatGPT, {"model": "gpt-4-1106-preview", "MAX_TOKENS": 128000}),
 }
 
 ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."
