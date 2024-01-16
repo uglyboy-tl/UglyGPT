@@ -29,7 +29,7 @@ class Config:
         # OpenAI
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.openai_api_base = os.getenv("OPENAI_API_BASE")
-        self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4-turbo")
+        self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4")
         # Bing Search
         self.bing_subscription_key = os.getenv("BING_SUBSCRIPTION_KEY")
         # Github

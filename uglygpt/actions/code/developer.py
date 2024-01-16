@@ -27,7 +27,7 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Developer(Action):
-    llm_name: str = "gpt4-turbo"
+    llm_name: str = "gpt4"
     prompt: str = PROMPT_TEMPLATE
     name: str = ""
 
