@@ -4,8 +4,10 @@
 import re
 import json
 from typing import Dict
+
 from loguru import logger
-from uglygpt.chains import LLM
+
+from .llm import LLM
 
 
 def parse_code(text: str, lang: str = "python"):

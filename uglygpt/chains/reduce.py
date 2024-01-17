@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Callable
+
 from loguru import logger
 
 from .llm import LLM
@@ -24,8 +25,10 @@ class ReduceChain(LLM):
 
     def _validate_reduce_key(self, reduce_key: str, inputs: Dict[str, Any]) -> None:
         assert reduce_key in self.input_keys, f"ReduceChain expects {reduce_key} to be in input_keys"
-        assert isinstance(inputs[reduce_key], List), f"ReduceChain expects {reduce_key} to be a list of strings"
-        assert len(inputs[reduce_key]) == self.num, f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
+        assert isinstance(
+            inputs[reduce_key], List), f"ReduceChain expects {reduce_key} to be a list of strings"
+        assert len(
+            inputs[reduce_key]) == self.num, f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
         result = inputs["history"]
@@ -40,5 +43,6 @@ class ReduceChain(LLM):
         if index > 0:
             new_input.pop("history")
             new_input["history"] = self.format(history)
-        new_input.update({reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
+        new_input.update(
+            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
         return super()._call(new_input)

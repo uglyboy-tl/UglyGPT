@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from uglygpt.llm import get_llm_provider, LLMProvider
 from ..base import Chain
 from .prompt import Prompt
-from uglygpt.base import config
 
 @dataclass
 class LLM(Chain):
@@ -20,7 +19,7 @@ class LLM(Chain):
         prompt_template: The template for the prompt.
     """
     prompt_template: str = "{prompt}"
-    llm_name: str = config.llm_provider
+    llm_name: str = ""
     role: Optional[str] = None
 
     def __post_init__(self):
