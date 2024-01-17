@@ -2,13 +2,11 @@
 # -*-coding:utf-8-*-
 
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from uglygpt.llm import get_llm_provider, LLMProvider
-from uglygpt.indexes import DB
 from ..base import Chain
 from .prompt import Prompt
-from .memory import Memory
 from uglygpt.base import config
 
 @dataclass
@@ -24,7 +22,6 @@ class LLM(Chain):
     prompt_template: str = "{prompt}"
     llm_name: str = config.llm_provider
     role: Optional[str] = None
-    db: Optional[str|DB] = None
 
     def __post_init__(self):
         """Initialize the LLMChain object.
@@ -35,8 +32,6 @@ class LLM(Chain):
         if self.role:
             self._llm.set_role(self.role)
         self.prompt = self.prompt_template
-        if self.db is not None:
-            self._memory = Memory(self.db)
 
     @property
     def input_keys(self) -> List[str]:
@@ -60,8 +55,6 @@ class LLM(Chain):
         """
         prompt = self.prompt.format(**inputs)
         response = self._llm.ask(prompt)
-        if hasattr(self, '_memory'):
-            self._memory.update((prompt, response))
         return response
 
     @property

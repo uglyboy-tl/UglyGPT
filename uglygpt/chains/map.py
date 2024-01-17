@@ -52,8 +52,6 @@ class MapChain(LLM):
                 logger.warning(f"MapChain: {input['index']} failed with error: {e}")
                 result = "Error"
             logger.debug(f"MapChain: {input['index']} finished")
-            if hasattr(self, '_memory'):
-                self._memory.update((prompt, result))
             return {"index": input["index"], "result": result}
         return func
 
