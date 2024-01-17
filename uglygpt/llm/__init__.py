@@ -41,7 +41,7 @@ def get_llm_provider(llm_provider_name: str = "") -> LLMProvider:
     if llm_provider_name == "":
         llm_provider_name = config.llm_provider
 
-    if llm_provider_name in LLM_PROVIDERS:
+    if llm_provider_name in LLM_PROVIDERS.keys():
         provider, kwargs = LLM_PROVIDERS[llm_provider_name]
         if provider is None:
             raise NotImplementedError(ERROR_MSG.format(provider=llm_provider_name))
