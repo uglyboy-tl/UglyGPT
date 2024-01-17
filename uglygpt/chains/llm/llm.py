@@ -23,6 +23,7 @@ class LLM(Chain):
     """
     prompt_template: str = "{prompt}"
     llm_name: str = config.llm_provider
+    role: Optional[str] = None
     db: Optional[str|DB] = None
 
     def __post_init__(self):
@@ -31,6 +32,8 @@ class LLM(Chain):
         This method initializes the LLMChain object by getting the LLM provider and setting the prompt.
         """
         self._llm = get_llm_provider(self.llm_name)
+        if self.role:
+            self._llm.set_role(self.role)
         self.prompt = self.prompt_template
         if self.db is not None:
             self._memory = Memory(self.db)

@@ -32,9 +32,7 @@ class Action(ABC):
         Sets the system of the LLMChain object if a role is provided.
         """
         if not hasattr(self, "llm"):
-            self.llm = LLM(self.prompt, self.llm_name)
-        if self.role:
-            self.llm.llm.set_role(self.role)
+            self.llm = LLM(self.prompt, self.llm_name, self.role)
 
     def ask(self, *args, **kwargs) -> str:
         """Ask a question to the LLMChain object.
