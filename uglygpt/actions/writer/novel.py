@@ -41,7 +41,7 @@ PROMPT_TEMPLATE = """
 @dataclass
 class Novel(Action):
     filename: str = "docs/examples/novel.txt"
-    llm_name: str = "chatgpt-16k"
+    llm_name: str = "gpt-3.5-turbo-16k"
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
     reduce: ReduceChain = field(init=False)

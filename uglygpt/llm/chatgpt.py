@@ -2,12 +2,12 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-import openai
-from openai.error import (
-    APIError,
+from openai import OpenAI
+from openai import (
+    BadRequestError,
     AuthenticationError,
-    InvalidRequestError,
-    APIConnectionError
+    PermissionDeniedError,
+    APIConnectionError,
 )
 from requests.exceptions import SSLError
 import tiktoken
@@ -23,22 +23,17 @@ from loguru import logger
 from .base import LLMProvider
 from uglygpt.base import config
 
-# Initialize the OpenAI API client
-openai.api_key = config.openai_api_key
-openai.api_base = config.openai_api_base
-
 def not_notry_exception(exception: Exception):
-    if isinstance(exception, APIError):
+    if isinstance(exception, BadRequestError):
         return False
     elif isinstance(exception, AuthenticationError):
         return False
-    elif isinstance(exception, InvalidRequestError):
+    elif isinstance(exception, PermissionDeniedError):
         return False
     elif isinstance(exception, APIConnectionError) and exception.__cause__ is not None and isinstance(exception.__cause__, SSLError):
         return False
     else:
         return True
-
 
 @dataclass
 class ChatGPT(LLMProvider):
@@ -51,15 +46,15 @@ class ChatGPT(LLMProvider):
         MAX_TOKENS: The maximum number of tokens allowed in a conversation.
         messages: A list of messages in the conversation.
     """
-    requirements: list[str] = field(
-        default_factory=lambda: ["openai", "tiktoken"])
-    model: str = "gpt-3.5-turbo"
-    temperature: float = 0.3
+    model: str
     MAX_TOKENS: int = 4096
+    name: str = "OpenAI"
+    client: OpenAI = field(default=OpenAI(api_key=config.openai_api_key, base_url=config.openai_api_base))
+    temperature: float = 0.3
     messages: list = field(default_factory=list)
     use_max_tokens: bool = True
 
-    def _num_tokens(self, messages, model="gpt-3.5-turbo-0301"):
+    def _num_tokens(self, messages: list, model: str):
         """Calculate the number of tokens in a conversation.
 
         Args:
@@ -71,17 +66,17 @@ class ChatGPT(LLMProvider):
         """
         if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
             logger.trace(
-                "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
-            return self._num_tokens(messages, model="gpt-3.5-turbo-0301")
+                "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+            return self._num_tokens(messages, model="gpt-3.5-turbo-0613")
         elif model == "gpt-4" or model == "gpt-4-32k" or model == "gpt-4-1106-preview":
             logger.trace(
-                "gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
-            return self._num_tokens(messages, model="gpt-4-0314")
-        elif model == "gpt-3.5-turbo-0301":
+                "gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
+            return self._num_tokens(messages, model="gpt-4-0613")
+        elif model == "gpt-3.5-turbo-0613":
             # every message follows <|start|>{role/name}\n{content}<|end|>\n
             tokens_per_message = 4
             tokens_per_name = -1  # if there's a name, the role is omitted
-        elif model == "gpt-4-0314":
+        elif model == "gpt-4-0613":
             tokens_per_message = 3
             tokens_per_name = 1
         else:
@@ -102,7 +97,7 @@ class ChatGPT(LLMProvider):
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
 
-    def set_system(self, msg: str) -> None:
+    def set_role(self, msg: str) -> None:
         """Set the system message in the conversation.
 
         Args:
@@ -134,10 +129,10 @@ class ChatGPT(LLMProvider):
                 kwargs["max_tokens"] = self.max_tokens
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
-            if "maximum context length" in str(e):
+            if "maximum context length" in str(e) and self.name == "OpenAI":
                 if self.model == "gpt-3.5-turbo":
                     kwargs["model"] = "gpt-3.5-turbo-16k"
-                elif self.model == "gpt-4":
+                elif self.model == "gpt-4" or self.model == "gpt-4-1106-preview":
                     kwargs["model"] = "gpt-4-32k"
                 logger.warning(
                     f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}.")
@@ -160,7 +155,7 @@ class ChatGPT(LLMProvider):
             The completion response from the OpenAI API.
         """
         logger.trace(kwargs)
-        return openai.ChatCompletion.create(**kwargs)
+        return self.client.chat.completions.create(**kwargs)
 
     @property
     def max_tokens(self):

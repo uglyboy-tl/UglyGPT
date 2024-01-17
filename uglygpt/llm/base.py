@@ -10,12 +10,12 @@ class LLMProvider(ABC):
     This class is an abstract base class (ABC) for LLM providers. It defines the common interface that all LLM providers should implement.
 
     Methods:
-        set_system: Set the system message.
+        set_role: Set Role message.
         ask: Ask a question and return the user's response.
 
     """
 
-    def set_system(self, msg: str) -> None:
+    def set_role(self, msg: str) -> None:
         """Set the system message.
 
         Args:

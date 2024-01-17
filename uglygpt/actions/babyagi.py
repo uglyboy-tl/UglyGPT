@@ -70,7 +70,7 @@ class BabyAGI(Action):
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)
-        self.llm = ReActChain(llm_name="chatgpt", cls=BabyTasks)
+        self.llm = ReActChain(cls=BabyTasks)
         return super().__post_init__()
 
     def run(self, objective=None):

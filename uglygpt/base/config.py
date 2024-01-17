@@ -6,8 +6,6 @@ from dataclasses import dataclass
 
 from .singleton import singleton
 
-os.umask(22)
-
 @singleton
 @dataclass
 class Config:
@@ -28,7 +26,9 @@ class Config:
         # API keys
         # OpenAI
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.openai_api_base = os.getenv("OPENAI_API_BASE")
+        self.openai_api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
+        self.copilot_token = os.getenv("COPILOT_TOKEN")
+        self.copilot_gpt4_service_url = os.getenv("COPILOT_GPT4_SERVICE_URL")
         self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4")
         # Bing Search
         self.bing_subscription_key = os.getenv("BING_SUBSCRIPTION_KEY")
@@ -37,7 +37,7 @@ class Config:
         # Stop Words Dictionary
         self.stop_words_path = os.getenv("STOP_WORDS_PATH", "sources/baidu_stopwords.txt")
 
-
         self.feishu_webhook = os.getenv("FEISHU_WEBHOOK")
         self.feishu_secret = os.getenv("FEISHU_SECRET")
+
 config = Config()

@@ -9,7 +9,7 @@ from uglygpt.indexes import DB
 from ..base import Chain
 from .prompt import Prompt
 from .memory import Memory
-
+from uglygpt.base import config
 
 @dataclass
 class LLM(Chain):
@@ -22,7 +22,7 @@ class LLM(Chain):
         prompt_template: The template for the prompt.
     """
     prompt_template: str = "{prompt}"
-    llm_name: str = "chatgpt"
+    llm_name: str = config.llm_provider
     db: Optional[str|DB] = None
 
     def __post_init__(self):

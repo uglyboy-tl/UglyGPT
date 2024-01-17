@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from uglygpt.chains import LLM
-from uglygpt.base import File
+from uglygpt.base import config, File
 
 
 @dataclass
@@ -20,7 +20,7 @@ class Action(ABC):
         llm: The LLMChain object used for the action.
     """
     filename: Optional[str] = None
-    llm_name: str = "chatgpt"
+    llm_name: str = config.llm_provider
     prompt: str = "{prompt}"
     role: Optional[str] = None
     llm: LLM = field(init=False)
@@ -34,7 +34,7 @@ class Action(ABC):
         if not hasattr(self, "llm"):
             self.llm = LLM(self.prompt, self.llm_name)
         if self.role:
-            self.llm.llm.set_system(self.role)
+            self.llm.llm.set_role(self.role)
 
     def ask(self, *args, **kwargs) -> str:
         """Ask a question to the LLMChain object.
