@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 
 from uglygpt.llm import get_llm_provider, LLMProvider
@@ -21,6 +21,7 @@ class LLM(Chain):
     prompt_template: str = "{prompt}"
     llm_name: str = ""
     role: Optional[str] = None
+    memory_callback: Optional[Callable[[Tuple[str,str]],None]] = None
 
     def __post_init__(self):
         """Initialize the LLMChain object.
@@ -54,6 +55,8 @@ class LLM(Chain):
         """
         prompt = self.prompt.format(**inputs)
         response = self._llm.ask(prompt)
+        if self.memory_callback:
+            self.memory_callback((prompt, response))
         return response
 
     @property
