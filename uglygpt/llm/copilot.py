@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
-from openai import OpenAI
-from .chatgpt import ChatGPT
+from .openai_api import ChatGPTAPI
 
 from uglygpt.base import config
 
+
 @dataclass
-class Copilot(ChatGPT):
-    client: OpenAI = OpenAI(api_key=config.copilot_token, base_url=config.copilot_gpt4_service_url)
+class Copilot(ChatGPTAPI):
+    api_key: str = config.copilot_token
+    base_url: str = config.copilot_gpt4_service_url
     name: str = "Github Copilot"
     use_max_tokens: bool = False

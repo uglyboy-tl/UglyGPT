@@ -3,41 +3,24 @@
 
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 from .singleton import singleton
+
 
 @singleton
 @dataclass
 class Config:
-    """Singleton class for storing configuration settings.
+    BASE_LOG_DIR = 'logs'
+    # API keys
+    # OpenAI
+    openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
+    openai_api_base: str = os.getenv(
+        "OPENAI_API_BASE", "https://api.openai.com/v1")
+    copilot_token: Optional[str] = os.getenv("COPILOT_TOKEN")
+    copilot_gpt4_service_url: Optional[str] = os.getenv(
+        "COPILOT_GPT4_SERVICE_URL")
+    llm_provider: str = os.getenv("LLM_PROVIDER", "gpt4")
 
-    Attributes:
-        BASE_LOG_DIR: Base directory for log files.
-        openai_api_key: API key for OpenAI.
-        openai_api_base: Base URL for OpenAI API.
-        llm_provider: LLM provider name, default is "gpt4".
-    """
-    def __post_init__(self):
-        """Post-initialization method.
-
-        Sets default values for attributes.
-        """
-        self.BASE_LOG_DIR = 'logs'
-        # API keys
-        # OpenAI
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.openai_api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
-        self.copilot_token = os.getenv("COPILOT_TOKEN")
-        self.copilot_gpt4_service_url = os.getenv("COPILOT_GPT4_SERVICE_URL")
-        self.llm_provider = os.getenv("LLM_PROVIDER", "gpt4")
-        # Bing Search
-        self.bing_subscription_key = os.getenv("BING_SUBSCRIPTION_KEY")
-        # Github
-        self.github_token = os.getenv("GITHUB_TOKEN","")
-        # Stop Words Dictionary
-        self.stop_words_path = os.getenv("STOP_WORDS_PATH", "sources/baidu_stopwords.txt")
-
-        self.feishu_webhook = os.getenv("FEISHU_WEBHOOK")
-        self.feishu_secret = os.getenv("FEISHU_SECRET")
 
 config = Config()
