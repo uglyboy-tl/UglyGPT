@@ -82,7 +82,7 @@ class ChatGPT(ChatGPTAPI):
             if "maximum context length" in str(e) and self.name == "OpenAI":
                 if self.model == "gpt-3.5-turbo":
                     kwargs["model"] = "gpt-3.5-turbo-16k"
-                elif self.model == "gpt-4" or self.model == "gpt-4-1106-preview":
+                elif self.model == "gpt-4":
                     kwargs["model"] = "gpt-4-32k"
                 else:
                     raise e
