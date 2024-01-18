@@ -2,7 +2,6 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from http import HTTPStatus
 
 import dashscope
 from tenacity import (
@@ -14,19 +13,11 @@ from tenacity import (
 )
 from loguru import logger
 
-from .base import LLMProvider
 from uglygpt.base import config
+from .base import LLMProvider
+from .error import *
 
 dashscope.api_key = config.dashscope_api_key
-
-class BadRequestError(Exception):
-    pass
-
-class Unauthorized(Exception):
-    pass
-
-class RequestLimitError(Exception):
-    pass
 
 def not_notry_exception(exception: Exception):
     if isinstance(exception, BadRequestError):
@@ -39,7 +30,6 @@ def not_notry_exception(exception: Exception):
 @dataclass
 class DashScope(LLMProvider):
     model: str = dashscope.Generation.Models.qwen_max
-    use_max_tokens: bool = True
     MAX_TOKENS: int = 6000
     seed: int = 1234
     messages: list = field(default_factory=list)
@@ -52,7 +42,7 @@ class DashScope(LLMProvider):
         try:
             response = dashscope.Tokenization.call(model=model, messages=messages)
         except KeyError:
-            logger.trace("model not found. Using cl100k_base encoding.")
+            logger.trace("model not found. Using qwen-turbo encoding.")
             response = dashscope.Tokenization.call(model="qwen-turbo", messages=messages)
         if response.status_code == HTTPStatus.OK:
             return response.usage["input_tokens"]
@@ -89,20 +79,17 @@ class DashScope(LLMProvider):
             "result_format": 'message'
         }
         try:
-            if self.use_max_tokens:
-                kwargs["max_tokens"] = 2000 if self.max_tokens>2000 else self.max_tokens
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
             if "Range of input length" in str(e) or "Prompt is too long." in str(e):
                 if self.model == "qwen-max":
                     kwargs["model"] = "qwen-max-longcontext"
                 logger.warning(
-                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}.")
+                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)} tokens. Trying again with {kwargs['model']}.")
                 response = self.completion_with_backoff(**kwargs)
             else:
                 raise e
 
-        logger.trace(response)
         message = response.output.choices[0].message.content.strip()  # type: ignore
         return message
 
@@ -118,6 +105,7 @@ class DashScope(LLMProvider):
         """
         logger.trace(kwargs)
         response = dashscope.Generation.call(**kwargs)
+        logger.trace(response)
         status_code, code, message = response.status_code, response.code, response.message # type: ignore
         if status_code == HTTPStatus.OK:
             return response

@@ -72,7 +72,7 @@ class ReActChain(LLM):
 
     def __call__(self, act: Optional[ReAct] = None) -> str:
         if act is None:
-            inputs = {"prompt": ""}
+            inputs = {"prompt": "Start!"}
             inputs = self._prep_inputs(inputs)
             response = self._call(inputs)
             act = self.cls.parse(response)  # type: ignore

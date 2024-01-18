@@ -21,6 +21,8 @@ class Config:
         "COPILOT_GPT4_SERVICE_URL")
     # Dashscope
     dashscope_api_key: Optional[str] = os.getenv("DASHSCOPE_API_KEY")
+    # Zhipuai
+    zhipuai_api_key: Optional[str] = os.getenv("ZHIPUAI_API_KEY")
     llm_provider: str = os.getenv("LLM_PROVIDER", "gpt4")
 
 

@@ -75,7 +75,7 @@ def fix_llm_json_str(string: str):
                 return new_string
             except Exception as e:
                 logger.warning("fix_llm_json_str failed 3:", e)
-                llm = LLM()
+                llm = LLM(llm_name="copilot-4")
                 message = llm(
                     """Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.\n```\n"""+new_string+"""\n```""")
                 logger.debug(message)

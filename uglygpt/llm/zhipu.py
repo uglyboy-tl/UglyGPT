@@ -2,14 +2,9 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from openai import OpenAI
-from openai import (
-    BadRequestError,
-    AuthenticationError,
-    PermissionDeniedError,
-    APIConnectionError,
-)
-from requests.exceptions import SSLError
+from http import HTTPStatus
+
+from zhipuai import ZhipuAI
 from tenacity import (
     retry,
     retry_if_exception,
@@ -19,43 +14,24 @@ from tenacity import (
 )
 from loguru import logger
 
-from .base import LLMProvider
 from uglygpt.base import config
+from .base import LLMProvider
+from .error import *
 
 def not_notry_exception(exception: Exception):
-    if isinstance(exception, BadRequestError):
-        return False
-    elif isinstance(exception, AuthenticationError):
-        return False
-    elif isinstance(exception, PermissionDeniedError):
-        return False
-    elif isinstance(exception, APIConnectionError) and exception.__cause__ is not None and isinstance(exception.__cause__, SSLError):
-        return False
-    else:
-        return True
+    return False
+
 
 @dataclass
-class ChatGPTAPI(LLMProvider):
-    """A class representing a chat-based language model using OpenAI's GPT.
-
-    Attributes:
-        requirements: A list of required packages.
-        model: The model to use for the language model.
-        temperature: The temperature parameter for generating responses.
-        MAX_TOKENS: The maximum number of tokens allowed in a conversation.
-        messages: A list of messages in the conversation.
-    """
-    model: str
-    api_key: str
-    base_url: str
-    name: str
-    use_max_tokens: bool = True
-    MAX_TOKENS: int = 4096
+class ChatGLM(LLMProvider):
+    model: str = "glm-3-turbo"
+    use_max_tokens: bool = False
+    MAX_TOKENS: int = 128000
     temperature: float = 0.3
     messages: list = field(default_factory=list)
 
     def __post_init__(self):
-        self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self._client = ZhipuAI(api_key=config.zhipuai_api_key)
 
     def _num_tokens(self, messages: list, model: str):
         return 0
@@ -85,6 +61,7 @@ class ChatGPTAPI(LLMProvider):
         kwargs = {
             "model": self.model,
             "messages": self.messages,
+            "do_sample": True,
             "temperature": self.temperature,
         }
         try:
@@ -92,9 +69,8 @@ class ChatGPTAPI(LLMProvider):
                 kwargs["max_tokens"] = self.max_tokens
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
-                raise e
+            raise e
 
-        logger.trace(response)
         message = response.choices[0].message.content.strip()  # type: ignore
         return message
 
@@ -110,7 +86,7 @@ class ChatGPTAPI(LLMProvider):
         """
         logger.trace(kwargs)
         response = self._client.chat.completions.create(**kwargs)
-        logger.trace(response)
+        logger.info(response)
         return response
 
     @property
@@ -119,4 +95,4 @@ class ChatGPTAPI(LLMProvider):
         if not self.MAX_TOKENS > tokens:
             raise Exception(f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
         max_tokens = self.MAX_TOKENS - tokens + 1000
-        return max_tokens
+        return 2000 if max_tokens > 2000 else max_tokens

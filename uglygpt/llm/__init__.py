@@ -19,6 +19,11 @@ try:
 except ImportError:
     DashScope = None
 
+try:
+    from uglygpt.llm.zhipu import ChatGLM
+except ImportError:
+    ChatGLM = None
+
 LLM_PROVIDERS = {
     "gpt-3.5-turbo": (ChatGPT, {"model": "gpt-3.5-turbo", "MAX_TOKENS": 4096}),
     "gpt-3.5-turbo-16k": (ChatGPT, {"model": "gpt-3.5-turbo-16k", "MAX_TOKENS": 16384}),
@@ -31,6 +36,8 @@ LLM_PROVIDERS = {
     "qwen-turbo": (DashScope, {"model": "qwen-turbo", "MAX_TOKENS": 6000}),
     "qwen-plus": (DashScope, {"model": "qwen-plus", "MAX_TOKENS": 30000}),
     "qwen-28k": (DashScope, {"model": "qwen-max-longcontext", "MAX_TOKENS": 28000}),
+    "glm4": (ChatGLM, {"model": "glm-4", "MAX_TOKENS": 128000}),
+    "glm3": (ChatGLM, {"model": "glm-3-turbo", "MAX_TOKENS": 128000}),
 }
 
 ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."
