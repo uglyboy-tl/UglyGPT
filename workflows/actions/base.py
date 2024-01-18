@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 from typing import Optional
 
-from uglygpt import LLM
+from core import LLM
 from workflows.utils import File
 
 

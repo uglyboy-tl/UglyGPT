@@ -20,7 +20,7 @@ from tenacity import (
 from loguru import logger
 
 from .base import LLMProvider
-from uglygpt.base import config
+from core.base import config
 
 def not_notry_exception(exception: Exception):
     if isinstance(exception, BadRequestError):

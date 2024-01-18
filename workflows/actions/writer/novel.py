@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from loguru import logger
 
-from uglygpt import ReduceChain
+from core import ReduceChain
 from agent.indexes import BM25DB
 from workflows.utils import parse_json
 from ..base import Action

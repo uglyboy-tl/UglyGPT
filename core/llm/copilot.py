@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from .openai_api import ChatGPTAPI
 
-from uglygpt.base import config
+from core.base import config
 
 
 @dataclass

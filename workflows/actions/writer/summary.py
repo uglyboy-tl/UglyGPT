@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from loguru import logger
 import re
 
-from uglygpt import LLM, ReduceChain
+from core import LLM, ReduceChain
 from ..base import Action
 
 ROLE = """

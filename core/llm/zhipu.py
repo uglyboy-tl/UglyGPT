@@ -14,7 +14,7 @@ from tenacity import (
 )
 from loguru import logger
 
-from uglygpt.base import config
+from core.base import config
 from .base import LLMProvider
 from .error import *
 

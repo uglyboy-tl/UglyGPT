@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 
-from uglygpt.llm import get_llm_provider, LLMProvider
+from core.llm import get_llm_provider, LLMProvider
 from ..base import Chain
 from .prompt import Prompt
 

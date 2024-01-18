@@ -2,25 +2,25 @@
 # -*-coding:utf-8-*-
 
 from .base import LLMProvider
-from uglygpt.base import config
+from core.base import config
 
 try:
-    from uglygpt.llm.chatgpt import ChatGPT
+    from core.llm.chatgpt import ChatGPT
 except ImportError:
     ChatGPT = None
 
 try:
-    from uglygpt.llm.copilot import Copilot
+    from core.llm.copilot import Copilot
 except ImportError:
     Copilot = None
 
 try:
-    from uglygpt.llm.dashscope import DashScope
+    from core.llm.dashscope import DashScope
 except ImportError:
     DashScope = None
 
 try:
-    from uglygpt.llm.zhipu import ChatGLM
+    from core.llm.zhipu import ChatGLM
 except ImportError:
     ChatGLM = None
 

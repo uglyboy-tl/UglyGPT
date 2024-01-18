@@ -7,7 +7,7 @@ from typing import Deque
 from collections import deque
 import re
 
-from uglygpt import LLM, ReAct, ReActChain
+from core import LLM, ReAct, ReActChain
 from .base import Action
 
 

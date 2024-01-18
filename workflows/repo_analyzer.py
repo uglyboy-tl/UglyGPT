@@ -7,7 +7,7 @@ import json
 from loguru import logger
 
 from .utils import File
-from uglygpt import LLM
+from core import LLM
 from .actions.repo_analyze import *
 
 FORMAT_EXAMPLE = """

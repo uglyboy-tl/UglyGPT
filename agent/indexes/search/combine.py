@@ -9,7 +9,7 @@ import json
 
 from loguru import logger
 
-from uglygpt import LLM
+from core import LLM
 from ..base import Index
 from . import *
 

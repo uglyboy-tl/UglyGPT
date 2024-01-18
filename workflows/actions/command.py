@@ -7,7 +7,7 @@ import subprocess
 import platform
 from typing import Optional
 
-from uglygpt import LLM, ReAct, ReActChain
+from core import LLM, ReAct, ReActChain
 from workflows.utils import parse_json
 from .base import Action
 

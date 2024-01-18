@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from loguru import logger
 import tiktoken
 
-from uglygpt.base import config
+from core.base import config
 from .openai_api import ChatGPTAPI
 
 

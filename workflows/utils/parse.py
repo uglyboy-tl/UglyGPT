@@ -7,7 +7,7 @@ from typing import Dict
 
 from loguru import logger
 
-from uglygpt import LLM
+from core import LLM
 
 
 def parse_code(text: str, lang: str = "python"):
