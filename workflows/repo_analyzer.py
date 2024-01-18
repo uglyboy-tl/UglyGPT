@@ -6,7 +6,7 @@ import json
 
 from loguru import logger
 
-from uglygpt.base import File
+from .utils import File
 from uglygpt.chains import LLM
 from .actions.repo_analyze import *
 

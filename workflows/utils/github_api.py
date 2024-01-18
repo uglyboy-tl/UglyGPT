@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import requests
 from loguru import logger
 
-from uglygpt.base import File
+from . import File
 from agent.config import config
 
 @dataclass

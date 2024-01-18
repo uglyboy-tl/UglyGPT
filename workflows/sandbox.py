@@ -12,7 +12,7 @@ import re
 from typing import List, Optional, Set
 from collections import deque
 
-from uglygpt.base import File
+from .utils import File
 from .default_files import Makefile, Service
 
 VENV_NAME = ".venv"

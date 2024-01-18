@@ -3,12 +3,8 @@
 
 from .config import config
 from .singleton import singleton
-from .file import File, ProjectRootNotFoundError, FileNotFoundInWorkspaceError
 
 __all__ = [
     'config',
     'singleton',
-    'File',
-    'ProjectRootNotFoundError',
-    'FileNotFoundInWorkspaceError'
 ]
