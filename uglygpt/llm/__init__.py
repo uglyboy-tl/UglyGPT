@@ -28,6 +28,8 @@ LLM_PROVIDERS = {
     "copilot-3.5": (Copilot, {"model": "gpt-3.5-turbo"}),
     "copilot-4": (Copilot, {"model": "gpt-4"}),
     "qwen": (DashScope, {"model": "qwen-max", "MAX_TOKENS": 6000}),
+    "qwen-turbo": (DashScope, {"model": "qwen-turbo", "MAX_TOKENS": 6000}),
+    "qwen-plus": (DashScope, {"model": "qwen-plus", "MAX_TOKENS": 30000}),
     "qwen-28k": (DashScope, {"model": "qwen-max-longcontext", "MAX_TOKENS": 28000}),
 }
 
