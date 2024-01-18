@@ -14,6 +14,11 @@ try:
 except ImportError:
     Copilot = None
 
+try:
+    from uglygpt.llm.dashscope import DashScope
+except ImportError:
+    DashScope = None
+
 LLM_PROVIDERS = {
     "gpt-3.5-turbo": (ChatGPT, {"model": "gpt-3.5-turbo", "MAX_TOKENS": 4096}),
     "gpt-3.5-turbo-16k": (ChatGPT, {"model": "gpt-3.5-turbo-16k", "MAX_TOKENS": 16384}),
@@ -22,6 +27,8 @@ LLM_PROVIDERS = {
     "gpt4-turbo": (ChatGPT, {"model": "gpt-4-1106-preview", "MAX_TOKENS": 128000}),
     "copilot-3.5": (Copilot, {"model": "gpt-3.5-turbo"}),
     "copilot-4": (Copilot, {"model": "gpt-4"}),
+    "qwen": (DashScope, {"model": "qwen-max", "MAX_TOKENS": 6000}),
+    "qwen-28k": (DashScope, {"model": "qwen-max-longcontext", "MAX_TOKENS": 28000}),
 }
 
 ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."

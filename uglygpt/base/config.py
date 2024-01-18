@@ -19,6 +19,8 @@ class Config:
     copilot_token: Optional[str] = os.getenv("COPILOT_TOKEN")
     copilot_gpt4_service_url: Optional[str] = os.getenv(
         "COPILOT_GPT4_SERVICE_URL")
+    # Dashscope
+    dashscope_api_key: Optional[str] = os.getenv("DASHSCOPE_API_KEY")
     llm_provider: str = os.getenv("LLM_PROVIDER", "gpt4")
 
 
