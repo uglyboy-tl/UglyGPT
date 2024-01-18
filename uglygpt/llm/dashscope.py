@@ -43,12 +43,20 @@ def not_notry_exception(exception: Exception):
 class DashScope(LLMProvider):
     model: str = dashscope.Generation.Models.qwen_max
     use_max_tokens: bool = True
-    MAX_TOKENS: int = 4096
+    MAX_TOKENS: int = 6000
     seed: int = 1234
     messages: list = field(default_factory=list)
 
     def _num_tokens(self, messages: list, model: str):
-        response = dashscope.Tokenization.call(model=model, messages=messages)
+        if model == "qwen-max" or model == "qwen-max-longcontext":
+            logger.trace(
+                "qwen-max may change over time. Returning num tokens assuming qwen-turbo.")
+            return self._num_tokens(messages, model="qwen-turbo")
+        try:
+            response = dashscope.Tokenization.call(model=model, messages=messages)
+        except KeyError:
+            logger.trace("model not found. Using cl100k_base encoding.")
+            response = dashscope.Tokenization.call(model="qwen-turbo", messages=messages)
         if response.status_code == HTTPStatus.OK:
             return response.usage["input_tokens"]
         else:
@@ -111,7 +119,7 @@ class DashScope(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-        logger.trace(kwargs)
+        logger.info(kwargs)
         response = dashscope.Generation.call(**kwargs)
         status_code, code, message = response.status_code, response.code, response.message # type: ignore
         if status_code == HTTPStatus.OK:
@@ -133,9 +141,9 @@ class DashScope(LLMProvider):
     def max_tokens(self):
         # add 1000 tokens for answers
         tokens = self._num_tokens(
-            messages=self.messages, model=self.model) + 1000
+            messages=self.messages, model=self.model)
         if not self.MAX_TOKENS > tokens:
             raise Exception(
                 f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
-        max_tokens = self.MAX_TOKENS - tokens + 1000
+        max_tokens = self.MAX_TOKENS - tokens
         return max_tokens
