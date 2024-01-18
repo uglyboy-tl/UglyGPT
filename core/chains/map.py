@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 import json
 
-from pathos.multiprocessing import ProcessingPool as Pool
+from pathos.pools import _ThreadPool as Pool
 from loguru import logger
 
 from .llm import LLM
