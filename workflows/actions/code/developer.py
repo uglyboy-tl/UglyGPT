@@ -26,7 +26,6 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Developer(Action):
-    llm_name: str = "copilot-4"
     prompt: str = PROMPT_TEMPLATE
     name: str = ""
 

@@ -16,13 +16,14 @@ class Coder:
     request: str = ""
     review_code: bool = False
     sandbox: Sandbox = field(default_factory=Sandbox)
+    llm_name: str = "gpt-4-turbo"
 
     def __post_init__(self):
-        self.writer = CodeWrite(self.file_path)
-        self.reviewer = CodeReviewer(self.file_path)
-        self.rewriter = CodeRewrite(self.file_path)
-        self.tester = TestWriter(self.test_path)
-        self.unittester = TestWriter(self.unittest_path)
+        self.writer = CodeWrite(self.file_path, self.llm_name)
+        self.reviewer = CodeReviewer(self.file_path, self.llm_name)
+        self.rewriter = CodeRewrite(self.file_path, self.llm_name)
+        self.tester = TestWriter(self.test_path, self.llm_name)
+        self.unittester = TestWriter(self.unittest_path, self.llm_name)
         try:
             logger.add(f"logs/{File.path_to_filename(self.file_path)}.log", level="INFO", rotation="1 week", retention="10 days", compression="zip")
         except:
