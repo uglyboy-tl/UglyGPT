@@ -55,7 +55,7 @@ class Technical(Action):
     name: str = "技术文档撰写"
 
     def __post_init__(self):
-        self.llm = LLM(PROMPT_TEMPLATE, "chatgpt")
+        self.llm = LLM(PROMPT_TEMPLATE, "chatgpt", self.role)
         return super().__post_init__()
 
     def run(self, *args, **kwargs):

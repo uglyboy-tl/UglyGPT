@@ -27,7 +27,7 @@ class Summary(Action):
     prompt: str = PROMPT_TEMPLATE
 
     def __post_init__(self):
-        self.llm = ReduceChain(self.prompt, self.llm_name)
+        self.llm = ReduceChain(self.prompt, self.llm_name, self.role)
         return super().__post_init__()
 
     def run(self):

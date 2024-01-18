@@ -115,7 +115,7 @@ class Command(Action):
             except:
                 pass
         self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
-        self.llm = ReActChain(llm_name=self.llm_name, cls = CommandAct)
+        self.llm = ReActChain(llm_name=self.llm_name, role=self.role, cls = CommandAct)
         return super().__post_init__()
 
     def run(self, objective=None, command=None):

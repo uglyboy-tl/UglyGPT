@@ -70,7 +70,7 @@ class BabyAGI(Action):
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)
-        self.llm = ReActChain(cls=BabyTasks)
+        self.llm = ReActChain(role=self.role, cls=BabyTasks)
         return super().__post_init__()
 
     def run(self, objective=None):

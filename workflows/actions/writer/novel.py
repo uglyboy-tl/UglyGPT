@@ -49,7 +49,7 @@ class Novel(Action):
     db: BM25DB = field(init=False)
 
     def __post_init__(self):
-        self.llm = ReduceChain(self.prompt, self.llm_name, format=self._parse)
+        self.llm = ReduceChain(self.prompt, self.llm_name, self.role, format=self._parse)
         self.db = BM25DB("docs/examples/novel.json",True)
         self.db.init()
         return super().__post_init__()
