@@ -7,7 +7,7 @@ import json
 
 from uglygpt.chains import MapChain
 from .base import Action
-from agent.utils.sqlite import KVCache
+from workflows.utils.sqlite import KVCache
 
 @dataclass
 class MapSqlite(Action):

@@ -4,10 +4,9 @@
 import sqlite3
 from dataclasses import dataclass
 from typing import Dict, List
+from pathlib import Path
 
 from loguru import logger
-
-from uglygpt.base import File
 
 
 @dataclass
@@ -17,7 +16,7 @@ class KVCache:
     expirationIntervalInDays: int = 10
 
     def __post_init__(self) -> None:
-        path = File.to_path(self.file)
+        path = Path(self.file)
         with sqlite3.connect(path) as conn:
             cur = conn.cursor()
             cur.execute(

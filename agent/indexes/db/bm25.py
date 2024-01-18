@@ -13,7 +13,7 @@ from typing import List, Set, Tuple, Dict
 from loguru import logger
 
 from ..base import DB
-from agent.utils.nlp import segment
+from .nlp import segment
 
 
 class PathNotFoundError(Exception):

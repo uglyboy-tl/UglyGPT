@@ -11,8 +11,7 @@ from loguru import logger
 
 from uglygpt.base import File
 from uglygpt.chains import parse_markdown
-from agent.utils.github_api import GithubAPI
-from agent.utils.sqlite import KVCache
+from .utils import GithubAPI, KVCache
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
 
