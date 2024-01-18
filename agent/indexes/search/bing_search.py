@@ -7,7 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, before_sleep_log, Re
 from dataclasses import dataclass
 
 from agent.config import config
-from .base import Index
+from ..base import Index
 
 BING_SEARCH_API_URL = 'https://api.bing.microsoft.com/v7.0/search'
 

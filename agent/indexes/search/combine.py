@@ -9,9 +9,8 @@ from typing import List
 from loguru import logger
 
 from uglygpt.chains import LLM, parse_json
-from .base import Index
-from .bing_search import BingSearch
-from .arxiv import ArxivIndex
+from ..base import Index
+from . import *
 
 @dataclass
 class CombineSearch(Index):

@@ -1,12 +1,15 @@
+#!/usr/bin/env python3
+# -*-coding:utf-8-*-
+
 from .base import Index, DB
-from .bing_search import BingSearch
-from .arxiv import ArxivIndex
-from .bm25 import BM25DB
+from .search import BingSearch, ArxivIndex, CombineSearch
+from .db import BM25DB
 
 __all__ = [
     'Index',
     'DB',
     'BingSearch',
     'ArxivIndex',
+    'CombineSearch',
     'BM25DB',
 ]

@@ -4,7 +4,7 @@
 from dataclasses import dataclass, field
 from typing import Tuple, List
 
-from agent.indexes import DB, BM25DB
+from . import DB, BM25DB
 
 SEPARATOR = '\u001f'
 

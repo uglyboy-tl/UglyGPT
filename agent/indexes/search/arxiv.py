@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import List
 from xml.etree import ElementTree
 
-from .base import Index
+from ..base import Index
 
 ARXIV_SEARCH_API_URL = 'http://export.arxiv.org/api/query'
 
