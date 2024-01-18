@@ -84,8 +84,8 @@ class ChatGPT(ChatGPTAPI):
                     kwargs["model"] = "gpt-3.5-turbo-16k"
                 elif self.model == "gpt-4" or self.model == "gpt-4-1106-preview":
                     kwargs["model"] = "gpt-4-32k"
-                elif self.model == "gpt-3.5-turbo-16k" or self.model == "gpt-4-32k":
-                    kwargs["model"] = "gpt-4-1106-preview"
+                else:
+                    raise e
                 logger.warning(
                     f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}.")
                 response = self.completion_with_backoff(**kwargs)

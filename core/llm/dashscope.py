@@ -84,6 +84,8 @@ class DashScope(LLMProvider):
             if "Range of input length" in str(e) or "Prompt is too long." in str(e):
                 if self.model == "qwen-max":
                     kwargs["model"] = "qwen-max-longcontext"
+                else:
+                    raise e
                 logger.warning(
                     f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)} tokens. Trying again with {kwargs['model']}.")
                 response = self.completion_with_backoff(**kwargs)
