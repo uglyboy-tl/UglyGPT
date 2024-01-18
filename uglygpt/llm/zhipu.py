@@ -85,8 +85,8 @@ class ChatGLM(LLMProvider):
             The completion response from the OpenAI API.
         """
         logger.trace(kwargs)
-        response = self._client.chat.completions.create(**kwargs)
-        logger.info(response)
+        response = self._client.chat.completions.create(**kwargs) # type: ignore
+        logger.trace(response)
         return response
 
     @property
