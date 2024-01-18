@@ -11,7 +11,6 @@ from .singleton import singleton
 @singleton
 @dataclass
 class Config:
-    BASE_LOG_DIR = 'logs'
     # API keys
     # OpenAI
     openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")

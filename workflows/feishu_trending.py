@@ -13,8 +13,7 @@ import json
 import requests
 from loguru import logger
 
-from agent.config import config
-from .utils import GithubAPI, KVCache, parse_markdown
+from .utils import GithubAPI, KVCache, parse_markdown, config
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
 

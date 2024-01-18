@@ -11,7 +11,7 @@ import requests
 from loguru import logger
 
 from .file import File
-from agent.config import config
+from .config import config
 
 @dataclass
 class GithubAPI:
