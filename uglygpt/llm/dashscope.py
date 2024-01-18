@@ -2,10 +2,7 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from email import message
 from http import HTTPStatus
-import re
-import stat
 
 import dashscope
 from tenacity import (
@@ -119,7 +116,7 @@ class DashScope(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-        logger.info(kwargs)
+        logger.trace(kwargs)
         response = dashscope.Generation.call(**kwargs)
         status_code, code, message = response.status_code, response.code, response.message # type: ignore
         if status_code == HTTPStatus.OK:

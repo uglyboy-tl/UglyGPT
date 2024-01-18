@@ -101,6 +101,7 @@ class Command(Action):
     """
     role: str = ROLE
     objective: str = ""
+    llm_name: str = "copilot-4"
 
     def __post_init__(self):
         """Initialize the Command object.
@@ -114,7 +115,7 @@ class Command(Action):
             except:
                 pass
         self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
-        self.llm = ReActChain(llm_name="copilot-4", cls = CommandAct)
+        self.llm = ReActChain(llm_name=self.llm_name, cls = CommandAct)
         return super().__post_init__()
 
     def run(self, objective=None, command=None):
