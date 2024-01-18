@@ -50,16 +50,6 @@ class DashScope(LLMProvider):
             raise Exception(
                 f"Failed request_id: {response.request_id}, status_code: {response.status_code}, code: {response.code}, message:{response.message}")
 
-    def set_role(self, msg: str) -> None:
-        """Set the system message in the conversation.
-
-        Args:
-            msg: The system message.
-        """
-        self.messages = []
-        if msg:
-            self.messages.append({"role": "system", "content": msg})
-
     def ask(self, prompt: str) -> str:
         """Ask a question and get a response from the language model.
 
@@ -92,8 +82,9 @@ class DashScope(LLMProvider):
             else:
                 raise e
 
-        message = response.output.choices[0].message.content.strip()  # type: ignore
-        return message
+        logger.trace(kwargs)
+        logger.trace(response)
+        return response.output.choices[0].message.content.strip()  # type: ignore
 
     @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
@@ -105,9 +96,9 @@ class DashScope(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-        logger.trace(kwargs)
+
         response = dashscope.Generation.call(**kwargs)
-        logger.trace(response)
+
         status_code, code, message = response.status_code, response.code, response.message # type: ignore
         if status_code == HTTPStatus.OK:
             return response

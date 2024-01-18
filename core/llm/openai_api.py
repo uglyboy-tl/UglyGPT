@@ -57,19 +57,6 @@ class ChatGPTAPI(LLMProvider):
     def __post_init__(self):
         self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
-    def _num_tokens(self, messages: list, model: str):
-        return 0
-
-    def set_role(self, msg: str) -> None:
-        """Set the system message in the conversation.
-
-        Args:
-            msg: The system message.
-        """
-        self.messages = []
-        if msg:
-            self.messages.append({"role": "system", "content": msg})
-
     def ask(self, prompt: str) -> str:
         """Ask a question and get a response from the language model.
 
@@ -94,9 +81,9 @@ class ChatGPTAPI(LLMProvider):
         except Exception as e:
                 raise e
 
+        logger.trace(kwargs)
         logger.trace(response)
-        message = response.choices[0].message.content.strip()  # type: ignore
-        return message
+        return response.choices[0].message.content.strip()  # type: ignore
 
     @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
@@ -108,10 +95,8 @@ class ChatGPTAPI(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-        logger.trace(kwargs)
-        response = self._client.chat.completions.create(**kwargs)
-        logger.trace(response)
-        return response
+        return self._client.chat.completions.create(**kwargs)
+
 
     @property
     def max_tokens(self):

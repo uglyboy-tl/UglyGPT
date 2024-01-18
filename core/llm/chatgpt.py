@@ -92,9 +92,9 @@ class ChatGPT(ChatGPTAPI):
             else:
                 raise e
 
+        logger.trace(kwargs)
         logger.trace(response)
-        message = response.choices[0].message.content.strip()  # type: ignore
-        return message
+        return response.choices[0].message.content.strip()  # type: ignore
 
     @property
     def max_tokens(self):
