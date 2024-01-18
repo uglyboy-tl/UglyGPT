@@ -31,7 +31,6 @@ PROMPT_TEMPLATE = """
 @dataclass
 class Category(MapSqlite):
     role: str = ROLE
-    llm_name: str = "qwen"
     prompt: str = PROMPT_TEMPLATE
     map_keys: List[str] = field(default_factory=lambda: ["description"])
 
