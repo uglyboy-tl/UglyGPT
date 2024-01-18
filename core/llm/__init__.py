@@ -27,17 +27,17 @@ except ImportError:
 LLM_PROVIDERS = {
     "gpt-3.5-turbo": (ChatGPT, {"model": "gpt-3.5-turbo", "MAX_TOKENS": 4096}),
     "gpt-3.5-turbo-16k": (ChatGPT, {"model": "gpt-3.5-turbo-16k", "MAX_TOKENS": 16384}),
-    "gpt4": (ChatGPT, {"model": "gpt-4", "MAX_TOKENS": 8192}),
-    "gpt4-32k": (ChatGPT, {"model": "gpt-4-32k", "MAX_TOKENS": 32768}),
-    "gpt4-turbo": (ChatGPT, {"model": "gpt-4-1106-preview", "MAX_TOKENS": 128000}),
+    "gpt-4": (ChatGPT, {"model": "gpt-4", "MAX_TOKENS": 8192}),
+    "gpt-4-32k": (ChatGPT, {"model": "gpt-4-32k", "MAX_TOKENS": 32768}),
+    "gpt-4-turbo": (ChatGPT, {"model": "gpt-4-1106-preview", "MAX_TOKENS": 128000}),
     "copilot-3.5": (Copilot, {"model": "gpt-3.5-turbo"}),
     "copilot-4": (Copilot, {"model": "gpt-4"}),
     "qwen": (DashScope, {"model": "qwen-max", "MAX_TOKENS": 6000}),
     "qwen-turbo": (DashScope, {"model": "qwen-turbo", "MAX_TOKENS": 6000}),
     "qwen-plus": (DashScope, {"model": "qwen-plus", "MAX_TOKENS": 30000}),
     "qwen-28k": (DashScope, {"model": "qwen-max-longcontext", "MAX_TOKENS": 28000}),
-    "glm4": (ChatGLM, {"model": "glm-4", "MAX_TOKENS": 128000}),
-    "glm3": (ChatGLM, {"model": "glm-3-turbo", "MAX_TOKENS": 128000}),
+    "glm-4": (ChatGLM, {"model": "glm-4", "MAX_TOKENS": 128000}),
+    "glm-3": (ChatGLM, {"model": "glm-3-turbo", "MAX_TOKENS": 128000}),
 }
 
 ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."
