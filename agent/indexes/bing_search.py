@@ -6,7 +6,7 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed, before_sleep_log, RetryError
 from dataclasses import dataclass
 
-from uglygpt.base import config
+from agent.config import config
 from .base import Index
 
 BING_SEARCH_API_URL = 'https://api.bing.microsoft.com/v7.0/search'

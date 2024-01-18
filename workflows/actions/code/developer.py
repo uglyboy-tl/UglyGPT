@@ -4,9 +4,8 @@
 from dataclasses import dataclass
 from loguru import logger
 
-from agent.actions.base import Action
 from uglygpt.chains import parse_markdown, parse_code
-
+from ..base import Action
 
 FORMAT = """
 请按照以下示例格式返回你的结果：

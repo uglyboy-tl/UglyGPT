@@ -6,9 +6,9 @@ from loguru import logger
 from pathlib import Path
 from typing import Optional
 
-from agent.actions.code import CodeWrite, CodeReviewer, TestWriter, CodeRewrite
-from agent.workflow.sandbox import Sandbox, TestFailedError
 from uglygpt.base import File
+from .actions.code import CodeWrite, CodeReviewer, TestWriter, CodeRewrite
+from .sandbox import Sandbox, TestFailedError
 
 @dataclass
 class Coder:

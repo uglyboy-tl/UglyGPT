@@ -6,7 +6,7 @@ __pycache__/
 docs/examples
 docs/md
 logs
-uglygpt/dev
+workflows/dev
 
 ``` 一些不需要上传的文件
 ```

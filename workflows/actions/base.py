@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from uglygpt.chains import LLM
-from uglygpt.base import config, File
+from uglygpt.base import File
 
 
 @dataclass
@@ -20,7 +20,7 @@ class Action(ABC):
         llm: The LLMChain object used for the action.
     """
     filename: Optional[str] = None
-    llm_name: str = config.llm_provider
+    llm_name: str = ""
     prompt: str = "{prompt}"
     role: Optional[str] = None
     llm: LLM = field(init=False)
