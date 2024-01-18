@@ -14,6 +14,8 @@ class LLMProvider(ABC):
         ask: Ask a question and return the user's response.
 
     """
+    def _num_tokens(self, messages: list, model: str):
+        return 0
 
     def set_role(self, msg: str) -> None:
         """Set the system message.
@@ -25,7 +27,9 @@ class LLMProvider(ABC):
             None
 
         """
-        pass
+        self.messages = []
+        if msg:
+            self.messages.append({"role": "system", "content": msg})
 
     @abstractmethod
     def ask(self, prompt: str) -> str:
