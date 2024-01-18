@@ -5,10 +5,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
+import json
 
 from loguru import logger
 
-from uglygpt.chains import LLM, parse_json
+from uglygpt import LLM
 from ..base import Index
 from . import *
 
@@ -52,4 +53,4 @@ class CombineSearch(Index):
             f'Use the current date if needed: {datetime.now().strftime("%B %d, %Y")}.\n' \
             f'The queries shoud be writing in English' \
             f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"].')
-        return parse_json(llm(question = question))
+        return json.loads(llm(question = question))

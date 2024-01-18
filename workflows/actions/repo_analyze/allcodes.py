@@ -8,9 +8,8 @@ from typing import Dict, List, Optional, Tuple
 
 from loguru import logger
 
-from uglygpt.base import File
+from workflows.utils import File
 from ..mapsqlite import MapSqlite
-from uglygpt.chains import MapChain
 from .utils import generate_dict, IMAGE_EXTENSIONS, MEDIA_EXTENSIONS, IGNORE_EXTENSIONS, EXTENSION_MAPPING
 
 ROLE = """

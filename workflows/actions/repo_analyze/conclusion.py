@@ -6,7 +6,7 @@ from loguru import logger
 from typing import List
 
 from ..base import Action
-from uglygpt.chains import ReduceChain
+from uglygpt import ReduceChain
 
 
 ROLE = """

@@ -6,7 +6,7 @@ from typing import List, Dict
 
 from loguru import logger
 
-from uglygpt.chains import parse_json
+from workflows.utils import parse_json
 from ..mapsqlite import MapSqlite
 
 ROLE = """

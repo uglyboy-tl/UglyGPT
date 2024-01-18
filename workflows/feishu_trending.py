@@ -13,9 +13,8 @@ import json
 import requests
 from loguru import logger
 
-from uglygpt.base import config
-from uglygpt.chains import parse_markdown
-from .utils import GithubAPI, KVCache
+from agent.config import config
+from .utils import GithubAPI, KVCache, parse_markdown
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
 

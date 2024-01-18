@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from loguru import logger
 
-from uglygpt.chains import parse_markdown, parse_code
+from workflows.utils import parse_markdown, parse_code
 from ..base import Action
 
 FORMAT = """

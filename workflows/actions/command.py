@@ -7,7 +7,8 @@ import subprocess
 import platform
 from typing import Optional
 
-from uglygpt.chains import LLM, ReAct, ReActChain, parse_json
+from uglygpt import LLM, ReAct, ReActChain
+from workflows.utils import parse_json
 from .base import Action
 
 DEBUG = False

@@ -9,8 +9,7 @@ from time import sleep
 
 from loguru import logger
 
-from uglygpt.chains import parse_markdown
-from .utils import GithubAPI, KVCache, File
+from .utils import GithubAPI, KVCache, File, parse_markdown
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
 

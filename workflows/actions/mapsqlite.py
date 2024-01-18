@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, List
 import json
 
-from uglygpt.chains import MapChain
+from uglygpt import MapChain
 from .base import Action
 from workflows.utils.sqlite import KVCache
 
