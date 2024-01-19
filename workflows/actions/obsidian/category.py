@@ -70,4 +70,6 @@ class Category(MapSqlite):
         except Exception as e:
             logger.warning(f"An error occurred: {e}")
             return "Error"
-        return result.get("CATEGORY", "Error")
+        if isinstance(result, dict):
+            return result.get("CATEGORY", "Error")
+        return "Error"

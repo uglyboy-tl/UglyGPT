@@ -54,6 +54,9 @@ def fix_llm_json_str(string: str):
     """
     new_string = re.sub(r',\s*}', '}', string)
     new_string = re.sub(r',\s*]', ']', new_string)
+    new_string = re.sub(r'"},"\n', '"},\n', new_string)
+    new_string = re.sub(r'"}"\n', '"}\n', new_string)
+    new_string = re.sub(r'}"$', '}', new_string)
     try:
         json.loads(new_string)
         return new_string
