@@ -36,8 +36,11 @@ class StoresRetriever(BaseRetriever, ABC):
         pass
 
     @abstractmethod
-    def add(self, text: str, metadata: Dict[str, str]):
+    def add(self, text: str, metadata: Dict[str, str]={}):
         pass
 
     def _load(self):
         self.init()
+
+    def all(self) -> List[str]:
+        return []

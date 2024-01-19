@@ -142,3 +142,6 @@ class BM25Retriever(StoresRetriever):
     @property
     def is_empty(self):
         return not self.texts
+
+    def all(self) -> List[str]:
+        return self.texts
