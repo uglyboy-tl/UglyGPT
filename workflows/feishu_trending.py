@@ -24,10 +24,11 @@ class FeishuTrending():
     secret: str = config.feishu_secret
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
+    llm_name: str = ""
 
     def __post_init__(self):
-        self.summarizer = ReadmeSummarizer(self.filename)
-        self.category = Category(self.filename)
+        self.summarizer = ReadmeSummarizer(self.filename, self.llm_name)
+        self.category = Category(self.filename, self.llm_name)
         self.old = KVCache(self.filename, "Feishu", 30)
         self.config = KVCache(self.filename, "Config")
 

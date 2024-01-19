@@ -31,10 +31,11 @@ class GithubTrending():
     filename: str = "resource/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
+    llm_name: str = ""
 
     def __post_init__(self):
-        self.summarizer = ReadmeSummarizer(self.filename)
-        self.category = Category(self.filename)
+        self.summarizer = ReadmeSummarizer(self.filename, self.llm_name)
+        self.category = Category(self.filename, self.llm_name)
         self.finished = KVCache(self.filename, "Finished", 30)
         self.config = KVCache(self.filename, "Config")
 
@@ -136,8 +137,8 @@ class GithubTrending():
         for repo_name in index:
             readme = GithubAPI.fetch_readme(repo_name)
             if readme:
-                if len(readme) > 40000:
-                    readme = readme[:40000]
+                if len(readme) > 35000:
+                    readme = readme[:35000]
                 readme_list.append(readme)
                 description_list.append(self._repo_descriptions[repo_name])
             else:
@@ -156,11 +157,12 @@ class GithubTrending():
         if filename:
             self.output = filename
         # 增加循环，每次执行 20 个，避免并发太快
+        block = 15
         repo_names = [i for i in self._repo_names]
         i = 0
         category_list = {}
-        while  i*20 < len(repo_names):
-            self._repo_names = repo_names[i*20:i*20+20]
+        while  i*block < len(repo_names):
+            self._repo_names = repo_names[i*block:i*block+block]
             # 先更新数据库
             self._fetch_summarizer()
             # 更新分类，并获得分类结果
