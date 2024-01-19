@@ -17,8 +17,10 @@ class Config:
     openai_api_base: str = os.getenv(
         "OPENAI_API_BASE", "https://api.openai.com/v1")
     copilot_token: Optional[str] = os.getenv("COPILOT_TOKEN")
-    copilot_gpt4_service_url: Optional[str] = os.getenv(
-        "COPILOT_GPT4_SERVICE_URL")
+    copilot_gpt4_service_url: Optional[str] = os.getenv("COPILOT_GPT4_SERVICE_URL")
+    # Yi
+    yi_api_key: Optional[str] = os.getenv("YI_API_KEY")
+
     # Dashscope
     dashscope_api_key: Optional[str] = os.getenv("DASHSCOPE_API_KEY")
     # Zhipuai

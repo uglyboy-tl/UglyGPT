@@ -6,13 +6,12 @@ from core.base import config
 
 try:
     from core.llm.chatgpt import ChatGPT
+    from core.llm.copilot import Copilot
+    from core.llm.yi import Yi
 except ImportError:
     ChatGPT = None
-
-try:
-    from core.llm.copilot import Copilot
-except ImportError:
     Copilot = None
+    Yi = None
 
 try:
     from core.llm.dashscope import DashScope
@@ -32,6 +31,8 @@ LLM_PROVIDERS = {
     "gpt-4-turbo": (ChatGPT, {"model": "gpt-4-1106-preview", "MAX_TOKENS": 128000}),
     "copilot-3.5": (Copilot, {"model": "gpt-3.5-turbo"}),
     "copilot-4": (Copilot, {"model": "gpt-4"}),
+    "yi": (Yi, {"model": "yi-34b-chat-v08"}),
+    "yi-32k": (Yi, {"model": "yi-34b-chat-32k-v01"}),
     "qwen": (DashScope, {"model": "qwen-max", "MAX_TOKENS": 6000}),
     "qwen-turbo": (DashScope, {"model": "qwen-turbo", "MAX_TOKENS": 6000}),
     "qwen-plus": (DashScope, {"model": "qwen-plus", "MAX_TOKENS": 30000}),

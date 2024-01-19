@@ -15,15 +15,6 @@ class ChatGPT(ChatGPTAPI):
     use_max_tokens: bool = False
 
     def _num_tokens(self, messages: list, model: str):
-        """Calculate the number of tokens in a conversation.
-
-        Args:
-            messages: A list of messages in the conversation.
-            model: The model to use for tokenization.
-
-        Returns:
-            The number of tokens in the conversation.
-        """
         if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
             logger.trace(
                 "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613.")

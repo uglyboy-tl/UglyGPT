@@ -18,6 +18,15 @@ class LLMProvider(ABC):
     delay_init: bool
 
     def _num_tokens(self, messages: list, model: str):
+        """Calculate the number of tokens in a conversation.
+
+        Args:
+            messages: A list of messages in the conversation.
+            model: The model to use for tokenization.
+
+        Returns:
+            The number of tokens in the conversation.
+        """
         return 0
 
     def set_role(self, msg: str) -> None:

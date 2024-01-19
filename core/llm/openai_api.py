@@ -20,7 +20,6 @@ from tenacity import (
 from loguru import logger
 
 from .base import LLMProvider
-from core.base import config
 
 def not_notry_exception(exception: Exception):
     if isinstance(exception, BadRequestError):
@@ -36,15 +35,6 @@ def not_notry_exception(exception: Exception):
 
 @dataclass
 class ChatGPTAPI(LLMProvider):
-    """A class representing a chat-based language model using OpenAI's GPT.
-
-    Attributes:
-        requirements: A list of required packages.
-        model: The model to use for the language model.
-        temperature: The temperature parameter for generating responses.
-        MAX_TOKENS: The maximum number of tokens allowed in a conversation.
-        messages: A list of messages in the conversation.
-    """
     model: str
     api_key: str
     base_url: str
@@ -59,14 +49,6 @@ class ChatGPTAPI(LLMProvider):
             self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def ask(self, prompt: str) -> str:
-        """Ask a question and get a response from the language model.
-
-        Args:
-            prompt: The user's prompt.
-
-        Returns:
-            The model's response.
-        """
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
@@ -88,14 +70,6 @@ class ChatGPTAPI(LLMProvider):
 
     @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
-        """Make a completion request to the OpenAI API with exponential backoff.
-
-        Args:
-            **kwargs: Keyword arguments for the completion request.
-
-        Returns:
-            The completion response from the OpenAI API.
-        """
         if self.delay_init:
             self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         return self._client.chat.completions.create(**kwargs)

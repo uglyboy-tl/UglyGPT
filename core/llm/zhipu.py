@@ -35,14 +35,6 @@ class ChatGLM(LLMProvider):
             self._client = ZhipuAI(api_key=config.zhipuai_api_key)
 
     def ask(self, prompt: str) -> str:
-        """Ask a question and get a response from the language model.
-
-        Args:
-            prompt: The user's prompt.
-
-        Returns:
-            The model's response.
-        """
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
@@ -65,14 +57,6 @@ class ChatGLM(LLMProvider):
 
     @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
     def completion_with_backoff(self, **kwargs):
-        """Make a completion request to the OpenAI API with exponential backoff.
-
-        Args:
-            **kwargs: Keyword arguments for the completion request.
-
-        Returns:
-            The completion response from the OpenAI API.
-        """
         if self.delay_init:
             self._client = ZhipuAI(api_key=config.zhipuai_api_key)
         return self._client.chat.completions.create(**kwargs) # type: ignore

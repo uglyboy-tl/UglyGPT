@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from pathlib import Path
 from loguru import logger
 import subprocess
 import platform
@@ -14,7 +15,7 @@ from .base import Action
 DEBUG = False
 
 ROLE = """
-假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令，CWD 为命令的执行目录。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
+假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}，你当前的目录是 `{cwd}` 。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令，CWD 为命令的执行目录。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
 
 格式示例：
 {{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}","CWD": "{{命令的执行目录，this is not required}}"}}
@@ -114,7 +115,7 @@ class Command(Action):
                 self.os_version = platform.freedesktop_os_release()['NAME']
             except:
                 pass
-        self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
+        self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
         self.llm = ReActChain(llm_name=self.llm_name, role=self.role, cls = CommandAct)
         return super().__post_init__()
 
@@ -132,13 +133,13 @@ class Command(Action):
         act = None
         if objective is not None:
             self.objective = objective
-            self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
+            self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
             self.llm.llm.set_role(self.role)
         elif command is not None:
             objective = LLM()("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")
             logger.debug(f'Objective: {objective}')
             self.objective = objective
-            self.role = ROLE.format(objective=self.objective, os_version=self.os_version)
+            self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
             act = CommandAct(action=command)
             self.llm.llm.set_role(self.role)
 
