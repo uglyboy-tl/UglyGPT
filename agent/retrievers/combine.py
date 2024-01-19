@@ -10,13 +10,13 @@ import json
 from loguru import logger
 
 from core import LLM
-from ..base import Index
+from .base import BaseRetriever
 from . import *
 
 @dataclass
-class CombineSearch(Index):
+class CombineRetriever(BaseRetriever):
     index_names: list[str] = field(default_factory=list)
-    _indexes: list[Index] = field(default_factory=list)
+    _indexes: list[BaseRetriever] = field(default_factory=list)
 
     def __post_init__(self):
         for index_name in self.index_names:
@@ -26,12 +26,12 @@ class CombineSearch(Index):
             except:
                 pass
 
-    def search(self, query: str, n: int = Index.default_n) -> list[str]:
+    def search(self, query: str, n: int = BaseRetriever.default_n) -> list[str]:
         with ThreadPoolExecutor() as executor:
             results = executor.map(lambda index: index.search(query, n), self._indexes)
         return [item for sublist in results for item in sublist]
 
-    def _add_index(self, index: Index):
+    def _add_index(self, index: BaseRetriever):
         self._indexes.append(index)
 
     def get(self, context: str) -> str:

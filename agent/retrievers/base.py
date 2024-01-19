@@ -7,7 +7,7 @@ from typing import Dict, List
 
 DEFAULT_N = 5
 
-class Index(ABC):
+class BaseRetriever(ABC):
     default_n: int = DEFAULT_N
 
     @abstractmethod
@@ -21,7 +21,7 @@ class Index(ABC):
             return ""
 
 @dataclass
-class DB(Index, ABC):
+class StoresRetriever(BaseRetriever, ABC):
     path: str
     start_init: bool = False
 

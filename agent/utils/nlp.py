@@ -6,10 +6,11 @@ from pathlib import Path
 from typing import List
 
 import jieba_fast.posseg as pseg
+from .config import config
 
 stop_words = set(
     line.strip() for line in
-    Path("resource/baidu_stopwords.txt").read_text(encoding='utf-8').splitlines()
+    Path(config.stop_words_path).read_text(encoding='utf-8').splitlines()
 )
 punt_list = set(['?', '!', ';', '？', '！', '。', '；', '……', '…', '\n'])
 allow_speech_tags = set(['an', 'i', 'j', 'l', 'n', 'nr',

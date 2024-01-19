@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 
 from core import ReduceChain
-from agent.indexes import BM25DB
+from agent.indexes import BM25Retriever
 from workflows.utils import parse_json
 from ..base import Action
 
@@ -46,11 +46,11 @@ class Novel(Action):
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
     reduce: ReduceChain = field(init=False)
-    db: BM25DB = field(init=False)
+    db: BM25Retriever = field(init=False)
 
     def __post_init__(self):
         self.llm = ReduceChain(self.prompt, self.llm_name, self.role, format=self._parse)
-        self.db = BM25DB("docs/examples/novel.json",True)
+        self.db = BM25Retriever("docs/examples/novel.json",True)
         self.db.init()
         return super().__post_init__()
 

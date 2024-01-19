@@ -8,14 +8,14 @@ from dataclasses import dataclass
 from typing import List
 from xml.etree import ElementTree
 
-from ..base import Index
+from .base import BaseRetriever
 
 ARXIV_SEARCH_API_URL = 'http://export.arxiv.org/api/query'
 
 @dataclass
-class ArxivIndex(Index):
+class ArxivRetriever(BaseRetriever):
 
-    def search(self, query: str, n: int = Index.default_n) -> List[str]:
+    def search(self, query: str, n: int = BaseRetriever.default_n) -> List[str]:
         try:
             response = self._send_request(query, n)
             xml = response.text

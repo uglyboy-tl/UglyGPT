@@ -6,19 +6,19 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed, before_sleep_log, RetryError
 from dataclasses import dataclass
 
-from agent.config import config
-from ..base import Index
+from agent.utils.config import config
+from .base import BaseRetriever
 
 BING_SEARCH_API_URL = 'https://api.bing.microsoft.com/v7.0/search'
 
 @dataclass
-class BingSearch(Index):
+class BingRetriever(BaseRetriever):
     def __post_init__(self):
         assert hasattr(config, 'bing_subscription_key'), 'Bing subscription key not found in config'
         assert isinstance(config.bing_subscription_key, str), 'Bing subscription key should be a string'
         assert config.bing_subscription_key, 'Bing subscription key should not be empty'
 
-    def search(self, query: str, n: int = Index.default_n) -> list[str]:
+    def search(self, query: str, n: int = BaseRetriever.default_n) -> list[str]:
         try:
             response = self._send_request(query, n)
             json = response.json()

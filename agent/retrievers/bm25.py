@@ -12,8 +12,8 @@ from typing import List, Set, Tuple, Dict
 
 from loguru import logger
 
-from ..base import DB
-from .nlp import segment
+from .base import StoresRetriever
+from ..utils.nlp import segment
 
 
 class PathNotFoundError(Exception):
@@ -59,7 +59,7 @@ class BM25:
             score += tf_idf_value * score_part
         return score
 
-    def search(self, query: str, n: int = DB.default_n) -> List[Tuple[int, float]]:
+    def search(self, query: str, n: int = StoresRetriever.default_n) -> List[Tuple[int, float]]:
         num = len(self.text_lens)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             scores = list(executor.map(self.calculate_bm25_score,
@@ -84,12 +84,12 @@ class BM25:
 
 
 @dataclass
-class BM25DB(DB):
+class BM25Retriever(StoresRetriever):
     texts: List[str] = field(default_factory=list)
     metadatas: List[Dict[str, str]] = field(default_factory=list)
     _data: BM25 = field(init=False)
 
-    def search(self, query: str, n: int = DB.default_n) -> List[str]:
+    def search(self, query: str, n: int = StoresRetriever.default_n) -> List[str]:
         if not query or self.is_empty:
             return []
         top_n_scores = self._data.search(query, n)
