@@ -31,7 +31,8 @@ class ChatGLM(LLMProvider):
     messages: list = field(default_factory=list)
 
     def __post_init__(self):
-        self._client = ZhipuAI(api_key=config.zhipuai_api_key)
+        if not self.delay_init:
+            self._client = ZhipuAI(api_key=config.zhipuai_api_key)
 
     def ask(self, prompt: str) -> str:
         """Ask a question and get a response from the language model.
@@ -72,7 +73,8 @@ class ChatGLM(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
-
+        if self.delay_init:
+            self._client = ZhipuAI(api_key=config.zhipuai_api_key)
         return self._client.chat.completions.create(**kwargs) # type: ignore
 
     @property

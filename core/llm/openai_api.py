@@ -55,7 +55,8 @@ class ChatGPTAPI(LLMProvider):
     messages: list = field(default_factory=list)
 
     def __post_init__(self):
-        self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        if not self.delay_init:
+            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def ask(self, prompt: str) -> str:
         """Ask a question and get a response from the language model.
@@ -95,6 +96,8 @@ class ChatGPTAPI(LLMProvider):
         Returns:
             The completion response from the OpenAI API.
         """
+        if self.delay_init:
+            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         return self._client.chat.completions.create(**kwargs)
 
 

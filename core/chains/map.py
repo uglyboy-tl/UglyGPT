@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 import json
 
-from pathos.pools import _ThreadPool as Pool
+from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
 
 from .llm import LLM
@@ -14,6 +14,7 @@ from .llm import LLM
 @dataclass
 class MapChain(LLM):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
+    delay_init: bool = True
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.map_keys[0]])
