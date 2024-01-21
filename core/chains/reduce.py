@@ -18,17 +18,23 @@ class ReduceChain(LLM):
         self.num = len(inputs[self.reduce_keys[0]])
         for reduce_key in self.reduce_keys:
             self._validate_reduce_key(reduce_key, inputs)
-        assert "history" in self.input_keys, f"ReduceChain expects history to be in input_keys"
+        assert (
+            "history" in self.input_keys
+        ), "ReduceChain expects history to be in input_keys"
         if not hasattr(inputs, "history"):
             inputs["history"] = ""
         super()._validate_inputs(inputs)
 
     def _validate_reduce_key(self, reduce_key: str, inputs: Dict[str, Any]) -> None:
-        assert reduce_key in self.input_keys, f"ReduceChain expects {reduce_key} to be in input_keys"
+        assert (
+            reduce_key in self.input_keys
+        ), f"ReduceChain expects {reduce_key} to be in input_keys"
         assert isinstance(
-            inputs[reduce_key], List), f"ReduceChain expects {reduce_key} to be a list of strings"
-        assert len(
-            inputs[reduce_key]) == self.num, f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
+            inputs[reduce_key], List
+        ), f"ReduceChain expects {reduce_key} to be a list of strings"
+        assert (
+            len(inputs[reduce_key]) == self.num
+        ), f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
         result = inputs["history"]
@@ -44,5 +50,6 @@ class ReduceChain(LLM):
             new_input.pop("history")
             new_input["history"] = self.format(history)
         new_input.update(
-            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys})
+            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys}
+        )
         return super()._call(new_input)

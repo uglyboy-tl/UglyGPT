@@ -52,7 +52,9 @@ class Chain(ABC):
         """Check the arguments and keyword arguments."""
         if args and not kwargs:
             if len(args) != 1 or not isinstance(args[0], str):
-                raise ValueError("`run` supports only one positional argument of type str.")
+                raise ValueError(
+                    "`run` supports only one positional argument of type str."
+                )
             return {self.input_keys[0]: args[0]}
 
         if kwargs and not args:

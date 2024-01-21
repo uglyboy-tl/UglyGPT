@@ -2,7 +2,6 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from http import HTTPStatus
 
 from zhipuai import ZhipuAI
 from tenacity import (
@@ -16,7 +15,6 @@ from loguru import logger
 
 from core.base import config
 from .base import LLMProvider
-from .error import *
 
 def not_notry_exception(exception: Exception):
     return False

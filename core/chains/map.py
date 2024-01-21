@@ -23,8 +23,11 @@ class MapChain(LLM):
         super()._validate_inputs(inputs)
 
     def _validate_map_key(self, map_key, inputs):
-        assert map_key in self.input_keys and isinstance(inputs[map_key], List) and len(inputs[map_key]) == self.num, \
-            f"MapChain expects {map_key} to be a list of strings with the same length"
+        assert (
+            map_key in self.input_keys
+            and isinstance(inputs[map_key], List)
+            and len(inputs[map_key]) == self.num
+        ), f"MapChain expects {map_key} to be a list of strings with the same length"
 
     def _call(self, inputs: Dict[str, Any]) -> str:
         inputs_list = self._generate_inputs_list(inputs)
@@ -38,14 +41,21 @@ class MapChain(LLM):
 
     def _generate_inputs_list(self, inputs):
         return [
-            {**{map_key: inputs[map_key][i] for map_key in self.map_keys}, **{"index": i}}
+            {
+                **{map_key: inputs[map_key][i] for map_key in self.map_keys},
+                **{"index": i},
+            }
             for i in range(self.num)
         ]
 
     def _map_func(self, inputs):
         def func(input):
-            new_input: Dict = {k: v for k, v in inputs.items() if k not in self.map_keys}
-            new_input.update({mapping_key: input[mapping_key] for mapping_key in self.map_keys})
+            new_input: Dict = {
+                k: v for k, v in inputs.items() if k not in self.map_keys
+            }
+            new_input.update(
+                {mapping_key: input[mapping_key] for mapping_key in self.map_keys}
+            )
             prompt = self.prompt.format(**new_input)
             try:
                 result = self._llm.ask(prompt)
@@ -54,6 +64,7 @@ class MapChain(LLM):
                 result = "Error"
             logger.debug(f"MapChain: {input['index']} finished")
             return {"index": input["index"], "result": result}
+
         return func
 
     def _process_results(self, results):

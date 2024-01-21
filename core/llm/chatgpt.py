@@ -17,11 +17,13 @@ class ChatGPT(ChatGPTAPI):
     def _num_tokens(self, messages: list, model: str):
         if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
             logger.trace(
-                "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+                "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613."
+            )
             return self._num_tokens(messages, model="gpt-3.5-turbo-0613")
         elif model == "gpt-4" or model == "gpt-4-32k" or model == "gpt-4-1106-preview":
             logger.trace(
-                "gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
+                "gpt-4 may change over time. Returning num tokens assuming gpt-4-0613."
+            )
             return self._num_tokens(messages, model="gpt-4-0613")
         elif model == "gpt-3.5-turbo-0613":
             # every message follows <|start|>{role/name}\n{content}<|end|>\n
@@ -32,7 +34,8 @@ class ChatGPT(ChatGPTAPI):
             tokens_per_name = 1
         else:
             raise NotImplementedError(
-                f"""num_tokens() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+                f"""num_tokens() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+            )
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
@@ -78,7 +81,8 @@ class ChatGPT(ChatGPTAPI):
                 else:
                     raise e
                 logger.warning(
-                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}.")
+                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}."
+                )
                 response = self.completion_with_backoff(**kwargs)
             else:
                 raise e
@@ -89,9 +93,13 @@ class ChatGPT(ChatGPTAPI):
 
     @property
     def max_tokens(self):
-        tokens = self._num_tokens(messages=self.messages, model=self.model) + 1000 # add 1000 tokens for answers
+        tokens = (
+            self._num_tokens(messages=self.messages, model=self.model) + 1000
+        )  # add 1000 tokens for answers
         if not self.MAX_TOKENS > tokens:
-            raise Exception(f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens")
+            raise Exception(
+                f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens"
+            )
         max_tokens = self.MAX_TOKENS - tokens + 1000
         if self.model == "gpt-4-1106-preview":
             return 4096 if max_tokens > 4096 else max_tokens

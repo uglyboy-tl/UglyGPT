@@ -4,6 +4,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+
 @dataclass
 class LLMProvider(ABC):
     """Base class for LLM providers.
@@ -15,6 +16,7 @@ class LLMProvider(ABC):
         ask: Ask a question and return the user's response.
 
     """
+
     delay_init: bool
 
     def _num_tokens(self, messages: list, model: str):

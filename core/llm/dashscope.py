@@ -15,7 +15,7 @@ from loguru import logger
 
 from core.base import config
 from .base import LLMProvider
-from .error import *
+from .error import BadRequestError, Unauthorized, RequestLimitError, HTTPStatus
 
 dashscope.api_key = config.dashscope_api_key
 

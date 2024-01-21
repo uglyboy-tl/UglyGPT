@@ -33,7 +33,8 @@ class Yi(ChatGPTAPI):
                 else:
                     raise e
                 logger.warning(
-                    f"Model {self.model} does not support such tokens. Trying again with {kwargs['model']}.")
+                    f"Model {self.model} does not support such tokens. Trying again with {kwargs['model']}."
+                )
                 response = self.completion_with_backoff(**kwargs)
             else:
                 raise e

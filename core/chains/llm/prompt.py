@@ -12,6 +12,7 @@ class Prompt:
     Attributes:
         template: The template string for the prompt.
     """
+
     template: str = ""
 
     def format(self, **kwargs):
@@ -23,6 +24,7 @@ class Prompt:
         Returns:
             The formatted prompt string.
         """
+
         def replace(match):
             key = match.group(1)
             value = kwargs.get(key, match.group(0))
@@ -43,4 +45,3 @@ class Prompt:
             A list of input variables.
         """
         return re.findall(r"(?<!{){([^{}\n]+)}(?!})", self.template)
-

@@ -5,6 +5,6 @@ from .config import config
 from .singleton import singleton
 
 __all__ = [
-    'config',
-    'singleton',
+    "config",
+    "singleton",
 ]

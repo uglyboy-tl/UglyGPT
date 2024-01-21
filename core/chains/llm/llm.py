@@ -8,6 +8,7 @@ from core.llm import get_llm_provider, LLMProvider
 from ..base import Chain
 from .prompt import Prompt
 
+
 @dataclass
 class LLM(Chain):
     """A class representing an LLM chain.
@@ -18,10 +19,11 @@ class LLM(Chain):
         llm_name: The name of the language model.
         prompt_template: The template for the prompt.
     """
+
     prompt_template: str = "{prompt}"
     llm_name: str = ""
     role: Optional[str] = None
-    memory_callback: Optional[Callable[[Tuple[str,str]],None]] = None
+    memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     delay_init: bool = False
 
     def __post_init__(self):

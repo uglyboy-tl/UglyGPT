@@ -44,7 +44,9 @@ LLM_PROVIDERS = {
 ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."
 
 
-def get_llm_provider(llm_provider_name: str = "", delay_init: bool = False) -> LLMProvider:
+def get_llm_provider(
+    llm_provider_name: str = "", delay_init: bool = False
+) -> LLMProvider:
     """
     Get the LLM provider.
 
