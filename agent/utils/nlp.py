@@ -9,12 +9,29 @@ import jieba_fast.posseg as pseg
 from .config import config
 
 stop_words = set(
-    line.strip() for line in
-    Path(config.stop_words_path).read_text(encoding='utf-8').splitlines()
+    line.strip()
+    for line in Path(config.stop_words_path).read_text(encoding="utf-8").splitlines()
 )
-punt_list = set(['?', '!', ';', '？', '！', '。', '；', '……', '…', '\n'])
-allow_speech_tags = set(['an', 'i', 'j', 'l', 'n', 'nr',
-                        'nrfg', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng'])
+punt_list = set(["?", "!", ";", "？", "！", "。", "；", "……", "…", "\n"])
+allow_speech_tags = set(
+    [
+        "an",
+        "i",
+        "j",
+        "l",
+        "n",
+        "nr",
+        "nrfg",
+        "ns",
+        "nt",
+        "nz",
+        "t",
+        "v",
+        "vd",
+        "vn",
+        "eng",
+    ]
+)
 
 
 def segment(text: str) -> str:
@@ -23,16 +40,17 @@ def segment(text: str) -> str:
     # 词性筛选
     jieba_result = [w for w in jieba_result if w.flag in allow_speech_tags]
     # 去除特殊符号
-    words = [w.word.strip() for w in jieba_result if w.flag != 'x']
+    words = [w.word.strip() for w in jieba_result if w.flag != "x"]
     # 去除停用词
     words = [
-        word for word in words
+        word
+        for word in words
         if word not in stop_words and word not in string.punctuation and len(word) > 1
     ]
     # 英文
     words = [word.lower() for word in words]
 
-    return ' '.join(words)
+    return " ".join(words)
 
 
 def cut_sentences(text: str) -> List[str]:

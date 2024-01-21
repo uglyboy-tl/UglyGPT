@@ -36,7 +36,8 @@ class BM25:
 
     def calculate_idf(self, word: str) -> float:
         matches = len(
-            [True for text in self.preprocessed_texts if word in text.split()])
+            [True for text in self.preprocessed_texts if word in text.split()]
+        )
         return math.log(len(self.preprocessed_texts) / matches) if matches else 0.0
 
     def calculate_bm25_score(self, i: int, query: str) -> float:
@@ -50,20 +51,27 @@ class BM25:
             idf_value = self.idf_values.get(word, 0)
             tf_idf_value = tf_value * idf_value
             text_len = self.text_lens[i]
-            avg_len = self.sum_len / \
-                len(self.preprocessed_texts) if self.preprocessed_texts else 1
-            score_part = (
-                (self.k1 + 1) /
-                (tf_value + self.k1 * (1 - self.b + self.b * text_len / avg_len))
+            avg_len = (
+                self.sum_len / len(self.preprocessed_texts)
+                if self.preprocessed_texts
+                else 1
+            )
+            score_part = (self.k1 + 1) / (
+                tf_value + self.k1 * (1 - self.b + self.b * text_len / avg_len)
             )
             score += tf_idf_value * score_part
         return score
 
-    def search(self, query: str, n: int = StoresRetriever.default_n) -> List[Tuple[int, float]]:
+    def search(
+        self, query: str, n: int = StoresRetriever.default_n
+    ) -> List[Tuple[int, float]]:
         num = len(self.text_lens)
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            scores = list(executor.map(self.calculate_bm25_score,
-                                        range(num), itertools.repeat(query)))
+            scores = list(
+                executor.map(
+                    self.calculate_bm25_score, range(num), itertools.repeat(query)
+                )
+            )
         scores = list(zip(range(num), scores))
         top_n_scores = heapq.nlargest(n, scores, key=lambda x: x[1])
         return top_n_scores
@@ -108,7 +116,7 @@ class BM25Retriever(StoresRetriever):
         self._save()
 
     def init(self) -> None:
-        if not hasattr(self, '_data') or not self._data or not self.is_empty:
+        if not hasattr(self, "_data") or not self._data or not self.is_empty:
             self._data = BM25()
             self.texts = []
             self.metadatas = []
@@ -119,19 +127,19 @@ class BM25Retriever(StoresRetriever):
         data = self._data.__dict__.copy()
         data["texts"] = self.texts
         data["metadatas"] = self.metadatas
-        data['word_sets'] = [list(v) for v in data['word_sets']]
-        with open(self.path, 'w') as f:
+        data["word_sets"] = [list(v) for v in data["word_sets"]]
+        with open(self.path, "w") as f:
             json.dump(data, f)
-        self._data.word_sets = [set(v) for v in data['word_sets']]
+        self._data.word_sets = [set(v) for v in data["word_sets"]]
 
     def _load(self) -> None:
         if self.path and Path(self.path).exists():
             try:
-                with open(self.path, 'r') as f:
+                with open(self.path, "r") as f:
                     data = json.load(f)
-                data['word_sets'] = [set(v) for v in data['word_sets']]
-                self.texts = data.pop('texts')
-                self.metadatas = data.pop('metadatas')
+                data["word_sets"] = [set(v) for v in data["word_sets"]]
+                self.texts = data.pop("texts")
+                self.metadatas = data.pop("metadatas")
                 self._data = BM25(**data)
                 return
             except json.JSONDecodeError as e:

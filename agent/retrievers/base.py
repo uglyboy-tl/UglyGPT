@@ -7,6 +7,7 @@ from typing import Dict, List
 
 DEFAULT_N = 5
 
+
 class BaseRetriever(ABC):
     default_n: int = DEFAULT_N
 
@@ -17,8 +18,9 @@ class BaseRetriever(ABC):
     def get(self, query: str) -> str:
         try:
             return self.search(query, 1)[0]
-        except:
+        except Exception:
             return ""
+
 
 @dataclass
 class StoresRetriever(BaseRetriever, ABC):
@@ -36,7 +38,7 @@ class StoresRetriever(BaseRetriever, ABC):
         pass
 
     @abstractmethod
-    def add(self, text: str, metadata: Dict[str, str]={}):
+    def add(self, text: str, metadata: Dict[str, str] = {}):
         pass
 
     def _load(self):
