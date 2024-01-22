@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 
-from core.llm import get_llm_provider, BaseLanguageModel
+from core.llm import get_llm_provider, BaseLanguageModel, Model
 from ..base import Chain
 from .prompt import Prompt
 
@@ -21,7 +21,7 @@ class LLM(Chain):
     """
 
     prompt_template: str = "{prompt}"
-    llm_name: str = ""
+    model: Model = Model.DEFAULT
     role: Optional[str] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     delay_init: bool = False
@@ -31,7 +31,7 @@ class LLM(Chain):
 
         This method initializes the LLMChain object by getting the LLM provider and setting the prompt.
         """
-        self._llm = get_llm_provider(self.llm_name, self.delay_init)
+        self._llm = get_llm_provider(self.model.value, self.delay_init)
         if self.role:
             self._llm.set_role(self.role)
         self.prompt = self.prompt_template

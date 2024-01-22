@@ -3,7 +3,8 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Dict
+
 
 @dataclass
 class BaseLanguageModel(ABC):
@@ -18,12 +19,16 @@ class BaseLanguageModel(ABC):
     """
 
     delay_init: bool
-    client: Any = field(init=False)
     model: str
+    use_max_tokens: bool
+    client: Any = field(init=False)
+    temperature: float = field(init=False)
 
     def __post_init__(self):
         if not self.delay_init:
             self.client = self._create_client()
+        if not hasattr(self, "temperature"):
+            self.temperature = 0.3
 
     def set_role(self, msg: str) -> None:
         """Set the system message.
@@ -55,6 +60,17 @@ class BaseLanguageModel(ABC):
     @abstractmethod
     def completion_with_backoff(self, **kwargs):
         pass
+
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        kwargs = {
+            "model": self.model,
+            "messages": self.messages,
+            "temperature": self.temperature,
+        }
+        if self.use_max_tokens:
+            kwargs["max_tokens"] = self.max_tokens
+        return kwargs
 
     def _create_client(self):
         return None

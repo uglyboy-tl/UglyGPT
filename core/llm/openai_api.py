@@ -29,13 +29,10 @@ def not_notry_exception(exception: BaseException) -> bool:
 
 @dataclass
 class ChatGPTAPI(BaseLanguageModel):
-    model: str
     api_key: str
     base_url: str
     name: str
-    use_max_tokens: bool = True
     MAX_TOKENS: int = 4096
-    temperature: float = 0.3
     messages: list = field(default_factory=list)
 
     def generate(self, prompt: str) -> str:
@@ -43,14 +40,7 @@ class ChatGPTAPI(BaseLanguageModel):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
-        kwargs = {
-            "model": self.model,
-            "messages": self.messages,
-            "temperature": self.temperature,
-        }
-
-        if self.use_max_tokens:
-            kwargs["max_tokens"] = self.max_tokens
+        kwargs = self._default_params
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")

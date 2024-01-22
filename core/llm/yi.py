@@ -18,14 +18,8 @@ class Yi(ChatGPTAPI):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
-        kwargs = {
-            "model": self.model,
-            "messages": self.messages,
-            "temperature": self.temperature,
-        }
+        kwargs = self._default_params
         try:
-            if self.use_max_tokens:
-                kwargs["max_tokens"] = self.max_tokens
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
             if "maximum context length" in str(e) and self.name == "Yi":

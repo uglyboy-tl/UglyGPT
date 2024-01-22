@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from .base import BaseLanguageModel
 from core.base import config
-
+from .base import BaseLanguageModel
+from .model import Model
 try:
     from core.llm.chatgpt import ChatGPT
     from core.llm.copilot import Copilot
@@ -45,7 +45,7 @@ ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken
 
 
 def get_llm_provider(
-    llm_provider_name: str = "", delay_init: bool = False
+    llm_provider_name: str = config.llm_provider , delay_init: bool = False
 ) -> BaseLanguageModel:
     """
     Get the LLM provider.
@@ -56,9 +56,6 @@ def get_llm_provider(
     Returns:
         The LLMProvider object.
     """
-
-    if llm_provider_name == "":
-        llm_provider_name = config.llm_provider
 
     if llm_provider_name in LLM_PROVIDERS.keys():
         provider, kwargs = LLM_PROVIDERS[llm_provider_name]
@@ -74,4 +71,5 @@ def get_llm_provider(
 __all__ = [
     "BaseLanguageModel",
     "get_llm_provider",
+    "Model",
 ]

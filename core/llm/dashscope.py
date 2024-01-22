@@ -2,6 +2,7 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
+from typing import Any, Dict
 from http import HTTPStatus
 
 import dashscope
@@ -34,10 +35,10 @@ def not_notry_exception(exception: BaseException):
         return False
     return True
 
-
 @dataclass
 class DashScope(BaseLanguageModel):
     model: str = dashscope.Generation.Models.qwen_max
+    use_max_tokens: bool = True
     MAX_TOKENS: int = 6000
     seed: int = 1234
     messages: list = field(default_factory=list)
@@ -47,12 +48,7 @@ class DashScope(BaseLanguageModel):
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
-        kwargs = {
-            "model": self.model,
-            "messages": self.messages,
-            "seed": self.seed,
-            "result_format": "message",
-        }
+        kwargs = self._default_params
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
@@ -96,6 +92,16 @@ class DashScope(BaseLanguageModel):
                 f"Failed request_id: {response.request_id}, status_code: {status_code}, code: {code}, message:{message}"  # type: ignore
             )
 
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        kwargs = {
+            "model": self.model,
+            "messages": self.messages,
+            "seed": self.seed,
+            "result_format": "message",
+        }
+        return kwargs
+
     def _num_tokens(self, messages: list, model: str):
         if model == "qwen-max" or model == "qwen-max-longcontext":
             logger.trace(
@@ -124,5 +130,4 @@ class DashScope(BaseLanguageModel):
             raise Exception(
                 f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens"
             )
-        max_tokens = self.MAX_TOKENS - tokens
-        return max_tokens
+        return 2000

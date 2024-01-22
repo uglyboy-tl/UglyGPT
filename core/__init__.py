@@ -1,5 +1,5 @@
 from .chains import Chain, LLM, MapChain, ReduceChain, ReAct, ReActChain
-from .llm import BaseLanguageModel
+from .llm import BaseLanguageModel, Model
 
 __all__ = [
     "Chain",
@@ -9,4 +9,5 @@ __all__ = [
     "ReAct",
     "ReActChain",
     "BaseLanguageModel",
+    "Model",
 ]
