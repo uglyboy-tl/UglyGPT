@@ -4,7 +4,7 @@ from typing import Optional, Union
 from loguru import logger
 
 from core.base import config
-from core.llm import T
+from core.llm import Instructor
 from .openai_api import ChatGPTAPI
 
 
@@ -18,8 +18,8 @@ class Yi(ChatGPTAPI):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[T] = None,
-    ) -> Union[str, T]:
+        response_model: Optional[Instructor] = None,
+    ) -> Union[str, Instructor]:
         self._generate_validation()
         self._generate_messages(prompt)
         kwargs = {"messages": self.messages, **self._default_params}

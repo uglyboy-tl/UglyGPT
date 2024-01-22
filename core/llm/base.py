@@ -3,11 +3,10 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union, Optional, TypeVar
+from typing import Any, Dict, List, Union, Optional
 
-from pydantic import BaseModel
+from .instructor import Instructor
 
-T = TypeVar("T", bound=BaseModel)
 TEMPERATURE = 0.3
 
 
@@ -70,8 +69,8 @@ class BaseLanguageModel(ABC):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[T] = None,
-    ) -> Union[str, T]:
+        response_model: Optional[Instructor] = None,
+    ) -> Union[str, Instructor]:
         """Ask a question and return the user's response.
 
         Args:

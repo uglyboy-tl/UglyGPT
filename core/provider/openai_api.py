@@ -8,7 +8,7 @@ import openai
 from requests.exceptions import SSLError
 from loguru import logger
 
-from core.llm import BaseLanguageModel, T, retry_decorator
+from core.llm import BaseLanguageModel, Instructor, retry_decorator
 
 
 def not_notry_exception(exception: BaseException) -> bool:
@@ -38,8 +38,8 @@ class ChatGPTAPI(BaseLanguageModel):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[T] = None,
-    ) -> Union[str, T]:
+        response_model: Optional[Instructor] = None,
+    ) -> Union[str, Instructor]:
         self._generate_validation()
         self._generate_messages(prompt)
         kwargs = {
