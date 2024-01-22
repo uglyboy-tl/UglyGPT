@@ -13,7 +13,8 @@ class Yi(ChatGPTAPI):
     name: str = "Yi"
     use_max_tokens: bool = False
 
-    def ask(self, prompt: str) -> str:
+    def generate(self, prompt: str) -> str:
+        self._generate_validation()
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
@@ -39,6 +40,5 @@ class Yi(ChatGPTAPI):
             else:
                 raise e
 
-        logger.trace(kwargs)
-        logger.trace(response)
+        logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
         return response.choices[0].message.content.strip()  # type: ignore

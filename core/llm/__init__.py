@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from .base import LLMProvider
+from .base import BaseLanguageModel
 from core.base import config
 
 try:
@@ -46,7 +46,7 @@ ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken
 
 def get_llm_provider(
     llm_provider_name: str = "", delay_init: bool = False
-) -> LLMProvider:
+) -> BaseLanguageModel:
     """
     Get the LLM provider.
 
@@ -72,6 +72,6 @@ def get_llm_provider(
 
 
 __all__ = [
-    "LLMProvider",
+    "BaseLanguageModel",
     "get_llm_provider",
 ]

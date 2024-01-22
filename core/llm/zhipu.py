@@ -4,35 +4,22 @@
 from dataclasses import dataclass, field
 
 from zhipuai import ZhipuAI
-from tenacity import (
-    retry,
-    retry_if_exception,
-    stop_after_attempt,
-    wait_random_exponential,
-    before_sleep_log
-)
 from loguru import logger
 
 from core.base import config
-from .base import LLMProvider
-
-def not_notry_exception(exception: Exception):
-    return False
-
+from .base import BaseLanguageModel
+from .utils import retry_decorator
 
 @dataclass
-class ChatGLM(LLMProvider):
+class ChatGLM(BaseLanguageModel):
     model: str = "glm-3-turbo"
     use_max_tokens: bool = False
     MAX_TOKENS: int = 128000
     temperature: float = 0.3
     messages: list = field(default_factory=list)
 
-    def __post_init__(self):
-        if not self.delay_init:
-            self._client = ZhipuAI(api_key=config.zhipuai_api_key)
-
-    def ask(self, prompt: str) -> str:
+    def generate(self, prompt: str) -> str:
+        self._generate_validation()
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
@@ -42,22 +29,20 @@ class ChatGLM(LLMProvider):
             "do_sample": True,
             "temperature": self.temperature,
         }
-        try:
-            if self.use_max_tokens:
-                kwargs["max_tokens"] = self.max_tokens
-            response = self.completion_with_backoff(**kwargs)
-        except Exception as e:
-            raise e
 
-        logger.trace(kwargs)
-        logger.trace(response)
+        if self.use_max_tokens:
+            kwargs["max_tokens"] = self.max_tokens
+        response = self.completion_with_backoff(**kwargs)
+
+        logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
         return response.choices[0].message.content.strip()  # type: ignore
 
-    @retry(retry=retry_if_exception(not_notry_exception), wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6), before_sleep=before_sleep_log(logger, "WARNING"))  # type: ignore
+    def _create_client(self):
+        return ZhipuAI(api_key=config.zhipuai_api_key)
+
+    @retry_decorator()
     def completion_with_backoff(self, **kwargs):
-        if self.delay_init:
-            self._client = ZhipuAI(api_key=config.zhipuai_api_key)
-        return self._client.chat.completions.create(**kwargs) # type: ignore
+        return self.client.chat.completions.create(**kwargs) # type: ignore
 
     @property
     def max_tokens(self):

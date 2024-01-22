@@ -14,6 +14,46 @@ class ChatGPT(ChatGPTAPI):
     name: str = "OpenAI"
     use_max_tokens: bool = False
 
+    def generate(self, prompt: str) -> str:
+        """Ask a question and get a response from the language model.
+
+        Args:
+            prompt: The user's prompt.
+
+        Returns:
+            The model's response.
+        """
+        self._generate_validation()
+        if len(self.messages) > 1:
+            self.messages.pop()
+        self.messages.append({"role": "user", "content": prompt})
+        kwargs = {
+            "model": self.model,
+            "messages": self.messages,
+            "temperature": self.temperature,
+        }
+        try:
+            if self.use_max_tokens:
+                kwargs["max_tokens"] = self.max_tokens
+            response = self.completion_with_backoff(**kwargs)
+        except Exception as e:
+            if "maximum context length" in str(e) and self.name == "OpenAI":
+                if self.model == "gpt-3.5-turbo":
+                    kwargs["model"] = "gpt-3.5-turbo-16k"
+                elif self.model == "gpt-4":
+                    kwargs["model"] = "gpt-4-32k"
+                else:
+                    raise e
+                logger.warning(
+                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}."
+                )
+                response = self.completion_with_backoff(**kwargs)
+            else:
+                raise e
+
+        logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
+        return response.choices[0].message.content.strip()  # type: ignore
+
     def _num_tokens(self, messages: list, model: str):
         if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
             logger.trace(
@@ -50,46 +90,6 @@ class ChatGPT(ChatGPTAPI):
                     num_tokens += tokens_per_name
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
-
-    def ask(self, prompt: str) -> str:
-        """Ask a question and get a response from the language model.
-
-        Args:
-            prompt: The user's prompt.
-
-        Returns:
-            The model's response.
-        """
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
-        kwargs = {
-            "model": self.model,
-            "messages": self.messages,
-            "temperature": self.temperature,
-        }
-        try:
-            if self.use_max_tokens:
-                kwargs["max_tokens"] = self.max_tokens
-            response = self.completion_with_backoff(**kwargs)
-        except Exception as e:
-            if "maximum context length" in str(e) and self.name == "OpenAI":
-                if self.model == "gpt-3.5-turbo":
-                    kwargs["model"] = "gpt-3.5-turbo-16k"
-                elif self.model == "gpt-4":
-                    kwargs["model"] = "gpt-4-32k"
-                else:
-                    raise e
-                logger.warning(
-                    f"Model {self.model} does not support {self._num_tokens(self.messages, self.model)+1000} tokens. Trying again with {kwargs['model']}."
-                )
-                response = self.completion_with_backoff(**kwargs)
-            else:
-                raise e
-
-        logger.trace(kwargs)
-        logger.trace(response)
-        return response.choices[0].message.content.strip()  # type: ignore
 
     @property
     def max_tokens(self):

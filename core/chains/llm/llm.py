@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 
-from core.llm import get_llm_provider, LLMProvider
+from core.llm import get_llm_provider, BaseLanguageModel
 from ..base import Chain
 from .prompt import Prompt
 
@@ -57,7 +57,7 @@ class LLM(Chain):
             The response from the LLM provider.
         """
         prompt = self.prompt.format(**inputs)
-        response = self._llm.ask(prompt)
+        response = self._llm.generate(prompt)
         if self.memory_callback:
             self.memory_callback((prompt, response))
         return response
@@ -85,7 +85,7 @@ class LLM(Chain):
         self._prompt = Prompt(prompt_template)
 
     @property
-    def llm(self) -> LLMProvider:
+    def llm(self) -> BaseLanguageModel:
         """Get the LLM provider.
 
         Returns:

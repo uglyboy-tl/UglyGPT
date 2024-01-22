@@ -2,35 +2,23 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from openai import OpenAI
-from openai import (
-    BadRequestError,
-    AuthenticationError,
-    PermissionDeniedError,
-    APIConnectionError,
-)
+import openai
 from requests.exceptions import SSLError
-from tenacity import (
-    retry,
-    retry_if_exception,
-    stop_after_attempt,
-    wait_random_exponential,
-    before_sleep_log,
-)
 from loguru import logger
 
-from .base import LLMProvider
+from .base import BaseLanguageModel
+from .utils import retry_decorator
 
 
 def not_notry_exception(exception: BaseException) -> bool:
-    if isinstance(exception, BadRequestError):
+    if isinstance(exception, openai.BadRequestError):
         return False
-    elif isinstance(exception, AuthenticationError):
+    elif isinstance(exception, openai.AuthenticationError):
         return False
-    elif isinstance(exception, PermissionDeniedError):
+    elif isinstance(exception, openai.PermissionDeniedError):
         return False
     elif (
-        isinstance(exception, APIConnectionError)
+        isinstance(exception, openai.APIConnectionError)
         and exception.__cause__ is not None
         and isinstance(exception.__cause__, SSLError)
     ):
@@ -40,7 +28,7 @@ def not_notry_exception(exception: BaseException) -> bool:
 
 
 @dataclass
-class ChatGPTAPI(LLMProvider):
+class ChatGPTAPI(BaseLanguageModel):
     model: str
     api_key: str
     base_url: str
@@ -50,11 +38,8 @@ class ChatGPTAPI(LLMProvider):
     temperature: float = 0.3
     messages: list = field(default_factory=list)
 
-    def __post_init__(self):
-        if not self.delay_init:
-            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
-
-    def ask(self, prompt: str) -> str:
+    def generate(self, prompt: str) -> str:
+        self._generate_validation()
         if len(self.messages) > 1:
             self.messages.pop()
         self.messages.append({"role": "user", "content": prompt})
@@ -63,27 +48,20 @@ class ChatGPTAPI(LLMProvider):
             "messages": self.messages,
             "temperature": self.temperature,
         }
-        try:
-            if self.use_max_tokens:
-                kwargs["max_tokens"] = self.max_tokens
-            response = self.completion_with_backoff(**kwargs)
-        except Exception as e:
-            raise e
 
-        logger.trace(kwargs)
-        logger.trace(response)
+        if self.use_max_tokens:
+            kwargs["max_tokens"] = self.max_tokens
+        response = self.completion_with_backoff(**kwargs)
+
+        logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
         return response.choices[0].message.content.strip()  # type: ignore
 
-    @retry(
-        retry=retry_if_exception(not_notry_exception),
-        wait=wait_random_exponential(min=5, max=60),
-        stop=stop_after_attempt(6),
-        before_sleep=before_sleep_log(logger, "WARNING"),  # type: ignore
-    )
+    @retry_decorator(not_notry_exception)
     def completion_with_backoff(self, **kwargs):
-        if self.delay_init:
-            self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
-        return self._client.chat.completions.create(**kwargs)
+        return self.client.chat.completions.create(**kwargs)
+
+    def _create_client(self):
+        return openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     @property
     def max_tokens(self):
