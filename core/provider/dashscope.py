@@ -99,6 +99,8 @@ class DashScope(BaseLanguageModel):
             "seed": self.seed,
             "result_format": "message",
         }
+        if self.use_max_tokens:
+            kwargs["max_tokens"] = self.max_tokens
         return kwargs
 
     def _create_client(self):
@@ -133,4 +135,6 @@ class DashScope(BaseLanguageModel):
             raise Exception(
                 f"Prompt is too long. This model's maximum context length is {self.MAX_TOKENS} tokens. your messages required {tokens} tokens"
             )
+        if self.model == "qwen-turbo":
+            return 1500
         return 2000
