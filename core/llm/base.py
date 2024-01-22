@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
+TEMPERATURE = 0.3
 
 @dataclass
 class BaseLanguageModel(ABC):
@@ -28,7 +29,7 @@ class BaseLanguageModel(ABC):
         if not self.delay_init:
             self.client = self._create_client()
         if not hasattr(self, "temperature"):
-            self.temperature = 0.3
+            self.temperature = TEMPERATURE
 
     def set_role(self, msg: str) -> None:
         """Set the system message.
