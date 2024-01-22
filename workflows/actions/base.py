@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 from typing import Optional
 
-from core import LLM
+from core import LLM, Model
 from workflows.utils import File
 
 
@@ -20,7 +20,7 @@ class Action(ABC):
         llm: The LLMChain object used for the action.
     """
     filename: Optional[str] = None
-    llm_name: str = ""
+    model: Model = Model.DEFAULT
     prompt: str = "{prompt}"
     role: Optional[str] = None
     llm: LLM = field(init=False)
@@ -32,7 +32,7 @@ class Action(ABC):
         Sets the system of the LLMChain object if a role is provided.
         """
         if not hasattr(self, "llm"):
-            self.llm = LLM(self.prompt, self.llm_name, self.role)
+            self.llm = LLM(self.prompt, self.model, self.role)
 
     def ask(self, *args, **kwargs) -> str:
         """Ask a question to the LLMChain object.

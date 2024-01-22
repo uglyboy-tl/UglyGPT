@@ -8,7 +8,7 @@ import subprocess
 import platform
 from typing import Optional
 
-from core import LLM, ReAct, ReActChain
+from core import LLM, ReAct, ReActChain, Model
 from workflows.utils import parse_json
 from .base import Action
 
@@ -102,7 +102,7 @@ class Command(Action):
     """
     role: str = ROLE
     objective: str = ""
-    llm_name: str = "copilot-4"
+    model: Model = Model.GPT4_TURBO
 
     def __post_init__(self):
         """Initialize the Command object.
@@ -113,10 +113,10 @@ class Command(Action):
         if self.os_version == "Linux":
             try:
                 self.os_version = platform.freedesktop_os_release()['NAME']
-            except:
+            except Exception:
                 pass
         self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
-        self.llm = ReActChain(llm_name=self.llm_name, role=self.role, cls = CommandAct)
+        self.llm = ReActChain(model=self.model, role=self.role, cls = CommandAct)
         return super().__post_init__()
 
     def run(self, objective=None, command=None):
@@ -129,7 +129,7 @@ class Command(Action):
         Returns:
             None.
         """
-        logger.info(f'Command Running ..')
+        logger.info('Command Running ..')
         act = None
         if objective is not None:
             self.objective = objective
