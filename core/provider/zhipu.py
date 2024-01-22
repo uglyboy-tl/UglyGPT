@@ -8,8 +8,7 @@ from zhipuai import ZhipuAI
 from loguru import logger
 
 from core.base import config
-from .base import BaseLanguageModel
-from .utils import retry_decorator, T
+from core.llm import BaseLanguageModel, T, retry_decorator
 
 @dataclass
 class ChatGLM(BaseLanguageModel):

@@ -5,8 +5,9 @@ from loguru import logger
 import tiktoken
 
 from core.base import config
+from core.llm import T
 from .openai_api import ChatGPTAPI
-from .utils import T
+
 
 @dataclass
 class ChatGPT(ChatGPTAPI):
@@ -22,10 +23,7 @@ class ChatGPT(ChatGPTAPI):
     ) -> Union[str, T]:
         self._generate_validation()
         self._generate_messages(prompt)
-        kwargs = {
-            "messages": self.messages,
-            **self._default_params
-        }
+        kwargs = {"messages": self.messages, **self._default_params}
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:

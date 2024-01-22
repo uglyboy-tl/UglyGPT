@@ -3,10 +3,11 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union, Optional, TypeVar
 
-from .utils import T
+from pydantic import BaseModel
 
+T = TypeVar("T", bound=BaseModel)
 TEMPERATURE = 0.3
 
 

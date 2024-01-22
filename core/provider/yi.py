@@ -3,9 +3,9 @@ from typing import Optional, Union
 
 from loguru import logger
 
-from .openai_api import ChatGPTAPI
 from core.base import config
-from .utils import T
+from core.llm import T
+from .openai_api import ChatGPTAPI
 
 
 @dataclass
@@ -22,10 +22,7 @@ class Yi(ChatGPTAPI):
     ) -> Union[str, T]:
         self._generate_validation()
         self._generate_messages(prompt)
-        kwargs = {
-            "messages": self.messages,
-            **self._default_params
-        }
+        kwargs = {"messages": self.messages, **self._default_params}
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:

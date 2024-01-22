@@ -4,7 +4,8 @@
 from typing import Any, Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 
-from core.llm import get_llm_provider, BaseLanguageModel, Model
+from core.provider import get_llm_provider
+from core.llm import BaseLanguageModel, Model
 from ..base import Chain
 from .prompt import Prompt
 
