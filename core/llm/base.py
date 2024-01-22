@@ -3,9 +3,9 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Union, Optional
 
-from pydantic import BaseModel
+from .utils import T
 
 TEMPERATURE = 0.3
 
@@ -39,17 +39,17 @@ class BaseLanguageModel(ABC):
 
     """
 
-    delay_init: bool
+    is_init_delay: bool
     model: str
     client: Any = field(init=False)
-    use_max_tokens: bool = field(init=False, default=False)
     temperature: float = field(init=False, default=TEMPERATURE)
     role: Optional[str] = field(init=False, default=None)
+    use_max_tokens: bool = field(init=False, default=False)
     is_continuous: bool = field(init=False, default=False)
     messages: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        if not self.delay_init:
+        if not self.is_init_delay:
             self.client = self._create_client()
 
     def set_role(self, msg: Optional[str] = None) -> None:
@@ -69,8 +69,8 @@ class BaseLanguageModel(ABC):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[BaseModel] = None,
-    ) -> str:
+        response_model: Optional[T] = None,
+    ) -> Union[str, T]:
         """Ask a question and return the user's response.
 
         Args:
@@ -114,7 +114,7 @@ class BaseLanguageModel(ABC):
 
     def _generate_validation(self):
         """Perform validation before generating responses."""
-        if self.delay_init:
+        if self.is_init_delay:
             self.client = self._create_client()
 
     def _generate_messages(self, prompt: str) -> List[Dict[str, str]]:

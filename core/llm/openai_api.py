@@ -2,15 +2,14 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Union, Optional
 
 import openai
 from requests.exceptions import SSLError
 from loguru import logger
-from pydantic import BaseModel
 
 from .base import BaseLanguageModel
-from .utils import retry_decorator
+from .utils import retry_decorator, T
 
 
 def not_notry_exception(exception: BaseException) -> bool:
@@ -40,8 +39,8 @@ class ChatGPTAPI(BaseLanguageModel):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[BaseModel] = None,
-    ) -> str:
+        response_model: Optional[T] = None,
+    ) -> Union[str, T]:
         self._generate_validation()
         self._generate_messages(prompt)
         kwargs = {

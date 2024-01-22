@@ -14,7 +14,7 @@ from .llm import LLM
 @dataclass
 class MapChain(LLM):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
-    delay_init: bool = True
+    is_init_delay: bool = True
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.map_keys[0]])

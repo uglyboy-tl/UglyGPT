@@ -24,14 +24,14 @@ class LLM(Chain):
     model: Model = Model.DEFAULT
     role: Optional[str] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
-    delay_init: bool = False
+    is_init_delay: bool = False
 
     def __post_init__(self):
         """Initialize the LLMChain object.
 
         This method initializes the LLMChain object by getting the LLM provider and setting the prompt.
         """
-        self._llm = get_llm_provider(self.model.value, self.delay_init)
+        self._llm = get_llm_provider(self.model.value, self.is_init_delay)
         if self.role:
             self._llm.set_role(self.role)
         self.prompt = self.prompt_template

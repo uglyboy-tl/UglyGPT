@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from typing import Union, Optional
 
 from loguru import logger
 import tiktoken
 
 from core.base import config
 from .openai_api import ChatGPTAPI
+from .utils import T
 
 @dataclass
 class ChatGPT(ChatGPTAPI):
@@ -13,7 +15,11 @@ class ChatGPT(ChatGPTAPI):
     name: str = "OpenAI"
     use_max_tokens: bool = True
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+        self,
+        prompt: str = "",
+        response_model: Optional[T] = None,
+    ) -> Union[str, T]:
         self._generate_validation()
         self._generate_messages(prompt)
         kwargs = {

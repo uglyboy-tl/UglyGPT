@@ -4,6 +4,7 @@
 from core.base import config
 from .base import BaseLanguageModel
 from .model import Model
+
 try:
     from core.llm.chatgpt import ChatGPT
     from core.llm.copilot import Copilot
@@ -45,7 +46,7 @@ ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken
 
 
 def get_llm_provider(
-    llm_provider_name: str = config.llm_provider , delay_init: bool = False
+    llm_provider_name: str = config.llm_provider, is_init_delay: bool = False
 ) -> BaseLanguageModel:
     """
     Get the LLM provider.
@@ -59,7 +60,7 @@ def get_llm_provider(
 
     if llm_provider_name in LLM_PROVIDERS.keys():
         provider, kwargs = LLM_PROVIDERS[llm_provider_name]
-        kwargs["delay_init"] = delay_init
+        kwargs["is_init_delay"] = is_init_delay
         if provider is None:
             raise NotImplementedError(ERROR_MSG.format(provider=llm_provider_name))
         else:

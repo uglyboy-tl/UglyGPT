@@ -2,16 +2,15 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from http import HTTPStatus
 
 import dashscope
 from loguru import logger
-from pydantic import BaseModel
 
 from core.base import config
 from .base import BaseLanguageModel
-from .utils import retry_decorator
+from .utils import retry_decorator, T
 
 
 class BadRequestError(Exception):
@@ -43,8 +42,8 @@ class DashScope(BaseLanguageModel):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[BaseModel] = None,
-    ) -> str:
+        response_model: Optional[T] = None,
+    ) -> Union[str, T]:
         self._generate_validation()
         self._generate_messages(prompt)
         kwargs = {
