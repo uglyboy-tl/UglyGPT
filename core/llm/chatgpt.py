@@ -14,19 +14,12 @@ class ChatGPT(ChatGPTAPI):
     use_max_tokens: bool = True
 
     def generate(self, prompt: str) -> str:
-        """Ask a question and get a response from the language model.
-
-        Args:
-            prompt: The user's prompt.
-
-        Returns:
-            The model's response.
-        """
         self._generate_validation()
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
-        kwargs = self._default_params
+        self._generate_messages(prompt)
+        kwargs = {
+            "messages": self.messages,
+            **self._default_params
+        }
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:

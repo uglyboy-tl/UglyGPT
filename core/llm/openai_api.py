@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Optional
+
 import openai
 from requests.exceptions import SSLError
 from loguru import logger
+from pydantic import BaseModel
 
 from .base import BaseLanguageModel
 from .utils import retry_decorator
@@ -33,14 +36,18 @@ class ChatGPTAPI(BaseLanguageModel):
     base_url: str
     name: str
     MAX_TOKENS: int = 4096
-    messages: list = field(default_factory=list)
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+        self,
+        prompt: str = "",
+        response_model: Optional[BaseModel] = None,
+    ) -> str:
         self._generate_validation()
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
-        kwargs = self._default_params
+        self._generate_messages(prompt)
+        kwargs = {
+            "messages": self.messages,
+            **self._default_params
+        }
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")

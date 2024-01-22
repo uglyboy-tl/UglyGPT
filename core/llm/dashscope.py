@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
-from typing import Any, Dict
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 from http import HTTPStatus
 
 import dashscope
 from loguru import logger
+from pydantic import BaseModel
 
 from core.base import config
 from .base import BaseLanguageModel
 from .utils import retry_decorator
-
-
-dashscope.api_key = config.dashscope_api_key
 
 
 class BadRequestError(Exception):
@@ -41,14 +39,18 @@ class DashScope(BaseLanguageModel):
     use_max_tokens: bool = True
     MAX_TOKENS: int = 6000
     seed: int = 1234
-    messages: list = field(default_factory=list)
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+        self,
+        prompt: str = "",
+        response_model: Optional[BaseModel] = None,
+    ) -> str:
         self._generate_validation()
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
-        kwargs = self._default_params
+        self._generate_messages(prompt)
+        kwargs = {
+            "messages": self.messages,
+            **self._default_params
+        }
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
@@ -69,7 +71,7 @@ class DashScope(BaseLanguageModel):
 
     @retry_decorator(not_notry_exception)
     def completion_with_backoff(self, **kwargs):
-        response = dashscope.Generation.call(**kwargs)
+        response = self.client.call(**kwargs)
 
         status_code, code, message = (
             response.status_code, # type: ignore
@@ -96,11 +98,14 @@ class DashScope(BaseLanguageModel):
     def _default_params(self) -> Dict[str, Any]:
         kwargs = {
             "model": self.model,
-            "messages": self.messages,
             "seed": self.seed,
             "result_format": "message",
         }
         return kwargs
+
+    def _create_client(self):
+        dashscope.api_key = config.dashscope_api_key
+        return dashscope.Generation
 
     def _num_tokens(self, messages: list, model: str):
         if model == "qwen-max" or model == "qwen-max-longcontext":

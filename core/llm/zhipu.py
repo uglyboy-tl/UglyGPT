@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
 from zhipuai import ZhipuAI
 from loguru import logger
+from pydantic import BaseModel
 
 from core.base import config
 from .base import BaseLanguageModel
@@ -15,27 +17,33 @@ class ChatGLM(BaseLanguageModel):
     model: str = "glm-3-turbo"
     use_max_tokens: bool = False
     MAX_TOKENS: int = 128000
-    temperature: float = 0.3
-    messages: list = field(default_factory=list)
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+        self,
+        prompt: str = "",
+        response_model: Optional[BaseModel] = None,
+    ) -> str:
         self._generate_validation()
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
+        self._generate_messages(prompt)
         kwargs = {
-            "model": self.model,
             "messages": self.messages,
-            "do_sample": True,
-            "temperature": self.temperature,
+            **self._default_params
         }
-
-        if self.use_max_tokens:
-            kwargs["max_tokens"] = self.max_tokens
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
         return response.choices[0].message.content.strip()  # type: ignore
+
+    @property
+    def _default_params(self) -> Dict[str, Any]:
+        kwargs = {
+            "model": self.model,
+            "do_sample": True,
+            "temperature": self.temperature,
+        }
+        if self.use_max_tokens:
+            kwargs["max_tokens"] = self.max_tokens
+        return kwargs
 
     def _create_client(self):
         return ZhipuAI(api_key=config.zhipuai_api_key)

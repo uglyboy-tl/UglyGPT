@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from loguru import logger
+from pydantic import BaseModel
 
 from .openai_api import ChatGPTAPI
 from core.base import config
@@ -13,12 +15,17 @@ class Yi(ChatGPTAPI):
     name: str = "Yi"
     use_max_tokens: bool = False
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+        self,
+        prompt: str = "",
+        response_model: Optional[BaseModel] = None,
+    ) -> str:
         self._generate_validation()
-        if len(self.messages) > 1:
-            self.messages.pop()
-        self.messages.append({"role": "user", "content": prompt})
-        kwargs = self._default_params
+        self._generate_messages(prompt)
+        kwargs = {
+            "messages": self.messages,
+            **self._default_params
+        }
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
