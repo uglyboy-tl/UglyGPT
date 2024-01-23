@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Optional, Type
 
 from loguru import logger
+from pydantic import BaseModel
 
 from core.base import config
 from core.llm import Instructor
@@ -18,9 +19,12 @@ class Yi(ChatGPTAPI):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Instructor] = None,
-    ) -> Union[str, Instructor]:
+        response_model: Optional[Type[BaseModel]] = None,
+    ) -> str:
         self._generate_validation()
+        if response_model:
+            instructor = Instructor.from_BaseModel(response_model)
+            prompt += "\n" + instructor.get_format_instructions()
         self._generate_messages(prompt)
         kwargs = {"messages": self.messages, **self._default_params}
         try:

@@ -2,14 +2,15 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Type
 from http import HTTPStatus
 
 import dashscope
 from loguru import logger
+from pydantic import BaseModel
 
 from core.base import config
-from core.llm import BaseLanguageModel, Instructor, retry_decorator
+from core.llm import BaseLanguageModel, retry_decorator, Instructor
 
 
 class BadRequestError(Exception):
@@ -41,14 +42,14 @@ class DashScope(BaseLanguageModel):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Instructor] = None,
-    ) -> Union[str, Instructor]:
+        response_model: Optional[Type[BaseModel]] = None,
+    ) -> str:
         self._generate_validation()
+        if response_model:
+            instructor = Instructor.from_BaseModel(response_model)
+            prompt += "\n" + instructor.get_format_instructions()
         self._generate_messages(prompt)
-        kwargs = {
-            "messages": self.messages,
-            **self._default_params
-        }
+        kwargs = {"messages": self.messages, **self._default_params}
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:

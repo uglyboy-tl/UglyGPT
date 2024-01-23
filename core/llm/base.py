@@ -3,8 +3,9 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Type
 
+from pydantic import BaseModel
 from .instructor import Instructor
 
 TEMPERATURE = 0.3
@@ -69,8 +70,8 @@ class BaseLanguageModel(ABC):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Instructor] = None,
-    ) -> Union[str, Instructor]:
+        response_model: Optional[Type[BaseModel]] = None,
+    ) -> str:
         """Ask a question and return the user's response.
 
         Args:
@@ -82,6 +83,20 @@ class BaseLanguageModel(ABC):
 
         """
         pass
+
+    def parse_response(self, response: str, response_model: Type[BaseModel]) -> BaseModel:
+        """Parse the response from the LLM provider.
+
+        Args:
+            response (str): The response from the LLM provider.
+            response_model (BaseModel): The response model.
+
+        Returns:
+            BaseModel: The parsed response.
+
+        """
+        instructor = Instructor.from_BaseModel(response_model)
+        return instructor.from_response(response)
 
     @abstractmethod
     def completion_with_backoff(self, **kwargs):

@@ -2,10 +2,11 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Type, Optional
 
 from zhipuai import ZhipuAI
 from loguru import logger
+from pydantic import BaseModel
 
 from core.base import config
 from core.llm import BaseLanguageModel, Instructor, retry_decorator
@@ -19,14 +20,14 @@ class ChatGLM(BaseLanguageModel):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Instructor] = None,
-    ) -> Union[str, Instructor]:
+        response_model: Optional[Type[BaseModel]] = None,
+    ) -> str:
         self._generate_validation()
+        if response_model:
+            instructor = Instructor.from_BaseModel(response_model)
+            prompt += "\n" + instructor.get_format_instructions()
         self._generate_messages(prompt)
-        kwargs = {
-            "messages": self.messages,
-            **self._default_params
-        }
+        kwargs = {"messages": self.messages, **self._default_params}
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")

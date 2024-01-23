@@ -1,7 +1,7 @@
-from typing import TypeVar, Generic
 import re
 import json
 from functools import wraps
+from typing import Type
 
 from pydantic import BaseModel, create_model, ValidationError
 
@@ -14,13 +14,14 @@ Here is the output schema:
 ```
 {schema}
 ```"""
+FORMAT_INSTRUCTIONS = """As a genius expert, your task is to understand the content and provide the parsed objects in json that match the following json_schema:\n
+{schema}
+"""
 
-T = TypeVar("T", bound=BaseModel)
 
-
-class Instructor(Generic[T]):
+class Instructor(BaseModel):
     @classmethod
-    def from_response(cls, response: str) -> T:
+    def from_response(cls, response: str) -> "Instructor":
         try:
             # Greedy search for 1st json candidate.
             match = re.search(
@@ -29,8 +30,8 @@ class Instructor(Generic[T]):
             json_str = ""
             if match:
                 json_str = match.group()
-            json_object = json.loads(json_str, strict=False)
-            return cls.model_validate_json(json_object)  # type: ignore
+            # json_object = json.loads(json_str, strict=False)
+            return cls.model_validate_json(json_str)  # type: ignore
 
         except (json.JSONDecodeError, ValidationError) as e:
             name = cls.__name__
@@ -52,14 +53,14 @@ class Instructor(Generic[T]):
 
         return PYDANTIC_FORMAT_INSTRUCTIONS.format(schema=schema_str)
 
+    @classmethod
+    def from_BaseModel(cls, cls1) -> Type["Instructor"]:
+        if not issubclass(cls1, BaseModel):
+            raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-def instructor_schema(cls) -> Instructor:
-    if not issubclass(cls, BaseModel):
-        raise TypeError("Class must be a subclass of pydantic.BaseModel")
-
-    return wraps(cls, updated=())(
-        create_model(
-            cls.__name__,
-            __base__=(cls, Instructor),  # type: ignore
+        return wraps(cls1, updated=())(
+            create_model(
+                cls1.__name__,
+                __base__=(cls1, Instructor),  # type: ignore
+            )
         )
-    )

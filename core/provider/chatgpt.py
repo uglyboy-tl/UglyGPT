@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Type, Optional
 
 from loguru import logger
 import tiktoken
+from pydantic import BaseModel
 
 from core.base import config
 from core.llm import Instructor
@@ -19,11 +20,16 @@ class ChatGPT(ChatGPTAPI):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Instructor] = None,
-    ) -> Union[str, Instructor]:
+        response_model: Optional[Type[BaseModel]] = None,
+    ) -> str:
         self._generate_validation()
+        if response_model:
+            instructor = Instructor.from_BaseModel(response_model)
+            prompt += "\n" + instructor.get_format_instructions()
         self._generate_messages(prompt)
         kwargs = {"messages": self.messages, **self._default_params}
+        if response_model and self.model == "gpt-4-1106-preview":
+            kwargs["response_format"] = {"type": "json_object"}
         try:
             response = self.completion_with_backoff(**kwargs)
         except Exception as e:
