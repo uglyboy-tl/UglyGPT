@@ -7,6 +7,7 @@ from typing import Dict, Type, List, Optional
 
 from loguru import logger
 
+from core.llm import BaseLanguageModel
 from .llm import LLM
 
 
@@ -26,7 +27,7 @@ class ReAct(ABC):
 
     @classmethod
     @abstractmethod
-    def parse(cls, text: str) -> "ReAct":
+    def parse(cls, text: str, llm: BaseLanguageModel ) -> "ReAct":
         pass
 
     @property
@@ -66,7 +67,7 @@ class ReActChain(LLM):
             self._acts.append(act)
             inputs = {"prompt": "\n".join(str(a) for a in self._acts)}
             response = self._call(inputs)
-            act = self.cls.parse(response)  # type: ignore
+            act = self.cls.parse(response, self.llm)  # type: ignore
             logger.success(act.info)
         return act.info
 
@@ -75,5 +76,5 @@ class ReActChain(LLM):
             inputs = {"prompt": "Start!"}
             inputs = self._prep_inputs(inputs)
             response = self._call(inputs)
-            act = self.cls.parse(response)  # type: ignore
+            act = self.cls.parse(response, self.llm)  # type: ignore
         return self._process(act)

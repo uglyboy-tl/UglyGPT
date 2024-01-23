@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List, Optional, Callable, Tuple
+from typing import Any, Dict, List, Optional, Callable, Tuple, Type
 from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from core.provider import get_llm_provider
 from core.llm import BaseLanguageModel, Model
@@ -24,6 +26,7 @@ class LLM(Chain):
     prompt_template: str = "{prompt}"
     model: Model = Model.DEFAULT
     role: Optional[str] = None
+    response_model: Optional[Type[BaseModel]] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     is_init_delay: bool = False
 
@@ -58,7 +61,7 @@ class LLM(Chain):
             The response from the LLM provider.
         """
         prompt = self.prompt.format(**inputs)
-        response = self._llm.generate(prompt)
+        response = self._llm.generate(prompt, self.response_model)
         if self.memory_callback:
             self.memory_callback((prompt, response))
         return response

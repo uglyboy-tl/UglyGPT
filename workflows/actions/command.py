@@ -8,18 +8,29 @@ import subprocess
 import platform
 from typing import Optional
 
-from core import LLM, ReAct, ReActChain, Model
-from workflows.utils import parse_json
+from pydantic import BaseModel, Field
+
+from core import LLM, ReAct, ReActChain, BaseLanguageModel, Model
 from .base import Action
 
 DEBUG = False
 
 ROLE = """
+假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}，你当前的目录是 `{cwd}` 。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。
+"""
+
+ROLE_BACK = """
 假设你是一名系统运维工程师，你正在操作的系统版本为 {os_version}，你的目标是 {objective}，你当前的目录是 `{cwd}` 。为了达到这个目标，你需要依次执行一系列的命令行指令。请一步步地描述你的解决方案，每一步都应该对应一个命令行指令（请不要在一次操作中执行多个命令）。你需要根据每次指令的执行结果来调整你的下一步操作。请注意，你只能通过命令行来完成你的目标，不能使用图形界面。请将已获得的执行结果融入你的解决方案中，以不断完善你的解决方案。你的输出应该只包含下一步将执行的命令行指令。请确保你的命令能够自动执行，不需要人工干预。如果你的命令行指令需要在特定的目录下执行，请直接给出执行的目录。如果需要执行文件操作，请使用 sed、awk、grep 等命令行工具，或者通过 echo 重定向的方式。因为你能获取的信息有字数限制，所以努力让命令行指令执行的结果尽可能精简。请按照以下示例格式直接返回 JSON 结果，其中 THOUGHT 为解决思路，ACTION 为即将执行的命令行指令，CWD 为命令的执行目录。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
 
 格式示例：
 {{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}","CWD": "{{命令的执行目录，this is not required}}"}}
 """
+
+class CommandDetail(BaseModel):
+    thought: str = Field(..., description="解决思路")
+    action: str= Field(..., description="即将执行的命令行指令，若任务已完成则为空")
+    cwd: Optional[str] = Field(default=None, description="命令的执行目录")
+
 @dataclass
 class CommandAct(ReAct):
     def run(self) -> str:
@@ -60,7 +71,7 @@ class CommandAct(ReAct):
             return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
 
     @classmethod
-    def parse(cls, text: str) -> "ReAct":
+    def parse(cls, text: str, llm: BaseLanguageModel) -> "ReAct":
         """Parse the response text.
 
         Args:
@@ -69,10 +80,10 @@ class CommandAct(ReAct):
         Returns:
             The reasoning and command extracted from the response text.
         """
-        result = parse_json(text)
-        reason = result.get("THOUGHT", "")
-        command = result.get("ACTION", "")
-        cwd = result.get("CWD", "")
+        result:CommandDetail = llm.parse_response(text, CommandDetail) # type: ignore
+        reason = result.thought
+        command = result.action
+        cwd = result.cwd
         if cwd:
             return CommandAct(thought=reason, action=command, params={"cwd": cwd})
         return CommandAct(thought=reason, action=command)
@@ -101,6 +112,7 @@ class Command(Action):
         llm: The LLMChain object for language model completion.
     """
     role: str = ROLE
+    response_model = CommandDetail
     objective: str = ""
     model: Model = Model.GPT4_TURBO
 
@@ -116,7 +128,7 @@ class Command(Action):
             except Exception:
                 pass
         self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
-        self.llm = ReActChain(model=self.model, role=self.role, cls = CommandAct)
+        self.llm = ReActChain(model=self.model, role=self.role, response_model=self.response_model, cls = CommandAct)
         return super().__post_init__()
 
     def run(self, objective=None, command=None):

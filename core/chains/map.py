@@ -58,7 +58,7 @@ class MapChain(LLM):
             )
             prompt = self.prompt.format(**new_input)
             try:
-                result = self._llm.generate(prompt)
+                result = self._llm.generate(prompt, self.response_model)
             except Exception as e:
                 logger.warning(f"MapChain: {input['index']} failed with error: {e}")
                 result = "Error"
