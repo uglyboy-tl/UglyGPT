@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
 from .instructor import Instructor
+from .tool import BaseTool
 
 TEMPERATURE = 0.3
 
@@ -71,6 +72,7 @@ class BaseLanguageModel(ABC):
         self,
         prompt: str = "",
         response_model: Optional[Type[BaseModel]] = None,
+        tools: Optional[List[BaseTool]] = None,
     ) -> str:
         """Ask a question and return the user's response.
 

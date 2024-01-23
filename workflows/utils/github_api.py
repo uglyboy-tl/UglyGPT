@@ -34,7 +34,7 @@ class GithubAPI:
         url = f"repos/{repo_name}/readme"
         try:
             response = cls._github_api(url)
-        except requests.exceptions.HTTPError as err:
+        except requests.exceptions.HTTPError:
             logger.warning(f"Repo {repo_name} has no README.")
             return None
         if response.status_code == 200:
@@ -69,7 +69,7 @@ class GithubAPI:
             date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
             try:
                 content = cls.fetch_file("uglyboy-tl/Data", f"trending/{date}.md")
-            except requests.exceptions.HTTPError as err:
+            except requests.exceptions.HTTPError:
                 logger.warning("Github Trending is not updated yet.")
                 return File.load(file_name)
             except requests.exceptions.RequestException as e:
@@ -86,7 +86,7 @@ class GithubAPI:
         url = f"repos/{repo_name}/contents/{file_path}"
         try:
             response = cls._github_api(url)
-        except requests.exceptions.HTTPError as err:
+        except requests.exceptions.HTTPError:
             logger.error(f"Repo {repo_name} has no {file_path}.")
             raise
         except requests.exceptions.RequestException as e:

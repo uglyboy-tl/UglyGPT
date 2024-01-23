@@ -23,7 +23,7 @@ class CombineRetriever(BaseRetriever):
             try:
                 index = globals()[index_name]()
                 self._add_index(index)
-            except:
+            except Exception:
                 pass
 
     def search(self, query: str, n: int = BaseRetriever.default_n) -> list[str]:

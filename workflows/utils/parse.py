@@ -25,7 +25,7 @@ def parse_code(text: str, lang: str = "python"):
     if match:
         code = match.group(1)
     else:
-        pattern = rf'```.*?\s+(.*)\s+```'
+        pattern = r'```.*?\s+(.*)\s+```'
         match = re.search(pattern, text, re.DOTALL)
         if match:
             code = match.group(1)
