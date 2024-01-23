@@ -16,9 +16,9 @@ class MapSqlite(Action):
 
     def __post_init__(self):
         if self.map_keys is not None:
-            self.llm = MapChain(self.prompt, self.model, self.role, map_keys=self.map_keys)
+            self.llm = MapChain(self.prompt, self.model, self.role, self.response_model, map_keys=self.map_keys)
         else:
-            self.llm = MapChain(self.prompt, self.model, self.role)
+            self.llm = MapChain(self.prompt, self.model, self.role, self.response_model)
 
         self._reset_cache()
         return super().__post_init__()

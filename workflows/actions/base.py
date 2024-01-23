@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 
 from typing import Optional
 
+from pydantic import BaseModel
+
 from core import LLM, Model
 from workflows.utils import File
 
@@ -23,6 +25,7 @@ class Action(ABC):
     model: Model = Model.DEFAULT
     prompt: str = "{prompt}"
     role: Optional[str] = None
+    response_model: Optional[type[BaseModel]] = None
     llm: LLM = field(init=False)
     is_append_mode: bool = False
 
@@ -32,7 +35,7 @@ class Action(ABC):
         Sets the system of the LLMChain object if a role is provided.
         """
         if not hasattr(self, "llm"):
-            self.llm = LLM(self.prompt, self.model, self.role)
+            self.llm = LLM(self.prompt, self.model, self.role, self.response_model)
 
     def ask(self, *args, **kwargs) -> str:
         """Ask a question to the LLMChain object.

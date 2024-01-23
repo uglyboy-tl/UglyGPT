@@ -5,12 +5,20 @@ from dataclasses import dataclass, field
 from typing import List, Dict
 
 from loguru import logger
+from pydantic import BaseModel, Field
 
-from workflows.utils import parse_json
 from ..mapsqlite import MapSqlite
 
-ROLE = """
-"我将提供一些项目的描述信息。请根据这些信息，将每个项目分类到以下类别中的一个：
+ROLE = """我将提供一些项目的描述信息。请根据这些信息，将每个项目分类到以下类别中的一个：
+- `AI`: 关于机器学习或人工智能的项目；
+- `前端`: 前端相关的技术，例如 Vue、React等等生态下的种种技术，也包括移动客户端、小程序的技术，图标、字体等也属于这里；
+- `后端`: 这里主要指可以 selfhost 的后端服务类项目，而不是技术框架。例如，一个可以自己搭建的博客系统，或者一个可以自己搭建的 RSS 服务等等；如果是某个 Go 的 Web 框架，或者某个 Java 的 Web 框架，这些都不属于这里；
+- `资料`: 如果项目的内容是一些资料，例如一些书籍、教程、博客等等，那么这个项目就属于这里；这类项目的特点是，它们不是一个可以直接运行的程序，而是一些资料；
+- `其他`: 不在上述类别中的项目，都属于这里。
+"""
+
+ROLE_BACK = """
+我将提供一些项目的描述信息。请根据这些信息，将每个项目分类到以下类别中的一个：
 - `AI`: 关于机器学习或人工智能的项目；
 - `前端`: 前端相关的技术，例如 Vue、React等等生态下的种种技术，也包括移动客户端、小程序的技术，图标、字体等也属于这里；
 - `后端`: 这里主要指可以 selfhost 的后端服务类项目，而不是技术框架。例如，一个可以自己搭建的博客系统，或者一个可以自己搭建的 RSS 服务等等；如果是某个 Go 的 Web 框架，或者某个 Java 的 Web 框架，这些都不属于这里；
@@ -22,6 +30,11 @@ ROLE = """
 格式示例：
 {{"REASON": "{{分类的原因}}","CATEGORY": "{{具体的类别名，例如: 前端}}"}}
 """
+
+class CategoryDetail(BaseModel):
+    reason: str = Field(..., description="分类的原因")
+    category: str= Field(..., description="具体的类别名，例如: 前端")
+
 PROMPT_TEMPLATE = """
 项目的介绍：
 {description}
@@ -31,6 +44,7 @@ PROMPT_TEMPLATE = """
 @dataclass
 class Category(MapSqlite):
     role: str = ROLE
+    response_model: type[BaseModel] = CategoryDetail
     prompt: str = PROMPT_TEMPLATE
     map_keys: List[str] = field(default_factory=lambda: ["description"])
 
@@ -65,11 +79,5 @@ class Category(MapSqlite):
     def _parse(self, text: str):
         if text == "Error":
             return "Error"
-        try:
-            result = parse_json(text)
-        except Exception as e:
-            logger.warning(f"An error occurred: {e}")
-            return "Error"
-        if isinstance(result, dict):
-            return result.get("CATEGORY", "Error")
-        return "Error"
+        result: CategoryDetail = self.llm.llm.parse_response(text, self.response_model) # type: ignore
+        return result.category

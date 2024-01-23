@@ -5,10 +5,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import urllib.parse
 import re
-from time import sleep
 
 from loguru import logger
 
+from core import Model
 from .utils import GithubAPI, KVCache, File, parse_markdown
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
@@ -27,15 +27,15 @@ description: {description}
 
 @dataclass
 class GithubTrending():
-    output: str = "/srv/Base/Home/uglyboy/文档/Temp/Github 趋势.md"
+    output: str = "/home/uglyboy/Documents/Temp/Github 趋势.md"
     filename: str = "resource/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
-    llm_name: str = ""
+    model: Model = Model.YI_32K
 
     def __post_init__(self):
-        self.summarizer = ReadmeSummarizer(self.filename, self.llm_name)
-        self.category = Category(self.filename, self.llm_name)
+        self.summarizer = ReadmeSummarizer(self.filename, self.model)
+        self.category = Category(self.filename, self.model)
         self.finished = KVCache(self.filename, "Finished", 30)
         self.config = KVCache(self.filename, "Config")
 
