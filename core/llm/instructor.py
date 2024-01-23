@@ -14,9 +14,6 @@ Here is the output schema:
 ```
 {schema}
 ```"""
-FORMAT_INSTRUCTIONS = """As a genius expert, your task is to understand the content and provide the parsed objects in json that match the following json_schema:\n
-{schema}
-"""
 
 
 class Instructor(BaseModel):

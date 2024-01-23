@@ -112,7 +112,7 @@ class Command(Action):
         llm: The LLMChain object for language model completion.
     """
     role: str = ROLE
-    response_model = CommandDetail
+    response_model: Optional[type[BaseModel]] = CommandDetail
     objective: str = ""
     model: Model = Model.GPT4_TURBO
 
