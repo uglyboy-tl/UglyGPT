@@ -6,9 +6,11 @@ from loguru import logger
 from pathlib import Path
 from typing import Optional
 
+from core import Model
 from .utils import File
 from .actions.code import CodeWrite, CodeReviewer, TestWriter, CodeRewrite
 from .sandbox import Sandbox, TestFailedError
+
 
 @dataclass
 class Coder:
@@ -16,30 +18,41 @@ class Coder:
     request: str = ""
     review_code: bool = False
     sandbox: Sandbox = field(default_factory=Sandbox)
-    llm_name: str = "gpt-4-turbo"
+    model: Model = Model.GPT4_TURBO
 
     def __post_init__(self):
-        self.writer = CodeWrite(self.file_path, self.llm_name)
-        self.reviewer = CodeReviewer(self.file_path, self.llm_name)
-        self.rewriter = CodeRewrite(self.file_path, self.llm_name)
-        self.tester = TestWriter(self.test_path, self.llm_name)
-        self.unittester = TestWriter(self.unittest_path, self.llm_name)
+        self.writer = CodeWrite(self.file_path, self.model)
+        self.reviewer = CodeReviewer(self.file_path, self.model)
+        self.rewriter = CodeRewrite(self.file_path, self.model)
+        self.tester = TestWriter(self.test_path, self.model)
+        self.unittester = TestWriter(self.unittest_path, self.model)
         try:
-            logger.add(f"logs/{File.path_to_filename(self.file_path)}.log", level="INFO", rotation="1 week", retention="10 days", compression="zip")
-        except:
-            logger.add(f"{Path(self.file_path).with_suffix('.log')}", level="INFO", rotation="1 week", retention="10 days")
+            logger.add(
+                f"logs/{File.path_to_filename(self.file_path)}.log",
+                level="INFO",
+                rotation="1 week",
+                retention="10 days",
+                compression="zip",
+            )
+        except Exception:
+            logger.add(
+                f"{Path(self.file_path).with_suffix('.log')}",
+                level="INFO",
+                rotation="1 week",
+                retention="10 days",
+            )
 
     def gen_code(self) -> None:
         if self.request == "":
             raise ValueError("request is empty, can not generate code.")
         logger.info(f"生成代码的原始需求：\n{self.request}")
         self._code = self.writer.run(self.request)
-        self._code = self.reviewer.run(context = self.request, code = self.code)
+        self._code = self.reviewer.run(context=self.request, code=self.code)
 
     def enhance_code(self) -> None:
-        self._code = self.reviewer.run(context = self.request, code = self.code)
+        self._code = self.reviewer.run(context=self.request, code=self.code)
 
-    def change_code(self, extra: Optional[str] = None ) -> bool:
+    def change_code(self, extra: Optional[str] = None) -> bool:
         if extra is None:
             extra = input("请输入你觉得需要修改的内容：")
             if extra == "":
@@ -50,9 +63,9 @@ class Coder:
             context = f"函数原始需求：\n{self.request}"
         else:
             context = ""
-        self._code = self.rewriter.run(context = context, code = self.code, extra = extra)
+        self._code = self.rewriter.run(context=context, code=self.code, extra=extra)
         if self.review_code:
-            self._code = self.reviewer.run(context = context, code = self.code)
+            self._code = self.reviewer.run(context=context, code=self.code)
         return True
 
     def gen_unittest(self) -> None:
@@ -60,10 +73,18 @@ class Coder:
             context = f"---\n函数原始需求：\n{self.request}\n---"
         else:
             context = ""
-        self.unittester.run(context = f"{context}", code = self.code, working_dir = str(File.WORKSPACE_ROOT), source_path = self.file_path, test_path = self.unittest_path)
+        self.unittester.run(
+            context=f"{context}",
+            code=self.code,
+            working_dir=str(File.WORKSPACE_ROOT),
+            source_path=self.file_path,
+            test_path=self.unittest_path,
+        )
         if self.review_code:
             agent = CodeReviewer(self.unittest_path)
-            agent.run(context = f"这是一个unittest测试文件\n{context}", code = agent._load())
+            agent.run(
+                context=f"这是一个unittest测试文件\n{context}", code=agent._load()
+            )
 
     def prepare_debug(self) -> None:
         self.sandbox.init()
@@ -74,10 +95,18 @@ class Coder:
         working_path = Path(self.sandbox.dir)
         source_path = Path(sandbox_file_path).relative_to(working_path)
         test_path = Path(self.test_path).relative_to(working_path)
-        self.tester.run(context = context, code = code, working_dir = self.sandbox.dir, source_path = str(source_path), test_path = str(test_path))
+        self.tester.run(
+            context=context,
+            code=code,
+            working_dir=self.sandbox.dir,
+            source_path=str(source_path),
+            test_path=str(test_path),
+        )
         if self.review_code:
             agent = CodeReviewer(self.test_path)
-            agent.run(context =f"这是一个unittest测试文件\n{context}", code = agent._load())
+            agent.run(
+                context=f"这是一个unittest测试文件\n{context}", code=agent._load()
+            )
 
     def run_debug(self) -> None:
         if not File.exists(self.test_path):
@@ -102,17 +131,21 @@ class Coder:
                     if self.change_code():
                         retry = 0
                         if self.review_code:
-                            self._code = self.reviewer.run(context = context, code = self.code)
+                            self._code = self.reviewer.run(
+                                context=context, code=self.code
+                            )
                         self.sandbox.prepare_test(self.file_path)
                     else:
                         break
                 else:
                     debug = e.args[0]
-                    self._code = self.rewriter.run(context = context, code = self.code, extra = debug)
+                    self._code = self.rewriter.run(
+                        context=context, code=self.code, extra=debug
+                    )
                     if self.review_code:
-                        self._code = self.reviewer.run(context = context, code = self.code)
+                        self._code = self.reviewer.run(context=context, code=self.code)
                     self.sandbox.prepare_test(self.file_path)
-            except Exception as e:
+            except Exception:
                 raise
         if retry > 3:
             logger.error("代码依然无法通过测试，建议重新写代码。")
