@@ -24,7 +24,7 @@ except ImportError:
     ChatGLM = None
 
 LLM_PROVIDERS = {
-    "gpt-3.5-turbo": (ChatGPT, {"model": "gpt-3.5-turbo", "MAX_TOKENS": 4096}),
+    "gpt-3.5-turbo": (ChatGPT, {"model": "gpt-3.5-turbo-1106", "MAX_TOKENS": 4096}),
     "gpt-3.5-turbo-16k": (ChatGPT, {"model": "gpt-3.5-turbo-16k", "MAX_TOKENS": 16384}),
     "gpt-4": (ChatGPT, {"model": "gpt-4", "MAX_TOKENS": 8192}),
     "gpt-4-32k": (ChatGPT, {"model": "gpt-4-32k", "MAX_TOKENS": 32768}),

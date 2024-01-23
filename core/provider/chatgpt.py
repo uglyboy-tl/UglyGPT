@@ -28,7 +28,7 @@ class ChatGPT(ChatGPTAPI):
             prompt += "\n" + instructor.get_format_instructions()
         self._generate_messages(prompt)
         kwargs = {"messages": self.messages, **self._default_params}
-        if response_model and self.model == "gpt-4-1106-preview":
+        if response_model and self.model in ["gpt-3.5-turbo-1106","gpt-4-1106-preview"]:
             kwargs["response_format"] = {"type": "json_object"}
         try:
             response = self.completion_with_backoff(**kwargs)
@@ -51,7 +51,7 @@ class ChatGPT(ChatGPTAPI):
         return response.choices[0].message.content.strip()  # type: ignore
 
     def _num_tokens(self, messages: list, model: str):
-        if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
+        if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k" or model == "gpt-3.5-turbo-1106":
             logger.trace(
                 "gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613."
             )

@@ -38,7 +38,6 @@ class BaseLanguageModel(ABC):
         _generate_messages: Generate the list of messages for the conversation.
         _num_tokens: Calculate the number of tokens in a conversation.
         max_tokens: Get the maximum number of tokens that can be returned at once.
-
     """
 
     is_init_delay: bool
@@ -86,7 +85,9 @@ class BaseLanguageModel(ABC):
         """
         pass
 
-    def parse_response(self, response: str, response_model: Type[BaseModel]) -> BaseModel:
+    def parse_response(
+        self, response: str, response_model: Type[BaseModel]
+    ) -> BaseModel:
         """Parse the response from the LLM provider.
 
         Args:
