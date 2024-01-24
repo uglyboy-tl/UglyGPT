@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List, Optional, Callable, Tuple, Type, TypeVar, Generic
+from typing import Any, Dict, List, Optional, Callable, Tuple, Type, TypeVar, Generic, Union
 from dataclasses import dataclass
 
 from pydantic import BaseModel
+from loguru import logger
 
 from core.provider import get_llm_provider
 from core.llm import BaseLanguageModel, Model
@@ -50,7 +51,7 @@ class LLM(Chain, Generic[ResponseModel]):
         """
         return self.prompt.input_variables
 
-    def _call(self, inputs: Dict[str, Any]) -> ResponseModel | str:
+    def _call(self, inputs: Dict[str, Any]) -> Union[ResponseModel, str]:
         """Call the LLMChain.
 
         This method calls the LLMChain by formatting the prompt with the inputs and asking the LLM provider.
@@ -62,13 +63,28 @@ class LLM(Chain, Generic[ResponseModel]):
             The response from the LLM provider.
         """
         prompt = self.prompt.format(**inputs)
-        response = self._llm.generate(prompt, self.response_model)
-        if self.memory_callback:
-            self.memory_callback((prompt, response))
-        if self.response_model:
-            return self._llm.parse_response(response, self.response_model)
-        else:
-            return response
+
+        max_retries = 3  # 设置最大重试次数
+        attempts = 0     # 初始化尝试次数
+        while attempts < max_retries:
+            try:
+                response = self._llm.generate(prompt, self.response_model)
+                if self.response_model:
+                    instructor_response = self._llm.parse_response(response, self.response_model)
+                    if self.memory_callback:
+                        self.memory_callback((prompt, response))
+                    return instructor_response
+                else:
+                    if self.memory_callback:
+                        self.memory_callback((prompt, response))
+                    return response
+            except Exception as e:  # 捕获所有异常
+                attempts += 1       # 尝试次数增加
+                logger.warning("解析失败，正在尝试重新解析")
+                logger.trace(f"第 {attempts} 次尝试解析失败，原因：{e}")
+                if attempts == max_retries:
+                    raise e         # 如果达到最大尝试次数，则抛出最后一个异常
+        raise
 
     @property
     def prompt(self) -> Prompt:
