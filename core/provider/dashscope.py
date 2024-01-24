@@ -34,7 +34,7 @@ def not_notry_exception(exception: BaseException):
 
 @dataclass
 class DashScope(BaseLanguageModel):
-    model: str = dashscope.Generation.Models.qwen_max
+    model: str
     use_max_tokens: bool = True
     MAX_TOKENS: int = 6000
     seed: int = 1234

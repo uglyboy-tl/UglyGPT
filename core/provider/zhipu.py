@@ -13,7 +13,7 @@ from core.llm import BaseLanguageModel, Instructor, retry_decorator
 
 @dataclass
 class ChatGLM(BaseLanguageModel):
-    model: str = "glm-3-turbo"
+    model: str
     use_max_tokens: bool = False
     MAX_TOKENS: int = 128000
 

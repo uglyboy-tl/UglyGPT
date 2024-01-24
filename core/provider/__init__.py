@@ -41,7 +41,7 @@ LLM_PROVIDERS = {
     "glm-3": (ChatGLM, {"model": "glm-3-turbo", "MAX_TOKENS": 128000}),
 }
 
-ERROR_MSG = "Error: {provider} is not installed. Please install openai, tiktoken to use {provider} as a LLM provider."
+ERROR_MSG = "Error: {provider} is not installed. Please install required packages to use {provider} as a LLM provider."
 
 
 def get_llm_provider(

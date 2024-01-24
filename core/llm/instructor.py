@@ -28,7 +28,7 @@ class Instructor(BaseModel):
             if match:
                 json_str = match.group()
             # json_object = json.loads(json_str, strict=False)
-            return cls.model_validate_json(json_str)  # type: ignore
+            return cls.model_validate_json(json_str)
 
         except (json.JSONDecodeError, ValidationError) as e:
             name = cls.__name__
@@ -37,7 +37,7 @@ class Instructor(BaseModel):
 
     @classmethod
     def get_format_instructions(cls) -> str:
-        schema = cls.model_json_schema()  # type: ignore
+        schema = cls.model_json_schema()
 
         # Remove extraneous fields.
         reduced_schema = schema
