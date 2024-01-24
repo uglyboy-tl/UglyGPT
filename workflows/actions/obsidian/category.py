@@ -44,7 +44,7 @@ PROMPT_TEMPLATE = """
 @dataclass
 class Category(MapSqlite):
     role: str = ROLE
-    response_model: type[BaseModel] = CategoryDetail
+    response_model: type[CategoryDetail] = CategoryDetail
     prompt: str = PROMPT_TEMPLATE
     map_keys: List[str] = field(default_factory=lambda: ["description"])
 

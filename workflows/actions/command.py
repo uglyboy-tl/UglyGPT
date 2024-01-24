@@ -88,7 +88,7 @@ class CommandAct(ReAct):
             )
 
     @classmethod
-    def parse(cls, response: CommandDetail, llm: BaseLanguageModel) -> "ReAct":
+    def parse(cls, response: CommandDetail) -> "ReAct":
         """Parse the response text.
 
         Args:

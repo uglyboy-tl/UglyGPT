@@ -2,17 +2,19 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
-import json
+from typing import Any, Dict, List, TypeVar, Generic, Union
 
 from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
+from pydantic import BaseModel
 
 from .llm import LLM
 
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+
 
 @dataclass
-class MapChain(LLM):
+class MapChain(LLM[ResponseModel], Generic[ResponseModel]):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
     is_init_delay: bool = True
 
@@ -29,15 +31,15 @@ class MapChain(LLM):
             and len(inputs[map_key]) == self.num
         ), f"MapChain expects {map_key} to be a list of strings with the same length"
 
-    def _call(self, inputs: Dict[str, Any]) -> str:
+    def _call(self, inputs: Dict[str, Any]) -> List[Union[ResponseModel, str]]:
         inputs_list = self._generate_inputs_list(inputs)
 
         with Pool() as pool:
-            results = pool.map(self._map_func(inputs), inputs_list)
+            response = pool.map(self._map_func(inputs), inputs_list)
 
-        results = self._process_results(results)
+        results = self._process_results(response)
 
-        return json.dumps(results, indent=4, ensure_ascii=False)
+        return results
 
     def _generate_inputs_list(self, inputs):
         return [
@@ -49,7 +51,7 @@ class MapChain(LLM):
         ]
 
     def _map_func(self, inputs):
-        def func(input):
+        def func(input) -> Dict[str, Union[int, str, ResponseModel]]:
             new_input: Dict = {
                 k: v for k, v in inputs.items() if k not in self.map_keys
             }
@@ -58,15 +60,19 @@ class MapChain(LLM):
             )
             prompt = self.prompt.format(**new_input)
             try:
-                result = self._llm.generate(prompt, self.response_model)
+                response = self._llm.generate(prompt, self.response_model)
             except Exception as e:
                 logger.warning(f"MapChain: {input['index']} failed with error: {e}")
-                result = "Error"
+                response = "Error"
+            if self.response_model:
+                result = self._llm.parse_response(response, self.response_model)
+            else:
+                result = response
             logger.debug(f"MapChain: {input['index']} finished")
             return {"index": input["index"], "result": result}
 
         return func
 
-    def _process_results(self, results):
+    def _process_results(self, results) -> List[Union[ResponseModel, str]]:
         results = sorted(results, key=lambda x: x["index"])
         return [result["result"] for result in results]

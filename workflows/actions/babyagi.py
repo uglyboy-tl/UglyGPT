@@ -74,10 +74,11 @@ class BabyAGI(Action):
         return super().__post_init__()
 
     def run(self, objective=None):
-        logger.info(f'BabyAGI Running ..')
+        logger.info('BabyAGI Running ..')
         if objective is not None:
             self.objective = objective
             self.role = ROLE.format(objective=objective)
+            self.llm.llm.set_role(self.role)
             super().__post_init__()
 
         tasks = BabyTasks.init()

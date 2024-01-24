@@ -8,7 +8,6 @@ from typing import Dict, Type, TypeVar, List, Optional, Generic
 from loguru import logger
 from pydantic import BaseModel
 
-from core.llm import BaseLanguageModel
 from .llm import LLM
 
 ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
@@ -30,7 +29,7 @@ class ReAct(ABC):
 
     @classmethod
     @abstractmethod
-    def parse(cls, response, llm: BaseLanguageModel) -> "ReAct":
+    def parse(cls, response) -> "ReAct":
         pass
 
     @property
@@ -70,7 +69,7 @@ class ReActChain(LLM[ResponseModel], Generic[ResponseModel]):
             self._acts.append(act)
             inputs = {"prompt": "\n".join(str(a) for a in self._acts)}
             response = self._call(inputs)
-            act = self.cls.parse(response, self.llm)  # type: ignore
+            act = self.cls.parse(response)  # type: ignore
             logger.success(act.info)
         return act.info
 
@@ -79,5 +78,5 @@ class ReActChain(LLM[ResponseModel], Generic[ResponseModel]):
             inputs = {"prompt": "Start!"}
             inputs = self._prep_inputs(inputs)
             response = self._call(inputs)
-            act = self.cls.parse(response, self.llm)  # type: ignore
+            act = self.cls.parse(response)  # type: ignore
         return self._process(act)

@@ -2,33 +2,35 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from typing import Optional, Dict, List
-import json
+from typing import Optional, Dict, List, TypeVar, Generic
+
+from pydantic import BaseModel
 
 from core import MapChain
 from .base import Action
 from workflows.utils.sqlite import KVCache
 
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+
 @dataclass
-class MapSqlite(Action):
+class MapSqlite(Action, Generic[ResponseModel]):
     map_keys: Optional[list] = None
     table: Optional[str] = None
 
     def __post_init__(self):
         if self.map_keys is not None:
-            self.llm = MapChain(self.prompt, self.model, self.role, self.response_model, map_keys=self.map_keys)
+            self.llm = MapChain[ResponseModel](self.prompt, self.model, self.role, self.response_model, map_keys=self.map_keys)
         else:
-            self.llm = MapChain(self.prompt, self.model, self.role, self.response_model)
+            self.llm = MapChain[ResponseModel](self.prompt, self.model, self.role, self.response_model)
 
         self._reset_cache()
         return super().__post_init__()
 
-    def ask(self, *args, **kwargs) -> List[str]:
+    def ask(self, *args, **kwargs) -> List[str|BaseModel]:
         response = self.llm(*args, **kwargs)
-        json_response = json.loads(response)
-        return json_response
+        return response
 
-    def _save(self, data: Optional[Dict[str,str]] = None, filename: Optional[str] = None):
+    def _save(self, data: Optional[Dict[str,str|BaseModel]] = None, filename: Optional[str] = None):
         if filename:
             self._reset_cache(filename)
         if not data:
