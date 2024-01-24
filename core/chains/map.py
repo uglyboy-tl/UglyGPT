@@ -58,18 +58,25 @@ class MapChain(LLM[ResponseModel], Generic[ResponseModel]):
             prompt = self.prompt.format(**new_input)
             try:
                 response = self._llm.generate(prompt, self.response_model)
+                if self.response_model:
+                    response = self._llm.parse_response(response, self.response_model).model_dump_json()
             except Exception as e:
                 logger.warning(f"MapChain: {input['index']} failed with error: {e}")
                 response = "Error"
-            if self.response_model:
-                result = self._llm.parse_response(response, self.response_model)
-            else:
-                result = response
             logger.debug(f"MapChain: {input['index']} finished")
-            return {"index": input["index"], "result": result}
+            return {"index": input["index"], "result": response}
 
         return func
 
     def _process_results(self, results) -> List[Union[ResponseModel, str]]:
         results = sorted(results, key=lambda x: x["index"])
-        return [result["result"] for result in results]
+        if self.response_model:
+            new_results = []
+            for result in results:
+                if result["result"] == "Error":
+                    new_results.append(result["result"])
+                else:
+                    new_results.append(self.response_model.model_validate_json(result["result"]))
+            return new_results
+        else:
+            return [result["result"] for result in results]

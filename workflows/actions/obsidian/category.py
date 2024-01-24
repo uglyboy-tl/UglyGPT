@@ -31,9 +31,11 @@ ROLE_BACK = """
 {{"REASON": "{{分类的原因}}","CATEGORY": "{{具体的类别名，例如: 前端}}"}}
 """
 
+
 class CategoryDetail(BaseModel):
     reason: str = Field(..., description="分类的原因")
-    category: str= Field(..., description="具体的类别名，例如: 前端")
+    category: str = Field(..., description="具体的类别名，例如: 前端")
+
 
 PROMPT_TEMPLATE = """
 项目的介绍：
@@ -42,7 +44,7 @@ PROMPT_TEMPLATE = """
 
 
 @dataclass
-class Category(MapSqlite):
+class Category(MapSqlite[CategoryDetail]):
     role: str = ROLE
     response_model: type[CategoryDetail] = CategoryDetail
     prompt: str = PROMPT_TEMPLATE
@@ -63,8 +65,7 @@ class Category(MapSqlite):
             description_list.append(description)
 
         datas = self.ask(description=description_list)
-        datas = [self._parse(data) for data in datas]
-        dict = {k:v for k,v in zip(new_names, datas) if v != "Error"}
+        dict = {k: v.category for k, v in zip(new_names, datas) if isinstance(v, CategoryDetail)}
         self._save(dict)
         _datas.update(dict)
 
@@ -75,9 +76,3 @@ class Category(MapSqlite):
             else:
                 result[classify] = [name]
         return result
-
-    def _parse(self, text: str):
-        if text == "Error":
-            return "Error"
-        result: CategoryDetail = self.llm.llm.parse_response(text, self.response_model) # type: ignore
-        return result.category

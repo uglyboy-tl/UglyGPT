@@ -1,5 +1,5 @@
 from .base import Chain
-from .llm import LLM
+from .llm import LLM, ResponseModel
 from .map import MapChain
 from .reduce import ReduceChain
 from .react import ReAct, ReActChain
@@ -12,4 +12,5 @@ __all__ = [
     "ReduceChain",
     "ReAct",
     "ReActChain",
+    "ResponseModel",
 ]
