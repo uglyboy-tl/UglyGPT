@@ -2,15 +2,16 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, cast
 
 from pydantic import BaseModel, Field
+from loguru import logger
 
 from core import ReduceChain, Model
 from agent.retrievers import StoresRetriever, get_stores_retriever
 from ..base import Action
 
-ROLE="""
+ROLE = """
 我需要你帮我写一部小说。现在我给你一个400字的记忆（简短的总结），你应该用它来储存已经写过的关键内容，这样你就可以跟踪很长的上下文。每次，我会给你你当前的记忆（前面故事的简短总结。你应该用它来储存已经写过的关键内容，这样你就可以跟踪很长的上下文），之前写的段落，以及关于下一段要写什么的指示。
 我需要你写：
 
@@ -24,13 +25,23 @@ ROLE="""
 格式示例：
 {{"output_paragraph": "{{string of output paragraph, around 20 sentences.}}","output_memory": {{"Rational":"{{string that explain how to update the memory}}","Updated Memory": "{{string of updated memory, around 10 to 20 sentences}}"}} }}
 """
+
+
 class OutputMemory(BaseModel):
-    rational: str = Field(..., description="string that explain how to update the memory")
-    updated_memory: str= Field(..., description="string of updated memory, around 10 to 20 sentences")
+    rational: str = Field(
+        ..., description="string that explain how to update the memory"
+    )
+    updated_memory: str = Field(
+        ..., description="string of updated memory, around 10 to 20 sentences"
+    )
+
 
 class NovelDetail(BaseModel):
-    output_paragraph: str = Field(..., description="string of output paragraph, around 20 sentences.")
+    output_paragraph: str = Field(
+        ..., description="string of output paragraph, around 20 sentences."
+    )
     output_memory: OutputMemory
+
 
 PROMPT_TEMPLATE = """
 这些是输入：
@@ -42,29 +53,44 @@ PROMPT_TEMPLATE = """
 -----
 """
 
+
 @dataclass
 class Novel(Action):
     filename: str = "docs/examples/novel.txt"
     model: Model = Model.GPT3_TURBO_16K
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
-    response_model: Optional[type[BaseModel]] = NovelDetail
+    response_model: Optional[type[NovelDetail]] = NovelDetail
     reduce: ReduceChain = field(init=False)
     db: StoresRetriever = field(init=False)
 
     def __post_init__(self):
-        self.llm = ReduceChain(self.prompt, self.model, self.role, self.response_model, format=self._parse)
+        self.llm = ReduceChain[NovelDetail](
+            self.prompt, self.model, self.role, self.response_model, format=self._parse
+        )
         self.db = get_stores_retriever("bm25", "docs/examples/novel.json", True)
         self.db.init()
         return super().__post_init__()
 
-    def _parse(self, response:str) -> str:
-        data: NovelDetail = self.llm.llm.parse_response(response, NovelDetail) # type: ignore
-        input_paragraph = data.output_paragraph
-        short_memory = data.output_memory.rational
+    def _parse(self, response: str | NovelDetail) -> str:
+        if response == "":
+            input_paragraph = ""
+            short_memory = ""
+        else:
+            try:
+                response = cast(NovelDetail, response)
+                input_paragraph = response.output_paragraph
+                short_memory = response.output_memory.rational
+            except Exception:
+                logger.error(f"Response is not NovelDetail, can not parse. {response}")
+                raise ValueError("Response is not NovelDetail, can not parse.")
         long_memory = self.db.search(input_paragraph, 3)
-        input_long_term_memory = '\n'.join(
-            [f"相关段落 {i+1} :" + selected_memory for i, selected_memory in enumerate(long_memory)])
+        input_long_term_memory = "\n".join(
+            [
+                f"相关段落 {i+1} :" + selected_memory
+                for i, selected_memory in enumerate(long_memory)
+            ]
+        )
         self.db.add(input_paragraph)
         history = f"""## 输入记忆：\n{short_memory}\n\n## 输入段落：\n{input_paragraph}\n\n## 输入相关段落：\n{input_long_term_memory}"""
         return history

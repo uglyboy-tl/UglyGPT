@@ -71,7 +71,7 @@ class Chain(ABC):
             f" but not both. Got args: {args} and kwargs: {kwargs}."
         )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> str:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Run the chain as text in, text out or multiple variables, text out."""
         try:
             inputs = self._check_args_kwargs(args, kwargs)

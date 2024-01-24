@@ -4,7 +4,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
@@ -21,6 +21,7 @@ class Action(ABC):
         filename: The filename associated with the action.
         llm: The LLMChain object used for the action.
     """
+
     filename: Optional[str] = None
     model: Model = Model.DEFAULT
     prompt: str = "{prompt}"
@@ -37,7 +38,7 @@ class Action(ABC):
         if not hasattr(self, "llm"):
             self.llm = LLM(self.prompt, self.model, self.role, self.response_model)
 
-    def ask(self, *args, **kwargs) -> str:
+    def ask(self, *args, **kwargs) -> Any:
         """Ask a question to the LLMChain object.
 
         Args:
@@ -92,7 +93,7 @@ class Action(ABC):
         data = File.load(filename)
         return data
 
-    def _parse(self, text: str):
+    def _parse(self, text):
         """Parse text.
 
         Args:

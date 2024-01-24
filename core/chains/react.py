@@ -3,12 +3,15 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Type, List, Optional
+from typing import Dict, Type, TypeVar, List, Optional, Generic
 
 from loguru import logger
+from pydantic import BaseModel
 
 from core.llm import BaseLanguageModel
 from .llm import LLM
+
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
 
 
 @dataclass
@@ -27,7 +30,7 @@ class ReAct(ABC):
 
     @classmethod
     @abstractmethod
-    def parse(cls, text: str, llm: BaseLanguageModel ) -> "ReAct":
+    def parse(cls, response, llm: BaseLanguageModel) -> "ReAct":
         pass
 
     @property
@@ -48,7 +51,7 @@ class ReAct(ABC):
 
 
 @dataclass
-class ReActChain(LLM):
+class ReActChain(LLM[ResponseModel], Generic[ResponseModel]):
     cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):

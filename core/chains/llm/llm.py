@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List, Optional, Callable, Tuple, Type
+from typing import Any, Dict, List, Optional, Callable, Tuple, Type, TypeVar, Generic
 from dataclasses import dataclass
 
 from pydantic import BaseModel
@@ -11,9 +11,11 @@ from core.llm import BaseLanguageModel, Model
 from ..base import Chain
 from .prompt import Prompt
 
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+
 
 @dataclass
-class LLM(Chain):
+class LLM(Chain, Generic[ResponseModel]):
     """A class representing an LLM chain.
 
     This class inherits from the Chain class and implements the logic for interacting with a language model.
@@ -26,7 +28,7 @@ class LLM(Chain):
     prompt_template: str = "{prompt}"
     model: Model = Model.DEFAULT
     role: Optional[str] = None
-    response_model: Optional[Type[BaseModel]] = None
+    response_model: Optional[Type[ResponseModel]] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     is_init_delay: bool = False
 
@@ -49,7 +51,7 @@ class LLM(Chain):
         """
         return self.prompt.input_variables
 
-    def _call(self, inputs: Dict[str, Any]) -> str:
+    def _call(self, inputs: Dict[str, Any]) -> ResponseModel | str:
         """Call the LLMChain.
 
         This method calls the LLMChain by formatting the prompt with the inputs and asking the LLM provider.
@@ -64,7 +66,10 @@ class LLM(Chain):
         response = self._llm.generate(prompt, self.response_model)
         if self.memory_callback:
             self.memory_callback((prompt, response))
-        return response
+        if self.response_model:
+            return self._llm.parse_response(response, self.response_model)
+        else:
+            return response
 
     @property
     def prompt(self) -> Prompt:

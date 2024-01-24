@@ -2,17 +2,20 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Callable
+from typing import Any, Dict, List, Callable, TypeVar, Generic
 
 from loguru import logger
+from pydantic import BaseModel
 
 from .llm import LLM
 
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+
 
 @dataclass
-class ReduceChain(LLM):
+class ReduceChain(LLM[ResponseModel], Generic[ResponseModel]):
     reduce_keys: List[str] = field(default_factory=lambda: ["input"])
-    format: Callable[[str], str] = field(default_factory=lambda: lambda x: x)
+    format: Callable[[str|ResponseModel], str] = field(default_factory=lambda: lambda x: str(x))
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.reduce_keys[0]])
@@ -20,7 +23,7 @@ class ReduceChain(LLM):
             self._validate_reduce_key(reduce_key, inputs)
         assert (
             "history" in self.input_keys
-        ), "ReduceChain expects history to be in input_keys"
+        ), "ReduceChain expects response to be in input_keys"
         if not hasattr(inputs, "history"):
             inputs["history"] = ""
         super()._validate_inputs(inputs)
@@ -36,20 +39,20 @@ class ReduceChain(LLM):
             len(inputs[reduce_key]) == self.num
         ), f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
-    def _call(self, inputs: Dict[str, Any]) -> str:
-        result = inputs["history"]
+    def _call(self, inputs: Dict[str, str]) -> str|ResponseModel:
+        response = inputs["history"]
         for i in range(self.num):
-            result = self._process_input(i, inputs, result)
+            response = self._process_input(i, inputs, response)
             logger.debug(f"ReduceChain: {i} finished")
-            logger.debug(f"ReduceChain: {result}")
-        return result
+            logger.debug(f"ReduceChain: {response}")
+        return response
 
-    def _process_input(self, index: int, inputs: Dict[str, Any], history: str) -> str:
+    def _process_input(self, index: int, inputs: Dict[str, str], response: str|ResponseModel) -> str|ResponseModel:
         new_input = inputs.copy()
         if index > 0:
             new_input.pop("history")
-            new_input["history"] = self.format(history)
+            new_input["history"] = self.format(response)
         new_input.update(
-            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys}
+            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys} # type: ignore
         )
-        return super()._call(new_input)
+        return super()._call(new_input) # type: ignore

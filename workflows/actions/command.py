@@ -26,10 +26,12 @@ ROLE_BACK = """
 {{"THOUGHT": "{{解决思路}}","ACTION": "{{即将执行的命令行指令，若任务已完成则为空}}","CWD": "{{命令的执行目录，this is not required}}"}}
 """
 
+
 class CommandDetail(BaseModel):
     thought: str = Field(..., description="解决思路")
-    action: str= Field(..., description="即将执行的命令行指令，若任务已完成则为空")
+    action: str = Field(..., description="即将执行的命令行指令，若任务已完成则为空")
     cwd: Optional[str] = Field(default=None, description="命令的执行目录")
+
 
 @dataclass
 class CommandAct(ReAct):
@@ -55,11 +57,24 @@ class CommandAct(ReAct):
             return "Command execution cancelled."
         try:
             if platform.system() == "Windows":
-                result = subprocess.run(["powershell", "-Command", command], shell=True, check=True,
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+                result = subprocess.run(
+                    ["powershell", "-Command", command],
+                    shell=True,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=cwd,
+                )
             else:
-                result = subprocess.run('set -o pipefail; ' + command, shell=True, check=True,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash', cwd=cwd)
+                result = subprocess.run(
+                    "set -o pipefail; " + command,
+                    shell=True,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    executable="/bin/bash",
+                    cwd=cwd,
+                )
             output = result.stdout.decode().strip()
             if output != "":
                 return output
@@ -68,10 +83,12 @@ class CommandAct(ReAct):
         except subprocess.CalledProcessError as e:
             logger.warning(e.stderr.decode())
             # raise RuntimeError("Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-            return "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
+            return "Command '{}' return with error (code {}): {}".format(
+                e.cmd, e.returncode, e.output
+            )
 
     @classmethod
-    def parse(cls, text: str, llm: BaseLanguageModel) -> "ReAct":
+    def parse(cls, response: CommandDetail, llm: BaseLanguageModel) -> "ReAct":
         """Parse the response text.
 
         Args:
@@ -80,10 +97,9 @@ class CommandAct(ReAct):
         Returns:
             The reasoning and command extracted from the response text.
         """
-        result:CommandDetail = llm.parse_response(text, CommandDetail) # type: ignore
-        reason = result.thought
-        command = result.action
-        cwd = result.cwd
+        reason = response.thought
+        command = response.action
+        cwd = response.cwd
         if cwd:
             return CommandAct(thought=reason, action=command, params={"cwd": cwd})
         return CommandAct(thought=reason, action=command)
@@ -93,7 +109,7 @@ class CommandAct(ReAct):
         return self.action == ""
 
     def __str__(self) -> str:
-            return f"## THOUGHT：\n{self.thought}\n\n## ACTION：\n```bash\n{self.action}\n```{'(' + self.params['cwd'] + ')' if self.params else ''}\n\n## OBS：\n---\n{self.obs}\n---\n\n"
+        return f"## THOUGHT：\n{self.thought}\n\n## ACTION：\n```bash\n{self.action}\n```{'(' + self.params['cwd'] + ')' if self.params else ''}\n\n## OBS：\n---\n{self.obs}\n---\n\n"
 
     @property
     def info(self) -> str:
@@ -101,6 +117,7 @@ class CommandAct(ReAct):
             return f"[Thought]: {self.thought}"
         else:
             return f"[Thought]: {self.thought}\n[CMD]: {self.action}{'(' + self.params['cwd'] + ')' if self.params else ''}\n[Result]: {self.obs}"
+
 
 @dataclass
 class Command(Action):
@@ -111,8 +128,9 @@ class Command(Action):
         objective: The objective of the command action.
         llm: The LLMChain object for language model completion.
     """
+
     role: str = ROLE
-    response_model: Optional[type[BaseModel]] = CommandDetail
+    response_model: Optional[type[CommandDetail]] = CommandDetail
     objective: str = ""
     model: Model = Model.GPT4_TURBO
 
@@ -124,11 +142,18 @@ class Command(Action):
         self.os_version = platform.system()
         if self.os_version == "Linux":
             try:
-                self.os_version = platform.freedesktop_os_release()['NAME']
+                self.os_version = platform.freedesktop_os_release()["NAME"]
             except Exception:
                 pass
-        self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
-        self.llm = ReActChain(model=self.model, role=self.role, response_model=self.response_model, cls = CommandAct)
+        self.role = ROLE.format(
+            objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
+        )
+        self.llm = ReActChain[CommandDetail](
+            model=self.model,
+            role=self.role,
+            response_model=self.response_model,
+            cls=CommandAct,
+        )
         return super().__post_init__()
 
     def run(self, objective=None, command=None):
@@ -141,17 +166,26 @@ class Command(Action):
         Returns:
             None.
         """
-        logger.info('Command Running ..')
+        logger.info("Command Running ..")
         act = None
         if objective is not None:
             self.objective = objective
-            self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
+            self.role = ROLE.format(
+                objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
+            )
             self.llm.llm.set_role(self.role)
         elif command is not None:
-            objective = LLM()("```bash\n" + command + "\n```"+"请根据上面的命令行指令，执行者的目标是？")
-            logger.debug(f'Objective: {objective}')
+            objective = LLM()(
+                "```bash\n"
+                + command
+                + "\n```"
+                + "请根据上面的命令行指令，执行者的目标是？"
+            )
+            logger.debug(f"Objective: {objective}")
             self.objective = objective
-            self.role = ROLE.format(objective=self.objective, os_version=self.os_version, cwd=Path.cwd())
+            self.role = ROLE.format(
+                objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
+            )
             act = CommandAct(action=command)
             self.llm.llm.set_role(self.role)
 
