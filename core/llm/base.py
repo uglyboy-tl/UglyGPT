@@ -71,7 +71,7 @@ class BaseLanguageModel(ABC):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Type[BaseModel]] = None,
+        response_model: Optional[Type[ResponseModel]] = None,
         tools: Optional[List[BaseTool]] = None,
     ) -> str:
         """Ask a question and return the user's response.

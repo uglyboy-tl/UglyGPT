@@ -3,14 +3,11 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Type, TypeVar, List, Optional, Generic
+from typing import Dict, Type, List, Optional, Generic
 
 from loguru import logger
-from pydantic import BaseModel
 
-from .llm import LLM
-
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+from .llm import LLM, ResponseModel
 
 
 @dataclass

@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from typing import Any, Dict, List, Optional, Callable, Tuple, Type, TypeVar, Generic
+from typing import Any, Dict, List, Optional, Callable, Tuple, Type, Generic
 from dataclasses import dataclass
 
-from pydantic import BaseModel
-
 from core.provider import get_llm_provider
-from core.llm import BaseLanguageModel, Model
+from core.llm import BaseLanguageModel, ResponseModel, Model
 from ..base import Chain
 from .prompt import Prompt
-
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
 
 
 @dataclass

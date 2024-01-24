@@ -2,15 +2,12 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, TypeVar, Generic, Union
+from typing import Any, Dict, List, Generic, Union
 
 from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
-from pydantic import BaseModel
 
-from .llm import LLM
-
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+from .llm import LLM, ResponseModel
 
 
 @dataclass

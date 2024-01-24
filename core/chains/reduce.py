@@ -2,14 +2,11 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Callable, TypeVar, Generic, Union
+from typing import Any, Dict, List, Callable, Generic, Union
 
 from loguru import logger
-from pydantic import BaseModel
 
-from .llm import LLM
-
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+from .llm import LLM, ResponseModel
 
 
 @dataclass
