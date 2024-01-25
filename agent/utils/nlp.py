@@ -4,10 +4,13 @@
 import string
 from pathlib import Path
 from typing import List
+import logging
 
+import jieba_fast as jieba
 import jieba_fast.posseg as pseg
 from .config import config
 
+jieba.setLogLevel(logging.INFO)
 stop_words = set(
     line.strip()
     for line in Path(config.stop_words_path).read_text(encoding="utf-8").splitlines()
