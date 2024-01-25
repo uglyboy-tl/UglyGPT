@@ -4,7 +4,6 @@
 from .base import BaseRetriever, StoresRetriever
 from .bing_search import BingRetriever
 from .arxiv import ArxivRetriever
-from .combine import CombineRetriever
 
 try:
     from .bm25 import BM25Retriever
@@ -14,7 +13,6 @@ except ImportError:
 RETRIEVERS = {
     "bing": BingRetriever,
     "arxiv": ArxivRetriever,
-    "combine": CombineRetriever,
 }
 
 STORE_RETRIEVERS = {"bm25": BM25Retriever}
