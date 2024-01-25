@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from .base import BaseRetriever, StoresRetriever
-from .bing_search import BingRetriever
+from .bing import BingRetriever
 from .arxiv import ArxivRetriever
 
 try:
