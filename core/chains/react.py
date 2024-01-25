@@ -3,7 +3,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Type, List, Optional, Generic
+from typing import Dict, Type, List, Optional
 
 from loguru import logger
 
@@ -47,7 +47,7 @@ class ReAct(ABC):
 
 
 @dataclass
-class ReActChain(LLM[ResponseModel], Generic[ResponseModel]):
+class ReActChain(LLM[ResponseModel]):
     cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):

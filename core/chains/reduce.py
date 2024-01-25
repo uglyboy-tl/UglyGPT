@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Callable, Generic, Union
+from typing import Any, Dict, List, Callable, Union
 
 from loguru import logger
 
@@ -10,7 +10,7 @@ from .llm import LLM, ResponseModel
 
 
 @dataclass
-class ReduceChain(LLM[ResponseModel], Generic[ResponseModel]):
+class ReduceChain(LLM[ResponseModel]):
     reduce_keys: List[str] = field(default_factory=lambda: ["input"])
     format: Callable[[Union[str, ResponseModel]], str] = field(
         default_factory=lambda: lambda x: str(x)

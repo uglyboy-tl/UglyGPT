@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Generic, Union
+from typing import Any, Dict, List, Union
 
 from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
@@ -11,7 +11,7 @@ from .llm import LLM, ResponseModel
 
 
 @dataclass
-class MapChain(LLM[ResponseModel], Generic[ResponseModel]):
+class MapChain(LLM[ResponseModel]):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
     is_init_delay: bool = True
 
