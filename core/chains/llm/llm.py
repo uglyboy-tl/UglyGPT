@@ -38,6 +38,7 @@ class LLM(Chain, Generic[ResponseModel]):
         This method initializes the LLMChain object by getting the LLM provider and setting the prompt.
         """
         self._llm = get_llm_provider(self.model.value, self.is_init_delay)
+        logger.success(f"{self.model} loaded")
         if self.role:
             self._llm.set_role(self.role)
         self.prompt = self.prompt_template
