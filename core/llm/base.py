@@ -10,7 +10,7 @@ from .instructor import Instructor
 from .tool import BaseTool
 
 TEMPERATURE = 0.3
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
 @dataclass
@@ -71,7 +71,7 @@ class BaseLanguageModel(ABC):
     def generate(
         self,
         prompt: str = "",
-        response_model: Optional[Type[ResponseModel]] = None,
+        response_model: Optional[Type[T]] = None,
         tools: Optional[List[BaseTool]] = None,
     ) -> str:
         """Ask a question and return the user's response.
@@ -87,8 +87,8 @@ class BaseLanguageModel(ABC):
         pass
 
     def parse_response(
-        self, response: str, response_model: Type[ResponseModel]
-    ) -> ResponseModel:
+        self, response: str, response_model: Type[T]
+    ) -> T:
         """Parse the response from the LLM provider.
 
         Args:
@@ -100,7 +100,7 @@ class BaseLanguageModel(ABC):
 
         """
         instructor = Instructor.from_BaseModel(response_model)
-        return cast(ResponseModel, instructor.from_response(response))
+        return cast(T, instructor.from_response(response))
 
     @abstractmethod
     def completion_with_backoff(self, **kwargs):
