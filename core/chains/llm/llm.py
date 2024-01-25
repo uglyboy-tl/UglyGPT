@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from typing import Any, Dict, List, Optional, Callable, Tuple, Type, TypeVar, Generic, Union
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pydantic import BaseModel
 from loguru import logger
@@ -31,16 +31,17 @@ class LLM(Chain, Generic[GenericResponseType]):
     response_model: Optional[Type[GenericResponseType]] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     is_init_delay: bool = False
+    llm: BaseLanguageModel = field(init=False)
 
     def __post_init__(self):
         """Initialize the LLMChain object.
 
         This method initializes the LLMChain object by getting the LLM provider and setting the prompt.
         """
-        self._llm = get_llm_provider(self.model.value, self.is_init_delay)
+        self.llm = get_llm_provider(self.model.value, self.is_init_delay)
         logger.success(f"{self.model} loaded")
         if self.role:
-            self._llm.set_role(self.role)
+            self.llm.set_role(self.role)
         self.prompt = self.prompt_template
 
     @property
@@ -69,9 +70,9 @@ class LLM(Chain, Generic[GenericResponseType]):
         attempts = 0     # 初始化尝试次数
         while attempts < max_retries:
             try:
-                response = self._llm.generate(prompt, self.response_model)
+                response = self.llm.generate(prompt, self.response_model)
                 if self.response_model:
-                    instructor_response = self._llm.parse_response(response, self.response_model)
+                    instructor_response = self.llm.parse_response(response, self.response_model)
                     if self.memory_callback:
                         self.memory_callback((prompt, response))
                     return instructor_response
@@ -108,12 +109,3 @@ class LLM(Chain, Generic[GenericResponseType]):
             prompt_template: The template for the prompt.
         """
         self._prompt = Prompt(prompt_template)
-
-    @property
-    def llm(self) -> BaseLanguageModel:
-        """Get the LLM provider.
-
-        Returns:
-            The LLM provider.
-        """
-        return self._llm

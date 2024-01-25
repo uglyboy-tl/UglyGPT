@@ -12,8 +12,8 @@ from .llm import LLM, GenericResponseType
 
 @dataclass
 class MapChain(LLM[GenericResponseType]):
-    map_keys: List[str] = field(default_factory=lambda: ["input"])
     is_init_delay: bool = True
+    map_keys: List[str] = field(default_factory=lambda: ["input"])
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         self.num = len(inputs[self.map_keys[0]])
@@ -57,9 +57,9 @@ class MapChain(LLM[GenericResponseType]):
             )
             prompt = self.prompt.format(**new_input)
             try:
-                response = self._llm.generate(prompt, self.response_model)
+                response = self.llm.generate(prompt, self.response_model)
                 if self.response_model:
-                    response = self._llm.parse_response(response, self.response_model).model_dump_json()
+                    response = self.llm.parse_response(response, self.response_model).model_dump_json()
             except Exception as e:
                 logger.warning(f"MapChain: {input['index']} failed with error: {e}")
                 response = "Error"
