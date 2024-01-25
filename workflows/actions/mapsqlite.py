@@ -4,14 +4,14 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Generic, Union
 
-from core.chains import MapChain, ResponseModel
+from core.chains import MapChain, GenericResponseType
 from .base import Action
 from workflows.utils.sqlite import KVCache
 
 
 @dataclass
-class MapSqlite(Action, Generic[ResponseModel]):
-    response_model: Optional[type[ResponseModel]] = None
+class MapSqlite(Action, Generic[GenericResponseType]):
+    response_model: Optional[type[GenericResponseType]] = None
     map_keys: Optional[list] = None
     table: Optional[str] = None
 
@@ -32,7 +32,7 @@ class MapSqlite(Action, Generic[ResponseModel]):
         self._reset_cache()
         return super().__post_init__()
 
-    def ask(self, *args, **kwargs) -> List[Union[str, ResponseModel]]:
+    def ask(self, *args, **kwargs) -> List[Union[str, GenericResponseType]]:
         response = self.llm(*args, **kwargs)
         return response
 

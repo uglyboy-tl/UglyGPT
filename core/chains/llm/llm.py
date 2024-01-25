@@ -12,10 +12,10 @@ from core.llm import BaseLanguageModel, Model
 from ..base import Chain
 from .prompt import Prompt
 
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+GenericResponseType = TypeVar("GenericResponseType", bound=BaseModel)
 
 @dataclass
-class LLM(Chain, Generic[ResponseModel]):
+class LLM(Chain, Generic[GenericResponseType]):
     """A class representing an LLM chain.
 
     This class inherits from the Chain class and implements the logic for interacting with a language model.
@@ -28,7 +28,7 @@ class LLM(Chain, Generic[ResponseModel]):
     prompt_template: str = "{prompt}"
     model: Model = Model.DEFAULT
     role: Optional[str] = None
-    response_model: Optional[Type[ResponseModel]] = None
+    response_model: Optional[Type[GenericResponseType]] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     is_init_delay: bool = False
 
@@ -52,7 +52,7 @@ class LLM(Chain, Generic[ResponseModel]):
         """
         return self.prompt.input_variables
 
-    def _call(self, inputs: Dict[str, Any]) -> Union[ResponseModel, str]:
+    def _call(self, inputs: Dict[str, Any]) -> Union[GenericResponseType, str]:
         """Call the LLMChain.
 
         This method calls the LLMChain by formatting the prompt with the inputs and asking the LLM provider.

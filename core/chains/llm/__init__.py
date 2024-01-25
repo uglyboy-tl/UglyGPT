@@ -1,8 +1,8 @@
-from .llm import LLM, ResponseModel
+from .llm import LLM, GenericResponseType
 from .prompt import Prompt
 
 __all__ = [
     "LLM",
-    "ResponseModel",
+    "GenericResponseType",
     "Prompt",
 ]

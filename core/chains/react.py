@@ -7,7 +7,7 @@ from typing import Dict, Type, List, Optional
 
 from loguru import logger
 
-from .llm import LLM, ResponseModel
+from .llm import LLM, GenericResponseType
 
 
 @dataclass
@@ -47,7 +47,7 @@ class ReAct(ABC):
 
 
 @dataclass
-class ReActChain(LLM[ResponseModel]):
+class ReActChain(LLM[GenericResponseType]):
     cls: Optional[Type[ReAct]] = None
 
     def __post_init__(self):

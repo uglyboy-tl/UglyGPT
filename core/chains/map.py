@@ -7,11 +7,11 @@ from typing import Any, Dict, List, Union
 from pathos.multiprocessing import ProcessingPool as Pool
 from loguru import logger
 
-from .llm import LLM, ResponseModel
+from .llm import LLM, GenericResponseType
 
 
 @dataclass
-class MapChain(LLM[ResponseModel]):
+class MapChain(LLM[GenericResponseType]):
     map_keys: List[str] = field(default_factory=lambda: ["input"])
     is_init_delay: bool = True
 
@@ -28,7 +28,7 @@ class MapChain(LLM[ResponseModel]):
             and len(inputs[map_key]) == self.num
         ), f"MapChain expects {map_key} to be a list of strings with the same length"
 
-    def _call(self, inputs: Dict[str, Any]) -> List[Union[ResponseModel, str]]:
+    def _call(self, inputs: Dict[str, Any]) -> List[Union[GenericResponseType, str]]:
         inputs_list = self._generate_inputs_list(inputs)
 
         with Pool() as pool:
@@ -48,7 +48,7 @@ class MapChain(LLM[ResponseModel]):
         ]
 
     def _map_func(self, inputs):
-        def func(input) -> Dict[str, Union[int, str, ResponseModel]]:
+        def func(input) -> Dict[str, Union[int, str, GenericResponseType]]:
             new_input: Dict = {
                 k: v for k, v in inputs.items() if k not in self.map_keys
             }
@@ -68,7 +68,7 @@ class MapChain(LLM[ResponseModel]):
 
         return func
 
-    def _process_results(self, results) -> List[Union[ResponseModel, str]]:
+    def _process_results(self, results) -> List[Union[GenericResponseType, str]]:
         results = sorted(results, key=lambda x: x["index"])
         if self.response_model:
             new_results = []

@@ -6,13 +6,13 @@ from typing import Any, Dict, List, Callable, Union
 
 from loguru import logger
 
-from .llm import LLM, ResponseModel
+from .llm import LLM, GenericResponseType
 
 
 @dataclass
-class ReduceChain(LLM[ResponseModel]):
+class ReduceChain(LLM[GenericResponseType]):
     reduce_keys: List[str] = field(default_factory=lambda: ["input"])
-    format: Callable[[Union[str, ResponseModel]], str] = field(
+    format: Callable[[Union[str, GenericResponseType]], str] = field(
         default_factory=lambda: lambda x: str(x)
     )
 
@@ -38,7 +38,7 @@ class ReduceChain(LLM[ResponseModel]):
             len(inputs[reduce_key]) == self.num
         ), f"ReduceChain expects {reduce_key} to be a list of strings with the same length"
 
-    def _call(self, inputs: Dict[str, str]) -> Union[str, ResponseModel]:
+    def _call(self, inputs: Dict[str, str]) -> Union[str, GenericResponseType]:
         response = inputs["history"]
         for i in range(self.num):
             response = self._process_input(i, inputs, response)
@@ -47,8 +47,8 @@ class ReduceChain(LLM[ResponseModel]):
         return response
 
     def _process_input(
-        self, index: int, inputs: Dict[str, str], response: Union[str, ResponseModel]
-    ) -> Union[str, ResponseModel]:
+        self, index: int, inputs: Dict[str, str], response: Union[str, GenericResponseType]
+    ) -> Union[str, GenericResponseType]:
         new_input = inputs.copy()
         if index > 0:
             new_input.pop("history")
