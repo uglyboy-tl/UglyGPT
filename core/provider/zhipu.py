@@ -31,7 +31,7 @@ class ChatGLM(BaseLanguageModel):
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
-        return response.choices[0].message.content.strip()  # type: ignore
+        return response.choices[0].message.content.strip()
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -49,7 +49,7 @@ class ChatGLM(BaseLanguageModel):
 
     @retry_decorator()
     def completion_with_backoff(self, **kwargs):
-        return self.client.chat.completions.create(**kwargs) # type: ignore
+        return self.client.chat.completions.create(**kwargs)
 
     @property
     def max_tokens(self):

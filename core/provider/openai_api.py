@@ -50,7 +50,7 @@ class ChatGPTAPI(BaseLanguageModel):
         response = self.completion_with_backoff(**kwargs)
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
-        return response.choices[0].message.content.strip()  # type: ignore
+        return response.choices[0].message.content.strip()
 
     @retry_decorator(not_notry_exception)
     def completion_with_backoff(self, **kwargs):

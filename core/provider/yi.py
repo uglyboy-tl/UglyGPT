@@ -43,4 +43,4 @@ class Yi(ChatGPTAPI):
                 raise e
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
-        return response.choices[0].message.content.strip()  # type: ignore
+        return response.choices[0].message.content.strip()

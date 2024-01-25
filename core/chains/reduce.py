@@ -54,6 +54,6 @@ class ReduceChain(LLM[GenericResponseType]):
             new_input.pop("history")
             new_input["history"] = self.format(response)
         new_input.update(
-            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys}  # type: ignore
+            {reduce_key: inputs[reduce_key][index] for reduce_key in self.reduce_keys}
         )
-        return super()._call(new_input)  # type: ignore
+        return super()._call(new_input)

@@ -66,16 +66,16 @@ class DashScope(BaseLanguageModel):
                 raise e
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
-        return response.output.choices[0].message.content.strip()  # type: ignore
+        return response.output.choices[0].message.content.strip()
 
     @retry_decorator(not_notry_exception)
     def completion_with_backoff(self, **kwargs):
         response = self.client.call(**kwargs)
 
         status_code, code, message = (
-            response.status_code, # type: ignore
-            response.code, # type: ignore
-            response.message, # type: ignore
+            response.status_code,
+            response.code,
+            response.message,
         )
         if status_code == HTTPStatus.OK:
             return response
@@ -90,7 +90,7 @@ class DashScope(BaseLanguageModel):
             raise RequestLimitError()
         else:
             raise Exception(
-                f"Failed request_id: {response.request_id}, status_code: {status_code}, code: {code}, message:{message}"  # type: ignore
+                f"Failed request_id: {response.request_id}, status_code: {status_code}, code: {code}, message:{message}"
             )
 
     @property

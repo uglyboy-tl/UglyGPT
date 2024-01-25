@@ -48,7 +48,7 @@ class ChatGPT(ChatGPTAPI):
                 raise e
 
         logger.trace(f"kwargs:{kwargs}\nresponse:{response}")
-        return response.choices[0].message.content.strip()  # type: ignore
+        return response.choices[0].message.content.strip()
 
     def _num_tokens(self, messages: list, model: str):
         if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k" or model == "gpt-3.5-turbo-1106":
