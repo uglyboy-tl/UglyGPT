@@ -151,7 +151,7 @@ class Command(Action):
             model=self.model,
             role=self.role,
             response_model=CommandDetail,
-            cls=CommandAct,
+            reactType=CommandAct,
         )
         return super().__post_init__()
 

@@ -48,11 +48,12 @@ class ReAct(ABC):
 
 @dataclass
 class ReActChain(LLM[GenericResponseType]):
-    cls: Optional[Type[ReAct]] = None
+    reactType: Optional[Type[ReAct]] = None
 
     def __post_init__(self):
         self._acts = []
         super().__post_init__()
+        assert self.reactType is not None, "cls must be set"
 
     @property
     def input_keys(self) -> List[str]:
@@ -66,7 +67,7 @@ class ReActChain(LLM[GenericResponseType]):
             self._acts.append(act)
             inputs = {"prompt": "\n".join(str(a) for a in self._acts)}
             response = self._call(inputs)
-            act = self.cls.parse(response)  # type: ignore
+            act = self.reactType.parse(response)  # type: ignore
             logger.success(act.info)
         return act.info
 
@@ -75,5 +76,5 @@ class ReActChain(LLM[GenericResponseType]):
             inputs = {"prompt": "Start!"}
             inputs = self._prep_inputs(inputs)
             response = self._call(inputs)
-            act = self.cls.parse(response)  # type: ignore
+            act = self.reactType.parse(response)  # type: ignore
         return self._process(act)
