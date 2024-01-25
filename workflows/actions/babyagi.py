@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from loguru import logger
-from typing import Deque
+from typing import Deque, Optional
 from collections import deque
 import re
 
@@ -25,7 +25,9 @@ class BabyTasks(ReAct):
 
     def run(self) -> str:
         self.thought = "\n- " + "\n- ".join(self.tasks)
-        return self.llm(f"请努力完成如下任务：{self.action}。注意不是让你告诉我解决问题的方法，而是告诉我答案")
+        return self.llm(
+            f"请努力完成如下任务：{self.action}。注意不是让你告诉我解决问题的方法，而是告诉我答案"
+        )
 
     @classmethod
     def parse(cls, text: str) -> "BabyTasks":
@@ -57,8 +59,10 @@ Based on the result, create new tasks to be completed by the AI system that do n
             return f"[Task List]{self.thought}\n[Current Task] {self.action}\n[Task Result] {self.obs}"
 
     @classmethod
-    def init(cls) -> "BabyTasks":
-        task = "根据目标生成一个任务列表"
+    def init(cls, objective: Optional[str]) -> "BabyTasks":
+        if objective is None:
+            objective = ""
+        task = f"根据目标 {objective} 生成一个任务列表"
         tasks = deque([task])
         return BabyTasks(action=task, tasks=tasks)
 
@@ -74,13 +78,14 @@ class BabyAGI(Action):
         return super().__post_init__()
 
     def run(self, objective=None):
-        logger.info('BabyAGI Running ..')
-        if objective is not None:
+        logger.info("BabyAGI Running ..")
+        if objective:
             self.objective = objective
             self.role = ROLE.format(objective=objective)
             self.llm.llm.set_role(self.role)
             super().__post_init__()
 
-        tasks = BabyTasks.init()
+        tasks = BabyTasks.init(objective)
+        logger.debug(self.llm.llm.role)
         response = self.ask(tasks)
         return response
