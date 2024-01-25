@@ -5,7 +5,9 @@ from typing import Type
 
 from pydantic import BaseModel, create_model, ValidationError
 
-PYDANTIC_FORMAT_INSTRUCTIONS = """The output should be formatted as a JSON instance that conforms to the JSON schema below.
+PYDANTIC_FORMAT_INSTRUCTIONS = """
+-----
+The output should be formatted as a JSON instance that conforms to the JSON schema below.
 
 As an example, for the schema {{"properties": {{"foo": {{"title": "Foo", "description": "a list of strings", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
 the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of the schema. The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
@@ -22,11 +24,11 @@ class Instructor(BaseModel):
         try:
             # Greedy search for 1st json candidate.
             match = re.search(
-                r"\{.*\}", response.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL
+                r"(.*)(\{.*\})", response.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL
             )
             json_str = ""
             if match:
-                json_str = match.group()
+                json_str = match.group(2)
             # json_object = json.loads(json_str, strict=False)
             return cls.model_validate_json(json_str)
 
