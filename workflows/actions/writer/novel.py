@@ -60,13 +60,12 @@ class Novel(Action):
     model: Model = Model.GPT3_TURBO_16K
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
-    response_model: Optional[type[NovelDetail]] = NovelDetail
     reduce: ReduceChain = field(init=False)
     db: StoresRetriever = field(init=False)
 
     def __post_init__(self):
-        self.llm = ReduceChain[NovelDetail](
-            self.prompt, self.model, self.role, self.response_model, format=self._parse
+        self.llm = ReduceChain(
+            self.prompt, self.model, self.role, NovelDetail, format=self._parse
         )
         self.db = get_stores_retriever("bm25", "docs/examples/novel.json", True)
         self.db.init()

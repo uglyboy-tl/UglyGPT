@@ -10,7 +10,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from core import LLM, ReAct, ReActChain, BaseLanguageModel, Model
+from core import LLM, ReAct, ReActChain, Model
 from .base import Action
 
 DEBUG = False
@@ -130,7 +130,6 @@ class Command(Action):
     """
 
     role: str = ROLE
-    response_model: Optional[type[CommandDetail]] = CommandDetail
     objective: str = ""
     model: Model = Model.GPT4_TURBO
 
@@ -148,10 +147,10 @@ class Command(Action):
         self.role = ROLE.format(
             objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
         )
-        self.llm = ReActChain[CommandDetail](
+        self.llm = ReActChain(
             model=self.model,
             role=self.role,
-            response_model=self.response_model,
+            response_model=CommandDetail,
             cls=CommandAct,
         )
         return super().__post_init__()

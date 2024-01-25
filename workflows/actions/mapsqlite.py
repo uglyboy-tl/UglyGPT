@@ -17,7 +17,7 @@ class MapSqlite(Action, Generic[ResponseModel]):
 
     def __post_init__(self):
         if self.map_keys is not None:
-            self.llm = MapChain[ResponseModel](
+            self.llm = MapChain(
                 self.prompt,
                 self.model,
                 self.role,
@@ -25,7 +25,7 @@ class MapSqlite(Action, Generic[ResponseModel]):
                 map_keys=self.map_keys,
             )
         else:
-            self.llm = MapChain[ResponseModel](
+            self.llm = MapChain(
                 self.prompt, self.model, self.role, self.response_model
             )
 
