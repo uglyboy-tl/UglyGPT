@@ -1,7 +1,7 @@
-openai
-tiktoken
-loguru
+pydantic
 tenacity
+loguru
 pathos
-jieba-fast
-beautifulsoup4
+# 可选依赖
+openai>=1.0.0
+tiktoken
