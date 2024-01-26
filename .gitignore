@@ -4,7 +4,6 @@
 .vscode
 __pycache__/
 resource
-docs/md
 logs
 workflows/dev
 
