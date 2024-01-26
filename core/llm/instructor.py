@@ -24,12 +24,11 @@ class Instructor(BaseModel):
         try:
             # Greedy search for 1st json candidate.
             match = re.search(
-                r"(.*)(\{.*\})", response.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL
+                r"(\{.*\})", response.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL
             )
             json_str = ""
             if match:
-                json_str = match.group(2)
-            # json_object = json.loads(json_str, strict=False)
+                json_str = match.group()
             return cls.model_validate_json(json_str)
 
         except (json.JSONDecodeError, ValidationError) as e:
