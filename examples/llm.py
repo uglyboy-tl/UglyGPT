@@ -1,3 +1,5 @@
+from enum import Enum, unique
+
 from pydantic import BaseModel
 from loguru import logger
 
@@ -18,15 +20,20 @@ def prompt(model: Model | None = None):
     logger.info(llm("上海"))
 
 def instructor(model: Model | None = None):
+    @unique
+    class Gender(Enum):
+        FEMALE = "FEMALE"
+        MALE = "MALE"
+
     class UserDetail(BaseModel):
         name: str
-        age: int
+        gender: Gender
 
     if model:
         llm = LLM(model=model, response_model=UserDetail)
     else:
         llm = LLM(response_model=UserDetail)
-    logger.info(llm("Extract Jason is 25 years old"))
+    logger.info(llm("Extract Jason is a boy"))
 
 if __name__ == "__main__":
     #llm(Model.YI)
