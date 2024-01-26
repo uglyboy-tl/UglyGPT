@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
+from dataclasses import dataclass
+from typing import List
+
 import requests
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed, before_sleep_log, RetryError
-from dataclasses import dataclass
-from typing import List
 from xml.etree import ElementTree
 
 from .base import BaseRetriever
