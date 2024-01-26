@@ -5,7 +5,8 @@ from dataclasses import dataclass, field
 from loguru import logger
 from typing import Deque, Optional
 from collections import deque
-import re
+
+from pydantic import BaseModel
 
 from core import LLM, ReAct, ReActChain
 from .base import Action
@@ -13,10 +14,10 @@ from .base import Action
 
 ROLE = """
 You are an task creation AI that uses the result of an execution agent to create new tasks with the following objective: {objective}.
-Your response should be a numbered list,
-eg: `1. First task\n2. Second task\n3. Third task`
 """
 
+class TaskList(BaseModel):
+    tasks: Deque[str] = field(default_factory=deque)
 
 @dataclass
 class BabyTasks(ReAct):
@@ -30,9 +31,8 @@ class BabyTasks(ReAct):
         )
 
     @classmethod
-    def parse(cls, text: str) -> "BabyTasks":
-        result = re.split(r"\d+\.", text)
-        tasks = deque([r.strip() for r in result if r.strip()])
+    def parse(cls, response: TaskList) -> "BabyTasks":
+        tasks = response.tasks
         task = tasks.popleft() if tasks else ""
         return BabyTasks(action=task, tasks=tasks)
 
@@ -46,7 +46,8 @@ class BabyTasks(ReAct):
 The last completed task has the result: {self.obs}.
 This result was based on this task description: {self.action}.
 These are incomplete tasks: {self.tasks}.
-Based on the result, create new tasks to be completed by the AI system that do not overlap with incomplete tasks. Use at most 4 steps. Return one task per line in your response."""
+Based on the result, create new tasks to be completed by the AI system that do not overlap with incomplete tasks. Use at most 4 steps.
+请用中文回答。"""
         else:
             context = ""
         return context
@@ -74,7 +75,7 @@ class BabyAGI(Action):
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)
-        self.llm = ReActChain(system_prompt=self.role, reactType=BabyTasks)
+        self.llm = ReActChain(system_prompt=self.role, reactType=BabyTasks, response_model=TaskList)
         return super().__post_init__()
 
     def run(self, objective=None):
@@ -85,7 +86,7 @@ class BabyAGI(Action):
             self.llm.llm.set_system_prompt(self.role)
             super().__post_init__()
 
-        tasks = BabyTasks.init(objective)
+        tasks = BabyTasks.init(self.objective)
         logger.debug(self.llm.llm.system_prompt)
         response = self.ask(tasks)
         return response
