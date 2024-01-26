@@ -56,7 +56,7 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Novel(Action):
-    filename: str = "docs/examples/novel.txt"
+    filename: str = "resource/local/novel.txt"
     model: Model = Model.GPT3_TURBO_16K
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
@@ -67,7 +67,7 @@ class Novel(Action):
         self.llm = ReduceChain(
             self.prompt, self.model, self.role, NovelDetail, format=self._parse
         )
-        self.db = get_stores_retriever("bm25", "docs/examples/novel.json", True)
+        self.db = get_stores_retriever("bm25", "resource/local/novel.json", True)
         self.db.init()
         return super().__post_init__()
 

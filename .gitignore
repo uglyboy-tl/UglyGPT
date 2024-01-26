@@ -3,7 +3,7 @@
 .venv
 .vscode
 __pycache__/
-docs/examples
+resource
 docs/md
 logs
 workflows/dev

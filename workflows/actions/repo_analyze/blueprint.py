@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 import json
 
-from loguru import logger
-
 from ..base import Action
 from workflows.utils import parse_json
 from .utils import get_directory_structure
@@ -38,7 +36,7 @@ PROMPT_TEMPLATE = """
 
 @dataclass
 class Blueprint(Action):
-    filename: str = "docs/examples/analysis_blueprint.json"
+    filename: str = "resource/local/analysis_blueprint.json"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 

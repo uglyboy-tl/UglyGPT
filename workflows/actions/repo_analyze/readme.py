@@ -20,7 +20,7 @@ DEFAULT_REQUEST = "请根据 README.md 文件，总结项目的核心内容，�
 
 @dataclass
 class README(Action):
-    filename: str = "docs/examples/analysis_readme.md"
+    filename: str = "resource/local/analysis_readme.md"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 

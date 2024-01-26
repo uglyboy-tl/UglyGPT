@@ -2,7 +2,6 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from loguru import logger
 from typing import List
 
 from ..base import Action
@@ -37,7 +36,7 @@ DEFAULT_FORMAT = """
 
 @dataclass
 class Conclusion(Action):
-    filename: str = "docs/examples/analysis_conclusion.md"
+    filename: str = "resource/local/analysis_conclusion.md"
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
 
