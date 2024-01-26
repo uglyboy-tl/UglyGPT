@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import List, Dict
+from enum import Enum, unique
 
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -15,8 +16,6 @@ ROLE = """我将提供一些项目的描述信息。请根据这些信息，将�
 - `后端`: 这里主要指可以 selfhost 的后端服务类项目，而不是技术框架。例如，一个可以自己搭建的博客系统，或者一个可以自己搭建的 RSS 服务等等；如果是某个 Go 的 Web 框架，或者某个 Java 的 Web 框架，这些都不属于这里；
 - `资料`: 如果项目的内容是一些资料，例如一些书籍、教程、博客等等，那么这个项目就属于这里；这类项目的特点是，它们不是一个可以直接运行的程序，而是一些资料；
 - `其他`: 不在上述类别中的项目，都属于这里。
-
-注意：每个项目只能属于一个类别，不能同时属于多个类别。
 """
 
 ROLE_BACK = """
@@ -33,10 +32,17 @@ ROLE_BACK = """
 {{"REASON": "{{分类的原因}}","CATEGORY": "{{具体的类别名，例如: 前端}}"}}
 """
 
+@unique
+class Cate(Enum):
+    AI = "AI"
+    FrontEnd = "前端"
+    BackEnd = "后端"
+    Data = "资料"
+    Other = "其他"
 
 class CategoryDetail(BaseModel):
     reason: str = Field(..., description="分类的原因")
-    category: str = Field(..., description="具体的类别名，例如: 前端")
+    category: Cate = Field(..., description="具体的类别名，例如: 前端")
 
 
 PROMPT_TEMPLATE = """
@@ -67,7 +73,7 @@ class Category(MapSqlite[CategoryDetail]):
             description_list.append(description)
 
         datas = self.ask(description=description_list)
-        dict = {k: v.category for k, v in zip(new_names, datas) if isinstance(v, CategoryDetail)}
+        dict = {k: v.category.value for k, v in zip(new_names, datas) if isinstance(v, CategoryDetail)}
         self._save(dict)
         _datas.update(dict)
 
