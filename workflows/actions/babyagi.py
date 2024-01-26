@@ -74,7 +74,7 @@ class BabyAGI(Action):
 
     def __post_init__(self):
         self.role = ROLE.format(objective=self.objective)
-        self.llm = ReActChain(role=self.role, reactType=BabyTasks)
+        self.llm = ReActChain(system_prompt=self.role, reactType=BabyTasks)
         return super().__post_init__()
 
     def run(self, objective=None):
@@ -82,10 +82,10 @@ class BabyAGI(Action):
         if objective:
             self.objective = objective
             self.role = ROLE.format(objective=objective)
-            self.llm.llm.set_role(self.role)
+            self.llm.llm.set_system_prompt(self.role)
             super().__post_init__()
 
         tasks = BabyTasks.init(objective)
-        logger.debug(self.llm.llm.role)
+        logger.debug(self.llm.llm.system_prompt)
         response = self.ask(tasks)
         return response

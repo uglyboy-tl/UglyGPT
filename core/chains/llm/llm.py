@@ -27,7 +27,7 @@ class LLM(Chain, Generic[GenericResponseType]):
 
     prompt_template: str = "{prompt}"
     model: Model = Model.DEFAULT
-    role: Optional[str] = None
+    system_prompt: Optional[str] = None
     response_model: Optional[Type[GenericResponseType]] = None
     memory_callback: Optional[Callable[[Tuple[str, str]], None]] = None
     is_init_delay: bool = False
@@ -40,8 +40,8 @@ class LLM(Chain, Generic[GenericResponseType]):
         """
         self.llm = get_llm_provider(self.model.value, self.is_init_delay)
         logger.success(f"{self.model} loaded")
-        if self.role:
-            self.llm.set_role(self.role)
+        if self.system_prompt:
+            self.llm.set_system_prompt(self.system_prompt)
         self.prompt = self.prompt_template
 
     @property

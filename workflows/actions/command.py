@@ -149,7 +149,7 @@ class Command(Action):
         )
         self.llm = ReActChain(
             model=self.model,
-            role=self.role,
+            system_prompt=self.role,
             response_model=CommandDetail,
             reactType=CommandAct,
         )
@@ -172,7 +172,7 @@ class Command(Action):
             self.role = ROLE.format(
                 objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
             )
-            self.llm.llm.set_role(self.role)
+            self.llm.llm.set_system_prompt(self.role)
         elif command is not None:
             objective = LLM()(
                 "```bash\n"
@@ -186,7 +186,7 @@ class Command(Action):
                 objective=self.objective, os_version=self.os_version, cwd=Path.cwd()
             )
             act = CommandAct(action=command)
-            self.llm.llm.set_role(self.role)
+            self.llm.llm.set_system_prompt(self.role)
 
         response = self.ask(act)
         return response

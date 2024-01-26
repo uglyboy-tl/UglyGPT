@@ -25,12 +25,12 @@ class BaseLanguageModel(ABC):
         use_max_tokens (bool): Whether to use the maximum number of tokens when generating responses.
         client (Any): The client used by the LLM provider.
         temperature (float): The temperature parameter used for generating responses.
-        role (Optional[str]): The system message to be displayed.
+        system_prompt (Optional[str]): The system message to be displayed.
         is_continuous (bool): Whether the conversation is continuous.
         messages (list): The list of messages in the conversation.
 
     Methods:
-        set_role: Set the system message.
+        set_system_prompt: Set the system message.
         generate: Ask a question and return the user's response.
         completion_with_backoff: Perform completion with backoff.
         _default_params: Get the default parameters for generating responses.
@@ -45,7 +45,7 @@ class BaseLanguageModel(ABC):
     model: str
     client: Any = field(init=False)
     temperature: float = field(init=False, default=TEMPERATURE)
-    role: Optional[str] = field(init=False, default=None)
+    system_prompt: Optional[str] = field(init=False, default=None)
     use_max_tokens: bool = field(init=False, default=False)
     is_continuous: bool = field(init=False, default=False)
     messages: list = field(init=False, default_factory=list)
@@ -54,7 +54,7 @@ class BaseLanguageModel(ABC):
         if not self.is_init_delay:
             self.client = self._create_client()
 
-    def set_role(self, msg: Optional[str] = None) -> None:
+    def set_system_prompt(self, msg: Optional[str] = None) -> None:
         """Set the system message.
 
         Args:
@@ -65,7 +65,7 @@ class BaseLanguageModel(ABC):
 
         """
         if msg:
-            self.role = msg
+            self.system_prompt = msg
 
     @abstractmethod
     def generate(
@@ -148,8 +148,8 @@ class BaseLanguageModel(ABC):
         """
         if not self.is_continuous:
             self.messages = []
-            if hasattr(self, "role") and self.role:
-                self.messages.append({"role": "system", "content": self.role})
+            if hasattr(self, "system_prompt") and self.system_prompt:
+                self.messages.append({"role": "system", "content": self.system_prompt})
         if prompt:
             self.messages.append({"role": "user", "content": prompt})
         return self.messages
