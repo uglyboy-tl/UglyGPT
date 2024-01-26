@@ -2,6 +2,9 @@ pydantic
 tenacity
 loguru
 pathos
-# 可选依赖
 openai>=1.0.0
+# 可选依赖
 tiktoken
+#zhipuai # ChatGLM
+#dashscope # 阿里千问
+#jieba-fast # BM25
