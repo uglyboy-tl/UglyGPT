@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "uglygpt"
+version = "0.1.0"
+description = ""
+authors = ["uglyboy-tl <25730357+uglyboy-tl@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+uglychain = "^0.0.2"
+
+
+[tool.poetry.group.dev.dependencies]
+tiktoken = "^0.5.2"
+dashscope = "^1.14.1"
+jieba-fast = "^0.53"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
