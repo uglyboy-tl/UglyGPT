@@ -10,7 +10,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from core import LLM, ReAct, ReActChain, Model
+from uglychain import LLM, ReAct, ReActChain, Model
 from .base import Action
 
 DEBUG = False

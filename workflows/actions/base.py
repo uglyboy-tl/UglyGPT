@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 from typing import Any, Optional
 
-from core import LLM, Model
+from uglychain import LLM, Model
 from workflows.utils import File
 
 

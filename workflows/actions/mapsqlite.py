@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Generic, Union
 
-from core.chains import MapChain, GenericResponseType
+from uglychain.chains import MapChain, GenericResponseType
 from .base import Action
 from workflows.utils.sqlite import KVCache
 

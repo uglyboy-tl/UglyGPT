@@ -8,7 +8,7 @@ from collections import deque
 
 from pydantic import BaseModel
 
-from core import LLM, ReAct, ReActChain
+from uglychain import LLM, ReAct, ReActChain
 from .base import Action
 
 

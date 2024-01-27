@@ -13,23 +13,11 @@ from ..mapsqlite import MapSqlite
 from .utils import generate_dict, IMAGE_EXTENSIONS, MEDIA_EXTENSIONS, IGNORE_EXTENSIONS, EXTENSION_MAPPING
 
 ROLE = """
-作为一个熟练的软件工程师，你现在需要对一个特定的源代码项目进行深入研究，特别关注该项目试图解决的主要问题以及其解决方案。你需要对一个具体的项目文件进行详细分析，包括文件内容、文件名以及其他任何可用的信息。
-
-你的任务是：
-1. 概述文件的主要功能以及它是如何帮助解决项目的核心问题的。
-2. 如果文件中包含业务逻辑，你需要识别并总结这些内容，这将有助于你更深入地理解项目的业务逻辑。
-请注意，你的分析应更偏重于业务逻辑，而不是代码逻辑。例如，如果项目包含前端，你需要关注的是前端页面的功能（如登录、注册、购物车等）以及它与后端的交互或后端业务逻辑，而不是前端代码的具体实现。对于一个可以部署的项目，你需要关注的是项目解决特定问题的方法，而不是与部署相关的代码或项目的接口、架构。
-
-对于那些对项目的重要性较低的文件，你只需要简要描述其基本功能。请确保你的回答简洁明了，只包含必要的信息，避免不必要的细节。
+你是一位资深的程序员，正在帮一位新手程序员阅读某个开源项目，我会把每个文件的内容告诉你，你需要做一个新手程序员阅读的，简单明了的总结。用MarkDown格式返回（必要的话可以用emoji表情增加趣味性）
 """
 
 PROMPT_TEMPLATE = """
-{request}
------
-文件名：{file_name}
-{additional}
-文件内容:
-{code}
+源文件路径：{file_name}，源代码：\n{code}
 """
 
 DEFAULT_REQUEST = "请对以下项目文件进行分析"
@@ -77,7 +65,7 @@ class AllCodes(MapSqlite):
                         f"```{EXTENSION_MAPPING[file.suffix.lower()]}\n{content}\n```")
                 else:
                     logger.warning(f"文件 {file} 类型未知，不进行额外处理")
-                    code.append(f"```content```")
+                    code.append("```content```")
                 additional.append(
                     file_dict[file] if file_dict is not None else "")
             except Exception as e:
@@ -105,7 +93,7 @@ class AllCodes(MapSqlite):
 
     def run(self, path: str, request: str = DEFAULT_REQUEST, filter: Optional[Dict[str, str] | Dict[Path, str]] = None, message: Optional[str] = None) -> str:
         if message is not None:
-            request = OPTIONAL_REQUEST.format(message=message)
+            request = OPTIONAL_REQUEST.format(message=message)  # noqa: F841
         directory_path = File.to_path(path)
 
         self.table = directory_path.name
@@ -117,7 +105,7 @@ class AllCodes(MapSqlite):
 
         assert len(files) > 0, "没有符合过滤器要求的文件"
 
-        analysis_list = self.ask(file_name=new_files, code=code, additional=additional, request=request)
+        analysis_list = self.ask(file_name=new_files, code=code)
         analysis = {k:v for k,v in zip(files, analysis_list) if v != "Error"}
         _data.update(analysis)
         self._save(analysis)

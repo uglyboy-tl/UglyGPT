@@ -7,8 +7,8 @@ from typing import cast
 from pydantic import BaseModel, Field
 from loguru import logger
 
-from core import ReduceChain, Model
-from agent.retrievers import StoresRetriever, get_stores_retriever
+from uglychain import ReduceChain, Model, StoresRetriever
+from uglychain.retrievers import get_stores_retriever
 from ..base import Action
 
 ROLE = """

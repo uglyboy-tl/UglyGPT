@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import List
 
 from ..base import Action
-from core import ReduceChain
+from uglychain import ReduceChain
 
 
 ROLE = """

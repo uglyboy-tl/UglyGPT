@@ -12,7 +12,7 @@ import json
 import requests
 from loguru import logger
 
-from core import Model
+from uglychain import Model
 from .utils import GithubAPI, KVCache, parse_markdown, config
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category

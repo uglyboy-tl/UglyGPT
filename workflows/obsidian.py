@@ -8,7 +8,7 @@ import re
 
 from loguru import logger
 
-from core import Model
+from uglychain import Model
 from .utils import GithubAPI, KVCache, File, parse_markdown
 from .actions.obsidian.summarizer import ReadmeSummarizer
 from .actions.obsidian.category import Category
