@@ -10,8 +10,8 @@ from urllib.parse import urlparse
 import requests
 from loguru import logger
 
-from .file import File
-from .config import config
+from workflows.utils.file import File
+from workflows.utils.config import config
 
 @dataclass
 class GithubAPI:

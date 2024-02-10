@@ -3,15 +3,16 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Dict
 import urllib.parse
 import re
 
 from loguru import logger
 
 from uglychain import Model
-from .utils import GithubAPI, KVCache, File, parse_markdown
-from .actions.obsidian.summarizer import ReadmeSummarizer
-from .actions.obsidian.category import Category
+from uglychain.storage import SQLiteStorage
+from workflows.utils import File, parse_markdown
+from uglygpt.worker.github import ReadmeSummarizer, Category, GithubAPI
 
 FRONT_MATTER = """---
 date: {time}
@@ -31,18 +32,19 @@ class GithubTrending():
     filename: str = "resource/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
-    model: Model = Model.YI_32K
+    model: Model = Model.DEFAULT
+    _data: Dict[str, str] = field(init=False)
 
     def __post_init__(self):
-        self.summarizer = ReadmeSummarizer(self.filename, self.model)
-        self.category = Category(self.filename, self.model)
-        self.finished = KVCache(self.filename, "Finished", 30)
-        self.config = KVCache(self.filename, "Config")
+        self.summarizer = ReadmeSummarizer(self.model, storage=SQLiteStorage(self.filename, "ReadmeSummarizer", 30))
+        self.category = Category(self.model, storage=SQLiteStorage(self.filename, "Category", 30))
+        self.finished = SQLiteStorage(self.filename, "Finished", 30)
+        self.config = SQLiteStorage(self.filename, "Config")
 
         self._repo_names = []
         self._repo_descriptions = {}
 
-        date = self.config.get("Date").get("Date","")
+        date = self.config.load("Date").get("Date","")
         if date != datetime.now().strftime("%Y-%m-%d"):
             self._check_finished()
 
@@ -56,31 +58,31 @@ class GithubTrending():
         # 去除已经完成的
         self._remove_finished_repos()
         # 加载数据库
-        self._data = self.summarizer._load(self._repo_names)
+        self._data = self.summarizer.storage.load(self._repo_names)
 
     def _check_finished(self):
         logger.info("Updating The Finished Repos...")
         #self._set_finished_with_favourite()
         self._set_finished_with_stars()
         self._set_finished_with_markdown()
-        self.config.set({"Date": datetime.now().strftime("%Y-%m-%d")})
+        self.config.save({"Date": datetime.now().strftime("%Y-%m-%d")})
 
     def _remove_finished_repos(self):
-        finished_repos = self.finished.get(self._repo_names)
+        finished_repos = self.finished.load(self._repo_names)
         self._repo_names = [name for name in self._repo_names if name not in finished_repos.keys()]
 
     def _set_finished_with_stars(self):
         stars = set(GithubAPI.fetch_starred_repos())
         data = {k: "Starred" for k in stars}
-        self.finished.set(data)
+        self.finished.save(data)
 
     def _set_finished_with_markdown(self):
         markdown_text = File.load(self.output)
         pattern = r"- \[x\] \[(?P<name>.+?)\]"
         matches = re.findall(pattern, markdown_text, re.MULTILINE)
-        old = self.finished.get(matches)
+        old = self.finished.load(matches)
         data = {k: "Marked" for k in matches if k not in old.keys()}
-        self.finished.set(data)
+        self.finished.save(data)
 
     def _set_finished_with_favourite(self):
         dir_path = File.to_path(self.output).parent
@@ -94,7 +96,7 @@ class GithubTrending():
                     favourite_List.append(name)
                     if file.stat().st_size == 0:
                         file_index[name] = file
-        dict = self.summarizer._load(favourite_List)
+        dict = self.summarizer.storage.load(favourite_List)
         data = {}
         for name in favourite_List:
             if name not in dict.keys():
@@ -102,7 +104,7 @@ class GithubTrending():
             data[name] = "Liked"
             if name in file_index.keys():
                 description = self._repo_descriptions.get(name, "")
-                category = self.category.cache.get(name).get(name, "Other")
+                category = self.category.storage.load(name).get(name, "Other") # type: ignore
                 context = FRONT_MATTER.format(
                     description=description,
                     time=datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -113,7 +115,7 @@ class GithubTrending():
                     context += f"> {line}\n"
                 context += "\n"
                 File.save(file_index[name], context)
-        self.finished.set(data)
+        self.finished.save(data)
 
     def _fetch_trending_repos(self, text: str, language: str = "All Languages"):
         markdown = parse_markdown(text)
@@ -125,32 +127,13 @@ class GithubTrending():
             self._repo_names.append(name)
             self._repo_descriptions[name] = context
 
-    def _fetch_summarizer(self):
-        readme_list = []
-        description_list = []
-
-        new_repo_names = [
-            repo_name for repo_name in self._repo_names if repo_name not in self._data.keys()]
-        index = [i for i in new_repo_names]
-        #new_repo_names = self._repo_names
-
-        for repo_name in index:
-            readme = GithubAPI.fetch_readme(repo_name)
-            if readme:
-                if len(readme) > 35000:
-                    readme = readme[:35000]
-                readme_list.append(readme)
-                description_list.append(self._repo_descriptions[repo_name])
-            else:
-                new_repo_names.remove(repo_name)
-
-        datas = self.summarizer.run(
-            new_repo_names, readme_list, description_list)
-
+    def _fetch_summarizer(self, names: list[str]):
+        description_list = [self._repo_descriptions[repo_name] for repo_name in names]
+        datas = self.summarizer.run(names, description_list)
         self._data.update(datas)
 
-    def _fetch_category(self):
-        category_list = self.category.run(self._repo_names, self._data)
+    def _fetch_category(self, names: list[str]):
+        category_list = self.category.run(names, self._data)
         return category_list
 
     def output_markdown(self, filename: str | None = None):
@@ -158,24 +141,20 @@ class GithubTrending():
             self.output = filename
         # 增加循环，每次执行 20 个，避免并发太快
         block = 15
-        repo_names = [i for i in self._repo_names]
         i = 0
         category_list = {}
-        while  i*block < len(repo_names):
-            self._repo_names = repo_names[i*block:i*block+block]
+        while  i*block < len(self._repo_names):
+            repo_names = self._repo_names[i*block:i*block+block]
             # 先更新数据库
-            self._fetch_summarizer()
+            self._fetch_summarizer(repo_names)
             # 更新分类，并获得分类结果
-            _dict = self._fetch_category()
-            for k,v in _dict.items():
+            category_list_part = self._fetch_category(repo_names)
+            for k,v in category_list_part.items():
                 if k in category_list.keys():
                     category_list[k].extend(v)
                 else:
                     category_list[k] = v
             i += 1
-            #logger.info("Sleeping 5 seconds...")
-            #sleep(5)
-        self._repo_names = repo_names
 
         # 生成 markdown
         markdown_txt = FRONT_MATTER.format(
