@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from loguru import logger
 
 from ..base import Action
-from uglychain import LLM
+from uglychain import LLM, Model
 
 ROLE = """
 假设你是一名经验丰富的技术文档撰写人员，你的工作是撰写技术文档。你即将完成的工作是根据提供的信息和要求，针对目标课题（可能是一个软件、一个插件、一个开源项目之类），撰写一份技术文档。具体要求如下：
@@ -55,7 +55,7 @@ class Technical(Action):
     name: str = "技术文档撰写"
 
     def __post_init__(self):
-        self.llm = LLM(PROMPT_TEMPLATE, "chatgpt", self.role)
+        self.llm = LLM(PROMPT_TEMPLATE, Model.DEFAULT, self.role)
         return super().__post_init__()
 
     def run(self, *args, **kwargs):

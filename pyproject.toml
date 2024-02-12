@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-uglychain = "^0.0.2"
+uglychain = "^0.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

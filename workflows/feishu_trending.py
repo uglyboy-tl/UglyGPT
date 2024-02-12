@@ -13,24 +13,24 @@ import requests
 from loguru import logger
 
 from uglychain import Model
-from .utils import GithubAPI, KVCache, parse_markdown, config
-from .actions.obsidian.summarizer import ReadmeSummarizer
-from .actions.obsidian.category import Category
+from uglychain.storage import SQLiteStorage
+from .utils import parse_markdown, config
+from uglygpt.worker.github import GithubAPI
 
 @dataclass
 class FeishuTrending():
     filename: str = "resource/github.db"
     bot_webhook: str = config.feishu_webhook
     secret: str = config.feishu_secret
-    summarizer: ReadmeSummarizer = field(init=False)
-    category: Category = field(init=False)
+    summarizer_db: SQLiteStorage = field(init=False)
+    category_db: SQLiteStorage = field(init=False)
     model: Model = Model.DEFAULT
 
     def __post_init__(self):
-        self.summarizer = ReadmeSummarizer(self.filename, self.model)
-        self.category = Category(self.filename, self.model)
-        self.old = KVCache(self.filename, "Feishu", 30)
-        self.config = KVCache(self.filename, "Config")
+        self.summarizer_db = SQLiteStorage(self.filename, "ReadmeSummarizer")
+        self.category_db = SQLiteStorage(self.filename, "Category")
+        self.old = SQLiteStorage(self.filename, "Feishu", 30)
+        self.config = SQLiteStorage(self.filename, "Config")
 
         self._repo_names = []
         self._repo_descriptions = {}
@@ -43,15 +43,15 @@ class FeishuTrending():
         _set = set(self._repo_names)
         self._repo_names = list(_set)
 
-        old_repos = self.old.get(self._repo_names, "timestamp != date(\'now\',\'localtime\')")
+        old_repos = self.old.load(self._repo_names, "timestamp != date(\'now\',\'localtime\')")
         self._repo_names = [i for i in self._repo_names if i not in old_repos.keys()]
 
         # 加载数据库
-        self._data = self.summarizer._load(self._repo_names)
-        _category = self.category._load(self._repo_names)
+        self._data = self.summarizer_db.load(self._repo_names)
+        _category = self.category_db.load(self._repo_names)
 
         self._repo_names = [i for i in self._repo_names if _category.get(i) == "AI"]
-        self.old.set({i:"1" for i in self._repo_names})
+        self.old.save({i:"1" for i in self._repo_names})
 
     def _fetch_trending_repos(self, text: str, language: str = "All Languages"):
         markdown = parse_markdown(text)

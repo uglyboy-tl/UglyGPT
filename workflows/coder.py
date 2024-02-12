@@ -8,7 +8,9 @@ from typing import Optional
 
 from uglychain import Model
 from .utils import File
-from .actions.code import CodeWrite, CodeReviewer, TestWriter, CodeRewrite
+from .actions.code import TestWriter, CodeRewrite
+from uglygpt.worker.code import CodeWriter, CodeReviewer
+from uglygpt.storage import FileStorage
 from .sandbox import Sandbox, TestFailedError
 
 
@@ -18,11 +20,11 @@ class Coder:
     request: str = ""
     review_code: bool = False
     sandbox: Sandbox = field(default_factory=Sandbox)
-    model: Model = Model.GPT4_TURBO
+    model: Model = Model.YI
 
     def __post_init__(self):
-        self.writer = CodeWrite(self.file_path, self.model)
-        self.reviewer = CodeReviewer(self.file_path, self.model)
+        self.writer = CodeWriter(model = self.model, storage=FileStorage(self.file_path))
+        self.reviewer = CodeReviewer(model = self.model, storage=FileStorage(self.file_path))
         self.rewriter = CodeRewrite(self.file_path, self.model)
         self.tester = TestWriter(self.test_path, self.model)
         self.unittester = TestWriter(self.unittest_path, self.model)
@@ -83,7 +85,7 @@ class Coder:
         if self.review_code:
             agent = CodeReviewer(self.unittest_path)
             agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent._load()
+                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load()
             )
 
     def prepare_debug(self) -> None:
@@ -105,7 +107,7 @@ class Coder:
         if self.review_code:
             agent = CodeReviewer(self.test_path)
             agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent._load()
+                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load()
             )
 
     def run_debug(self) -> None:
