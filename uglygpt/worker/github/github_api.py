@@ -64,7 +64,7 @@ class GithubAPI:
 
     @classmethod
     def fetch_trending_file(cls) -> str:
-        file_name = "resource/md/trending.md"
+        file_name = "data/github/trending.md"
         if File.datetime(file_name).date() < datetime.today().date():
             date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
             try:

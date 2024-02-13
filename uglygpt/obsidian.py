@@ -29,7 +29,7 @@ description: {description}
 @dataclass
 class GithubTrending():
     output: str = "/home/uglyboy/Documents/Temp/Github 趋势.md"
-    filename: str = "resource/github.db"
+    filename: str = "data/github/github.db"
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
     model: Model = Model.DEFAULT
