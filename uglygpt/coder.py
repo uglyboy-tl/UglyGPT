@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Optional
 
 from uglychain import Model
-from ..workflows.utils import File
+from .utils import File
 from uglygpt.worker.code import CodeWriter, CodeReviewer, TestWriter, CodeRewriter
 from uglygpt.storage import FileStorage
-from ..workflows.sandbox import Sandbox, TestFailedError
+from .sandbox import Sandbox, TestFailedError
 
 
 @dataclass

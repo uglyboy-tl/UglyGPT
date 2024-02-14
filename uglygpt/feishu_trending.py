@@ -19,7 +19,7 @@ from uglygpt.worker.github import GithubAPI
 
 @dataclass
 class FeishuTrending():
-    filename: str = "resource/github.db"
+    filename: str = "data/github/github.db"
     bot_webhook: str = config.feishu_webhook
     secret: str = config.feishu_secret
     summarizer_db: SQLiteStorage = field(init=False)
