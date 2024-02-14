@@ -7,11 +7,10 @@ from pathlib import Path
 from typing import Optional
 
 from uglychain import Model
-from .utils import File
-from .actions.code import TestWriter, CodeRewrite
-from uglygpt.worker.code import CodeWriter, CodeReviewer
+from ..workflows.utils import File
+from uglygpt.worker.code import CodeWriter, CodeReviewer, TestWriter, CodeRewriter
 from uglygpt.storage import FileStorage
-from .sandbox import Sandbox, TestFailedError
+from ..workflows.sandbox import Sandbox, TestFailedError
 
 
 @dataclass
@@ -25,9 +24,9 @@ class Coder:
     def __post_init__(self):
         self.writer = CodeWriter(model = self.model, storage=FileStorage(self.file_path))
         self.reviewer = CodeReviewer(model = self.model, storage=FileStorage(self.file_path))
-        self.rewriter = CodeRewrite(self.file_path, self.model)
-        self.tester = TestWriter(self.test_path, self.model)
-        self.unittester = TestWriter(self.unittest_path, self.model)
+        self.rewriter = CodeRewriter(model = self.model, storage=FileStorage(self.file_path))
+        self.tester = TestWriter(model = self.model, storage=FileStorage(self.file_path))
+        self.unittester = TestWriter(model = self.model, storage=FileStorage(self.unittest_path))
         try:
             logger.add(
                 f"logs/{File.path_to_filename(self.file_path)}.log",
@@ -85,7 +84,7 @@ class Coder:
         if self.review_code:
             agent = CodeReviewer(self.unittest_path)
             agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load()
+                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load() # type: ignore
             )
 
     def prepare_debug(self) -> None:
@@ -107,7 +106,7 @@ class Coder:
         if self.review_code:
             agent = CodeReviewer(self.test_path)
             agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load()
+                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load() # type: ignore
             )
 
     def run_debug(self) -> None:
