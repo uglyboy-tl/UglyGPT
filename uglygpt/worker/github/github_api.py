@@ -10,8 +10,7 @@ from urllib.parse import urlparse
 import requests
 from loguru import logger
 
-from workflows.utils.file import File
-from workflows.utils.config import config
+from uglygpt.utils import File, config
 
 @dataclass
 class GithubAPI:

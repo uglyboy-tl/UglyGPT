@@ -11,7 +11,7 @@ from loguru import logger
 
 from uglychain import Model
 from uglychain.storage import SQLiteStorage
-from workflows.utils import File, parse_markdown
+from .utils import File, parse_markdown
 from uglygpt.worker.github import ReadmeSummarizer, Category, GithubAPI
 
 FRONT_MATTER = """---
