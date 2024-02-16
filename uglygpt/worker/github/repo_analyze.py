@@ -5,6 +5,7 @@ import sys
 from llama_index.core import (
     Settings,
     StorageContext,
+    SummaryIndex,
     VectorStoreIndex,
     load_index_from_storage,
 )
@@ -38,7 +39,7 @@ if not os.path.exists(PERSIST_DIR):
         verbose=False,
         ignore_directories=["examples"],
     ).load_data(branch=branch)
-    index = VectorStoreIndex.from_documents(documents, show_progress=True, build_tree=True)
+    index = SummaryIndex.from_documents(documents, show_progress=True, build_tree=True)
     # store it for later
     index.storage_context.persist(persist_dir=PERSIST_DIR)
 else:

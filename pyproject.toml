@@ -8,7 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 uglychain = {extras = ["llama-index","bm25"], version = "^0.1.0"}
-llama-index-readers-github = {version = "^0.1.1", python = ">=3.11,<3.12"}
+llama-index-readers-github = {version = "^0.1.1", python = ">=3.11,<3.12", extras = ["github"], optional = true}
+
+[tool.poetry.extras]
+github = ["llama-index-readers-github"]
 
 [build-system]
 requires = ["poetry-core"]
