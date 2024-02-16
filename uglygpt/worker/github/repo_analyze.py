@@ -9,21 +9,17 @@ from llama_index.core import (
     load_index_from_storage,
 )
 from llama_index.readers.github import GithubRepositoryReader
-from llama_index.embeddings.openai import OpenAIEmbedding
 from uglychain.llm.llama_index import LlamaIndexLLM
-from uglychain.provider import get_llm_provider, Model
-from workflows.utils.config import config
+from uglychain import Model
+from uglygpt.utils.config import config
 import nest_asyncio
 
 nest_asyncio.apply()
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-embed_model = OpenAIEmbedding(
-    api_base="https://api.01ww.xyz/v1", api_key="tianlu-test", model="text-embedding-ada-002"
-)
-Settings.embed_model = embed_model
-Settings.llm = LlamaIndexLLM(llm = get_llm_provider(Model.GPT4_TURBO))
+
+Settings.llm = LlamaIndexLLM(model = Model.GPT4_TURBO)
 #service_context = ServiceContext.from_defaults(embed_model=embed_model)
 #set_global_service_context(service_context)
 

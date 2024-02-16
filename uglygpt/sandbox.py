@@ -12,8 +12,6 @@ import re
 from typing import List, Optional, Set
 from collections import deque
 
-from .default_files import Makefile, Service
-
 VENV_NAME = ".venv"
 WORKING_DIR = Path("/home/uglyboy/Code")
 # WORKING_DIR = File.WORKSPACE_ROOT
@@ -146,20 +144,6 @@ class Sandbox:
             )
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to install requirements: {e}")
-
-    def build_service(self) -> None:
-        # 创建一个 .service 文件，用于 systemd 的服务
-        install_path = Path("/usr/lib") / self._dir_name
-        data = Service.format(path=install_path)
-        service_name = self._dir_name.lower()
-        with open(self.dir_path / service_name, "w") as f:
-            f.write(data)
-        # 创建一个 Makefile 文件，用于安装和卸载 systemd 的服务
-        data = Makefile.format(
-            name=self._dir_name, path=install_path, service_name=service_name
-        )
-        with open(self.dir_path / "Makefile", "w") as f:
-            f.write(data)
 
     def prepare_test(self, path: str) -> str:
         file_list = self._copy_file(path)

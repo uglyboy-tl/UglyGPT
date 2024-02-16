@@ -9,7 +9,7 @@ from typing import Optional
 from uglychain import Model
 from .utils import File
 from uglygpt.worker.code import CodeWriter, CodeReviewer, TestWriter, CodeRewriter
-from uglygpt.storage import FileStorage
+from uglygpt.worker.code.file import FileStorage
 from .sandbox import Sandbox, TestFailedError
 
 

@@ -7,9 +7,9 @@ from typing import cast
 from pydantic import BaseModel, Field
 from loguru import logger
 
-from uglychain import ReduceChain, Model, StoresRetriever
-from uglychain.retrievers import get_stores_retriever
-from ..base import Action
+from uglychain import ReduceChain, Model, Retriever, BaseWorker, StorageRetriever
+from uglychain.storage import DillStorage
+
 
 ROLE = """
 我需要你帮我写一部小说。现在我给你一个400字的记忆（简短的总结），你应该用它来储存已经写过的关键内容，这样你就可以跟踪很长的上下文。每次，我会给你你当前的记忆（前面故事的简短总结。你应该用它来储存已经写过的关键内容，这样你就可以跟踪很长的上下文），之前写的段落，以及关于下一段要写什么的指示。
@@ -55,19 +55,19 @@ PROMPT_TEMPLATE = """
 
 
 @dataclass
-class Novel(Action):
+class Novel(BaseWorker):
     filename: str = "resource/local/novel.txt"
-    model: Model = Model.GPT3_TURBO_16K
+    model: Model = Model.YI_LONGCONTEXT
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
     reduce: ReduceChain = field(init=False)
-    db: StoresRetriever = field(init=False)
+    db: StorageRetriever = field(init=False)
 
     def __post_init__(self):
         self.llm = ReduceChain(
             self.prompt, self.model, self.role, NovelDetail, format=self._parse
         )
-        self.db = get_stores_retriever("bm25", "resource/local/novel.json", True)
+        self.db = Retriever.BM25.getStorage(DillStorage("data/novel/novel.pkl"))
         self.db.init()
         return super().__post_init__()
 
@@ -95,6 +95,6 @@ class Novel(Action):
         return history
 
     def run(self, *args, **kwargs):
-        reponse = self.ask(*args, **kwargs)
+        reponse = self._ask(*args, **kwargs)
         self._parse(reponse)
         return "\n".join(self.db.all())

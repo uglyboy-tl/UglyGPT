@@ -9,7 +9,7 @@ from uglychain.worker.base import BaseWorker
 
 class CodeType(BaseModel):
     reason: str = Field(..., description="你的思考过程和解决方案")
-    code_file: str = Field(..., description="最终优化后的代码文件中的内容")
+    code: str = Field(..., description="最终优化后的代码文件中的内容")
 
 
 PROMPT_TEMPLATE = """
@@ -32,7 +32,7 @@ class Developer(BaseWorker):
     def run(self, *args, **kwargs):
         logger.info(f"正在执行 {self.name} 的任务...")
         response = self._ask(*args, **kwargs)
-        logger.success(response)
+        logger.success(response.reason)
         if self.storage:
-            self.storage.save(response)
+            self.storage.save(response.code)
         return response
