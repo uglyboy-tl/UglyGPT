@@ -60,6 +60,15 @@ class FeishuTrending():
                 },
                 "elements": [
                     {
+                        "tag": "note",
+                        "elements": [
+                            {
+                            "tag": "plain_text",
+                            "content": f"{self._repo_descriptions[name]}"
+                            }
+                        ]
+                    },
+                    {
                     "tag": "markdown",
                     "content": f"{self._data[name]}"
                     },
@@ -86,7 +95,7 @@ class FeishuTrending():
                 "header": {
                     "template": "blue",
                     "title": {
-                    "content": f"项目名称：{name}",
+                    "content": f"{name}",
                     "tag": "plain_text"
                     }
                 }
