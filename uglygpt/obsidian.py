@@ -181,10 +181,10 @@ class GithubTrending():
         File.save(self.output, markdown_txt)
 
     def feishu_output(self):
-        old_repos = self.old.load(self._repo_names, "timestamp != date(\'now\',\'localtime\')")
-        _repo_names = [i for i in self._repo_names if i not in old_repos.keys()]
-        _category = self.category.storage.load(_repo_names)
-        _repo_names = [i for i in _repo_names if _category.get(i) == "AI"]
+        _category = self.category.storage.load(self._repo_names)
+        _repo_names = [i for i in self._repo_names if _category.get(i) == "AI"]
+        old_repos = self.old.load(_repo_names, "timestamp != date(\'now\',\'localtime\')")
+        _repo_names = [i for i in _repo_names if i not in old_repos.keys()]
         self.old.save({i:"1" for i in _repo_names})
         for name in _repo_names:
             card = {
