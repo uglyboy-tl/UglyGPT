@@ -3,10 +3,8 @@ import os
 import sys
 
 from llama_index.core import (
-    Settings,
     StorageContext,
     SummaryIndex,
-    VectorStoreIndex,
     load_index_from_storage,
 )
 from llama_index.readers.github import GithubRepositoryReader
@@ -19,10 +17,6 @@ nest_asyncio.apply()
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-
-Settings.llm = LlamaIndexLLM(model = Model.GPT4_TURBO)
-#service_context = ServiceContext.from_defaults(embed_model=embed_model)
-#set_global_service_context(service_context)
 
 # load the documents and create the index
 owner = "rjmacarthy"
@@ -48,6 +42,7 @@ else:
     index = load_index_from_storage(storage_context)
 
 query_engine = index.as_query_engine(
+    llm = LlamaIndexLLM(model = Model.YI),
     retriever_mode="all_leaf",
     response_mode='tree_summarize',
 )

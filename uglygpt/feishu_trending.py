@@ -1,27 +1,16 @@
 #!/usr/bin/env python3
-# -*-coding:utf-8-*-
 
 from dataclasses import dataclass, field
-from datetime import datetime
 import re
-import hashlib
-import base64
-import hmac
-import json
-
-import requests
-from loguru import logger
 
 from uglychain import Model
 from uglychain.storage import SQLiteStorage
-from .utils import parse_markdown, config
-from uglygpt.worker.github import GithubAPI
+from .utils import parse_markdown
+from uglygpt.utilities import GithubAPI, FeishuAPI
 
 @dataclass
 class FeishuTrending():
     filename: str = "data/github/github.db"
-    bot_webhook: str = config.feishu_webhook
-    secret: str = config.feishu_secret
     summarizer_db: SQLiteStorage = field(init=False)
     category_db: SQLiteStorage = field(init=False)
     model: Model = Model.DEFAULT
@@ -65,70 +54,41 @@ class FeishuTrending():
 
     def feishu_output(self):
         for name in self._repo_names:
-            _lines = []
-            _line = []
-            url = f"https://www.github.com/{name}"
-            part = {
-					"tag": "a",
-					"href": url,
-					"text": name,
-				}
-            _line.append(part)
-            part = {
-                    "tag": "text",
-                    "text": f" - {self._repo_descriptions[name]}"
-            }
-
-            _line.append(part)
-            _lines.append(_line)
-            _lines.append([])
-            for line in self._data[name].split("\n"):
-                _line = []
-                part = {
-                    "tag": "text",
-                    "text": line
-                }
-                _line.append(part)
-                _lines.append(_line)
-            data = {"post":{"zh_cn":{"title":name,"content":_lines}}}
-            self.post(data)
-
-    def post(self, message: str|dict):
-        timestamp = int(datetime.now().timestamp())
-        if isinstance(message, dict):
-            data = {
-                "timestamp": timestamp,
-                "sign": self.gen_sign(timestamp),
-                "msg_type": "post",
-                "content": message
-            }
-        else:
-            data = {
-                "timestamp": timestamp,
-                "sign": self.gen_sign(timestamp),
-                "msg_type": "text",
-                "content": {
-                    "text": message
+            card = {
+                "config": {
+                    "wide_screen_mode": True
+                },
+                "elements": [
+                    {
+                    "tag": "markdown",
+                    "content": f"{self._data[name]}"
+                    },
+                    {
+                    "tag": "action",
+                    "actions": [
+                        {
+                        "tag": "button",
+                        "text": {
+                            "tag": "plain_text",
+                            "content": "前往项目"
+                        },
+                        "type": "primary",
+                        "multi_url": {
+                            "url": f"https://www.github.com/{name}",
+                            "pc_url": "",
+                            "android_url": "",
+                            "ios_url": ""
+                        }
+                        }
+                    ]
+                    }
+                ],
+                "header": {
+                    "template": "blue",
+                    "title": {
+                    "content": f"项目名称：{name}",
+                    "tag": "plain_text"
+                    }
                 }
             }
-        try:
-            response = requests.post(
-                self.bot_webhook, headers={"Content-Type": "application/json"}, data=json.dumps(data))
-            #response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"An error occurred: {e}")
-            raise
-        result = response.json()
-
-        if result.get("code") != 0:
-            logger.debug(result)
-            logger.error(f"An error occurred: {result['msg']}")
-            raise Exception(result['msg'])
-
-    def gen_sign(self, timestamp):
-        # 拼接timestamp和secret
-        string_to_sign = '{}\n{}'.format(timestamp, self.secret)
-        hmac_code = hmac.new(string_to_sign.encode("utf-8"), digestmod=hashlib.sha256).digest()
-        # 对结果进行base64处理
-        sign = base64.b64encode(hmac_code).decode('utf-8')
-        return sign
+            FeishuAPI.post(card)
