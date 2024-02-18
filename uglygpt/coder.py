@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from loguru import logger
 from pathlib import Path
 from typing import Optional
 
 from uglychain import Model
 from .utils import File
-from uglygpt.worker.code import CodeWriter, CodeReviewer, TestWriter, CodeRewriter
+from uglygpt.worker.code import CodeWriter, CodeReviewer, CodeRewriter
 from uglygpt.worker.code.file import FileStorage
-from .sandbox import Sandbox, TestFailedError
 
 
 @dataclass
@@ -18,15 +17,9 @@ class Coder:
     file_path: str
     request: str = ""
     review_code: bool = False
-    sandbox: Sandbox = field(default_factory=Sandbox)
     model: Model = Model.YI
 
     def __post_init__(self):
-        self.writer = CodeWriter(model = self.model, storage=FileStorage(self.file_path))
-        self.reviewer = CodeReviewer(model = self.model, storage=FileStorage(self.file_path))
-        self.rewriter = CodeRewriter(model = self.model, storage=FileStorage(self.file_path))
-        self.tester = TestWriter(model = self.model, storage=FileStorage(self.file_path))
-        self.unittester = TestWriter(model = self.model, storage=FileStorage(self.unittest_path))
         try:
             logger.add(
                 f"logs/{File.path_to_filename(self.file_path)}.log",
@@ -69,100 +62,6 @@ class Coder:
             self._code = self.reviewer.run(context=context, code=self.code)
         return True
 
-    def gen_unittest(self) -> None:
-        if self.request != "":
-            context = f"---\n函数原始需求：\n{self.request}\n---"
-        else:
-            context = ""
-        self.unittester.run(
-            context=f"{context}",
-            code=self.code,
-            working_dir=str(File.WORKSPACE_ROOT),
-            source_path=self.file_path,
-            test_path=self.unittest_path,
-        )
-        if self.review_code:
-            agent = CodeReviewer(self.unittest_path)
-            agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load() # type: ignore
-            )
-
-    def prepare_debug(self) -> None:
-        self.sandbox.init()
-        self.sandbox.setup_venv()
-        code = self.code
-        sandbox_file_path = self.sandbox.prepare_test(self.file_path)
-        context = f"---\n函数原始需求：\n{self.request}\n---\n 所有的测试用例只需要验证目标代码中的函数或者类的方法能否顺利执行即可，无需验证结果是否正确。"
-        working_path = Path(self.sandbox.dir)
-        source_path = Path(sandbox_file_path).relative_to(working_path)
-        test_path = Path(self.test_path).relative_to(working_path)
-        self.tester.run(
-            context=context,
-            code=code,
-            working_dir=self.sandbox.dir,
-            source_path=str(source_path),
-            test_path=str(test_path),
-        )
-        if self.review_code:
-            agent = CodeReviewer(self.test_path)
-            agent.run(
-                context=f"这是一个unittest测试文件\n{context}", code=agent.storage.load() # type: ignore
-            )
-
-    def run_debug(self) -> None:
-        if not File.exists(self.test_path):
-            self.prepare_debug()
-
-        if self.request != "":
-            context = f"函数原始需求：\n{self.request}"
-        else:
-            context = ""
-
-        retry = 0
-
-        while True:
-            try:
-                retry += 1
-                self.sandbox.run_test(self.test_path)
-                break
-            except TestFailedError as e:
-                if retry > 3:
-                    # 人工介入来提出修改意见
-                    # TODO: 未来可以考虑使用人工智能来提出修改意见，包括上网搜索需要的信息。
-                    if self.change_code():
-                        retry = 0
-                        if self.review_code:
-                            self._code = self.reviewer.run(
-                                context=context, code=self.code
-                            )
-                        self.sandbox.prepare_test(self.file_path)
-                    else:
-                        break
-                else:
-                    debug = e.args[0]
-                    self._code = self.rewriter.run(
-                        context=context, code=self.code, extra=debug
-                    )
-                    if self.review_code:
-                        self._code = self.reviewer.run(context=context, code=self.code)
-                    self.sandbox.prepare_test(self.file_path)
-            except Exception:
-                raise
-        if retry > 3:
-            logger.error("代码依然无法通过测试，建议重新写代码。")
-
-    @property
-    def test_path(self) -> str:
-        if not hasattr(self, "_test_path"):
-            self._test_path = f"{self.sandbox.dir}/test_{Path(self.file_path).name}"
-        return self._test_path
-
-    @property
-    def unittest_path(self) -> str:
-        if not hasattr(self, "_unittest_path"):
-            self._unittest_path = f"tests/test_{Path(self.file_path).name}"
-        return self._unittest_path
-
     @property
     def code(self) -> str:
         if not hasattr(self, "_code"):
@@ -171,3 +70,21 @@ class Coder:
             else:
                 self.gen_code()
         return self._code
+
+    @property
+    def writer(self) -> CodeWriter:
+        if not hasattr(self, "_writer"):
+            self._writer = CodeWriter(model = self.model, storage=FileStorage(self.file_path))
+        return self._writer
+
+    @property
+    def reviewer(self) -> CodeReviewer:
+        if not hasattr(self, "_reviewer"):
+            self._reviewer = CodeReviewer(model = self.model, storage=FileStorage(self.file_path))
+        return self._reviewer
+
+    @property
+    def rewriter(self) -> CodeRewriter:
+        if not hasattr(self, "_rewriter"):
+            self._rewriter = CodeRewriter(model = self.model, storage=FileStorage(self.file_path))
+        return self._rewriter

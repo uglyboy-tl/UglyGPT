@@ -16,6 +16,15 @@ PROMPT_TEMPLATE = """
 {context}
 """
 
+FORMAT_PROMPT = """
+-----
+Return only python code in Markdown format, e.g.:
+
+```python
+....
+```
+"""
+
 @dataclass
 class Developer(BaseWorker):
     prompt: str = PROMPT_TEMPLATE
@@ -25,14 +34,19 @@ class Developer(BaseWorker):
         self.llm = LLM(
             self.prompt,
             self.model,
-            f"{self.role}",
-            CodeType,
+            f"{self.role}{FORMAT_PROMPT}",
+            #CodeType,
         )
 
     def run(self, *args, **kwargs):
         logger.info(f"正在执行 {self.name} 的任务...")
-        response = self._ask(*args, **kwargs)
-        logger.success(response.reason)
+        code = self._ask(*args, **kwargs)
+        #logger.success(response)
         if self.storage:
-            self.storage.save(response.code)
-        return response
+            self.storage.save(code)
+        return code
+
+    def _ask(self, *args, **kwargs):
+        resopnse = self.llm(*args, **kwargs) # type: ignore
+        _, after = resopnse.split("```python")
+        return after.split("```")[0]
