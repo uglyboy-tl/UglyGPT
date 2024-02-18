@@ -5,7 +5,7 @@ from uglychain.worker.base import BaseWorker
 from uglychain.storage import Storage, SQLiteStorage
 from uglychain import MapChain
 
-from .github_api import GithubAPI
+from uglygpt.utilities import GithubAPI
 
 T = TypeVar("T", bound=Storage)
 

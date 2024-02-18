@@ -12,7 +12,8 @@ from loguru import logger
 from uglychain import Model
 from uglychain.storage import SQLiteStorage
 from .utils import File, parse_markdown
-from uglygpt.worker.github import ReadmeSummarizer, Category, GithubAPI
+from uglygpt.worker.github import ReadmeSummarizer, Category
+from uglygpt.utilities import GithubAPI
 
 FRONT_MATTER = """---
 date: {time}
