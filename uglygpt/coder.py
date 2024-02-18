@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Optional
 
 from uglychain import Model
+from uglychain.storage import FileStorage
 from .utils import File
 from uglygpt.worker.code import CodeWriter, CodeReviewer, CodeRewriter
-from uglygpt.worker.code.file import FileStorage
 
 
 @dataclass
