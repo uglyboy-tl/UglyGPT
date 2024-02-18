@@ -13,7 +13,7 @@ from uglychain import Model
 from uglychain.storage import SQLiteStorage
 from .utils import File, parse_markdown
 from uglygpt.worker.github import ReadmeSummarizer, Category
-from uglygpt.utilities import GithubAPI
+from uglygpt.utilities import GithubAPI, FeishuAPI
 
 FRONT_MATTER = """---
 date: {time}
@@ -40,6 +40,7 @@ class GithubTrending():
         self.summarizer = ReadmeSummarizer(self.model, storage=SQLiteStorage(self.filename, "ReadmeSummarizer", 30))
         self.category = Category(self.model, storage=SQLiteStorage(self.filename, "Category", 30))
         self.finished = SQLiteStorage(self.filename, "Finished", 30)
+        self.old = SQLiteStorage(self.filename, "Feishu", 30)
         self.config = SQLiteStorage(self.filename, "Config")
 
         self._repo_names = []
@@ -178,3 +179,58 @@ class GithubTrending():
                 markdown_txt += "\n"
 
         File.save(self.output, markdown_txt)
+
+    def feishu_output(self):
+        old_repos = self.old.load(self._repo_names, "timestamp != date(\'now\',\'localtime\')")
+        _repo_names = [i for i in self._repo_names if i not in old_repos.keys()]
+        _category = self.category.storage.load(_repo_names)
+        _repo_names = [i for i in _repo_names if _category.get(i) == "AI"]
+        self.old.save({i:"1" for i in _repo_names})
+        for name in _repo_names:
+            card = {
+                "config": {
+                    "wide_screen_mode": True
+                },
+                "elements": [
+                    {
+                        "tag": "note",
+                        "elements": [
+                            {
+                            "tag": "plain_text",
+                            "content": f"{self._repo_descriptions[name]}"
+                            }
+                        ]
+                    },
+                    {
+                    "tag": "markdown",
+                    "content": f"{self._data[name]}"
+                    },
+                    {
+                    "tag": "action",
+                    "actions": [
+                        {
+                        "tag": "button",
+                        "text": {
+                            "tag": "plain_text",
+                            "content": "前往项目"
+                        },
+                        "type": "primary",
+                        "multi_url": {
+                            "url": f"https://www.github.com/{name}",
+                            "pc_url": "",
+                            "android_url": "",
+                            "ios_url": ""
+                        }
+                        }
+                    ]
+                    }
+                ],
+                "header": {
+                    "template": "blue",
+                    "title": {
+                    "content": f"{name}",
+                    "tag": "plain_text"
+                    }
+                }
+            }
+            FeishuAPI.post(card)
