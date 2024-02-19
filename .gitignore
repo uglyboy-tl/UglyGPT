@@ -15,6 +15,6 @@ workflows/dev
 *.log
 *.sql
 /*.py
-
+poetry.lock
 ``` 未来可能需要上传的文件夹
 ```
