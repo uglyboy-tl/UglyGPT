@@ -20,23 +20,23 @@ def parse_code(text: str, lang: str = "python"):
     Returns:
         The parsed code.
     """
-    pattern = rf'```{lang}.*?\s+(.*)\s+```'
+    pattern = rf"```{lang}.*?\s+(.*)\s+```"
     match = re.search(pattern, text, re.DOTALL)
     if match:
         code = match.group(1)
     else:
-        pattern = r'```.*?\s+(.*)\s+```'
+        pattern = r"```.*?\s+(.*)\s+```"
         match = re.search(pattern, text, re.DOTALL)
         if match:
             code = match.group(1)
-            logger.warning(
-                f"parse_code: {lang} not match following text:\n{text}")
+            logger.warning(f"parse_code: {lang} not match following text:\n{text}")
         else:
-            match = re.search(pattern, text+"\n```", re.DOTALL)
+            match = re.search(pattern, text + "\n```", re.DOTALL)
             if match:
                 code = match.group(1)
                 logger.warning(
-                    "code in code block not end with ```, we add it automatically.")
+                    "code in code block not end with ```, we add it automatically."
+                )
             else:
                 logger.warning(f"{pattern} not match following text:\n{text}")
                 raise Exception(f"{pattern} not match following text:\n{text}")
@@ -52,18 +52,18 @@ def fix_llm_json_str(string: str):
     Returns:
         The fixed JSON string.
     """
-    new_string = re.sub(r',\s*}', '}', string)
-    new_string = re.sub(r',\s*]', ']', new_string)
+    new_string = re.sub(r",\s*}", "}", string)
+    new_string = re.sub(r",\s*]", "]", new_string)
     new_string = re.sub(r'"},"\n', '"},\n', new_string)
     new_string = re.sub(r'"}"\n', '"}\n', new_string)
-    new_string = re.sub(r'}"$', '}', new_string)
+    new_string = re.sub(r'}"$', "}", new_string)
     try:
         json.loads(new_string)
         return new_string
     except Exception as e:
         logger.warning("fix_llm_json_str failed 1:", e)
         try:
-            pattern = r'```json(.*?)```'
+            pattern = r"```json(.*?)```"
             match = re.findall(pattern, new_string, re.DOTALL)
             if match:
                 new_string = match[-1]
@@ -80,9 +80,12 @@ def fix_llm_json_str(string: str):
                 logger.warning("fix_llm_json_str failed 3:", e)
                 llm = LLM()
                 message = llm(
-                    """Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.\n```\n"""+new_string+"""\n```""")
+                    """Do not change the specific content, fix the json, directly return the repaired JSON, without any explanation and dialogue.\n```\n"""
+                    + new_string
+                    + """\n```"""
+                )
                 logger.debug(message)
-                pattern = r'```json(.*?)```'
+                pattern = r"```json(.*?)```"
                 match = re.findall(pattern, message, re.DOTALL)
                 if match:
                     return match[-1]
@@ -117,7 +120,7 @@ def parse_markdown(markdown_text: str) -> Dict[str, str]:
     dict: The dictionary with title as key and text as value.
     """
     if not isinstance(markdown_text, str):
-        raise ValueError('The input markdown_text must be a string.')
-    pattern = r'(?m)^## (.*?)\n(.*?)(?=^## |\Z)'
+        raise ValueError("The input markdown_text must be a string.")
+    pattern = r"(?m)^## (.*?)\n(.*?)(?=^## |\Z)"
     matches = re.findall(pattern, markdown_text, re.DOTALL)
     return {title: text.strip() for title, text in matches}

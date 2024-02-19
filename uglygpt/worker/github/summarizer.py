@@ -21,11 +21,12 @@ PROMPT = """
 {readme}
 """
 
+
 @dataclass
 class ReadmeSummarizer(BaseWorker, Generic[T]):
     role: str = field(init=False, default=ROLE)
     prompt: str = field(init=False, default=PROMPT)
-    storage: T = field(default_factory=SQLiteStorage) # type: ignore
+    storage: T = field(default_factory=SQLiteStorage)  # type: ignore
 
     def __post_init__(self):
         self.llm = MapChain(
@@ -56,8 +57,8 @@ class ReadmeSummarizer(BaseWorker, Generic[T]):
             new_readme_list.append(readme)
             new_description_list.append(description)
         response = self._ask(readme=new_readme_list, description=new_description_list)
-        result ={}
-        for k,v in zip(new_names, response):
+        result = {}
+        for k, v in zip(new_names, response):
             if v == "Error":
                 logger.error(f"Error when summarizing {k}")
                 continue

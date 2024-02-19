@@ -7,6 +7,7 @@ from loguru import logger
 from uglychain import LLM
 from uglychain.worker.base import BaseWorker
 
+
 class CodeType(BaseModel):
     reason: str = Field(..., description="你的思考过程和解决方案")
     code: str = Field(..., description="最终优化后的代码文件中的内容")
@@ -25,6 +26,7 @@ Return only python code in Markdown format, e.g.:
 ```
 """
 
+
 @dataclass
 class Developer(BaseWorker):
     prompt: str = PROMPT_TEMPLATE
@@ -35,18 +37,13 @@ class Developer(BaseWorker):
             self.prompt,
             self.model,
             f"{self.role}{FORMAT_PROMPT}",
-            #CodeType,
+            CodeType,
         )
 
     def run(self, *args, **kwargs):
         logger.info(f"正在执行 {self.name} 的任务...")
-        code = self._ask(*args, **kwargs)
-        #logger.success(response)
+        response = self._ask(*args, **kwargs)
+        logger.success(response.reason)
         if self.storage:
-            self.storage.save(code)
-        return code
-
-    def _ask(self, *args, **kwargs):
-        resopnse = self.llm(*args, **kwargs) # type: ignore
-        _, after = resopnse.split("```python")
-        return after.split("```")[0]
+            self.storage.save(response.code)
+        return response.code

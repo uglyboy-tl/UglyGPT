@@ -42,9 +42,9 @@ else:
     index = load_index_from_storage(storage_context)
 
 query_engine = index.as_query_engine(
-    llm = LlamaIndexLLM(model = Model.YI),
+    llm=LlamaIndexLLM(model=Model.YI),
     retriever_mode="all_leaf",
-    response_mode='tree_summarize',
+    response_mode="tree_summarize",
 )
 response = query_engine.query("这个项目是如何实现补全功能的？给我看一看具体的代码。")
 print(response)

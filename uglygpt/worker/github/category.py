@@ -42,7 +42,7 @@ class CategoryDetail(BaseModel):
 class Category(BaseWorker, Generic[T]):
     role: str = field(init=False, default=ROLE)
     prompt: str = field(init=False, default=PROMPT)
-    storage: T = field(default_factory=SQLiteStorage) # type: ignore
+    storage: T = field(default_factory=SQLiteStorage)  # type: ignore
 
     def __post_init__(self):
         self.llm = MapChain(
@@ -78,6 +78,9 @@ class Category(BaseWorker, Generic[T]):
         _datas.update(result)
 
         category_dict = {}
-        _ = [category_dict.setdefault(category, []).append(name) for name, category in _datas.items()]
+        _ = [
+            category_dict.setdefault(category, []).append(name)
+            for name, category in _datas.items()
+        ]
 
         return category_dict

@@ -39,4 +39,3 @@ class TestWriter(Developer):
     role: str = ROLE
     prompt: str = PROMPT_TEMPLATE
     name: str = "测试用例编写者"
-

@@ -25,8 +25,9 @@ PROMPT_TEMPLATE = """
 {extra}
 """
 
+
 @dataclass
 class CodeRewriter(Developer):
     role: str = ROLE
-    prompt:str = PROMPT_TEMPLATE
+    prompt: str = PROMPT_TEMPLATE
     name: str = "代码改进者"

@@ -74,17 +74,23 @@ class Coder:
     @property
     def writer(self) -> CodeWriter:
         if not hasattr(self, "_writer"):
-            self._writer = CodeWriter(model = self.model, storage=FileStorage(self.file_path))
+            self._writer = CodeWriter(
+                model=self.model, storage=FileStorage(self.file_path)
+            )
         return self._writer
 
     @property
     def reviewer(self) -> CodeReviewer:
         if not hasattr(self, "_reviewer"):
-            self._reviewer = CodeReviewer(model = self.model, storage=FileStorage(self.file_path))
+            self._reviewer = CodeReviewer(
+                model=self.model, storage=FileStorage(self.file_path)
+            )
         return self._reviewer
 
     @property
     def rewriter(self) -> CodeRewriter:
         if not hasattr(self, "_rewriter"):
-            self._rewriter = CodeRewriter(model = self.model, storage=FileStorage(self.file_path))
+            self._rewriter = CodeRewriter(
+                model=self.model, storage=FileStorage(self.file_path)
+            )
         return self._rewriter

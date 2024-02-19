@@ -30,8 +30,9 @@ PROMPT_TEMPLATE = """
 ```
 """
 
+
 @dataclass
 class CodeReviewer(Developer):
     role: str = ROLE
-    prompt:str = PROMPT_TEMPLATE
+    prompt: str = PROMPT_TEMPLATE
     name: str = "代码审查者"

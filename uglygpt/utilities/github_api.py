@@ -12,6 +12,7 @@ from loguru import logger
 
 from uglygpt.utils import File, config
 
+
 @dataclass
 class GithubAPI:
     token = config.github_token
@@ -21,7 +22,8 @@ class GithubAPI:
         url = f"https://api.github.com/{url}"
         try:
             response = requests.get(
-                url, headers={'Authorization': f'token {cls.token}'}, params=params)
+                url, headers={"Authorization": f"token {cls.token}"}, params=params
+            )
             response.raise_for_status()
             return response
         except requests.exceptions.RequestException as e:
@@ -37,29 +39,30 @@ class GithubAPI:
             logger.warning(f"Repo {repo_name} has no README.")
             return None
         if response.status_code == 200:
-            content = base64.b64decode(
-                response.json()['content']).decode('utf-8')
+            content = base64.b64decode(response.json()["content"]).decode("utf-8")
             return content
         else:
             return None
 
     @classmethod
-    def fetch_starred_repos(cls, username: str = "uglyboy-tl") -> Generator[str, None, None]:
+    def fetch_starred_repos(
+        cls, username: str = "uglyboy-tl"
+    ) -> Generator[str, None, None]:
         url = f"users/{username}/starred"
         params = {"per_page": 100}
         while True:
             response = cls._github_api(str(url), params=params)
             items = response.json()
-            link = response.headers.get('Link', '')
+            link = response.headers.get("Link", "")
             if not items:
                 break
             for item in items:
                 yield item["full_name"]
             if 'rel="next"' not in link:
                 break
-            full_url = link.split(';')[0].strip('<>')
+            full_url = link.split(";")[0].strip("<>")
             parsed = urlparse(full_url)
-            url = (parsed.path + "?" + parsed.query).lstrip('/')
+            url = (parsed.path + "?" + parsed.query).lstrip("/")
 
     @classmethod
     def fetch_trending_file(cls) -> str:
@@ -93,8 +96,7 @@ class GithubAPI:
             raise
 
         if response.status_code == 200:
-            content = base64.b64decode(
-                response.json()['content']).decode('utf-8')
+            content = base64.b64decode(response.json()["content"]).decode("utf-8")
             return content
         else:
             return ""
