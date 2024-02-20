@@ -60,13 +60,13 @@ class Novel(BaseWorker):
     model: Model = Model.YI_LONGCONTEXT
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
-    reduce: ReduceChain = field(init=False)
     db: StorageRetriever = field(init=False)
 
     def __post_init__(self):
         self.llm = ReduceChain(
             self.prompt, self.model, self.role, NovelDetail, format=self._parse
         )
+        #self.llm.output_format = "json"
         self.db = Retriever.BM25.getStorage(DillStorage("data/novel/novel.pkl"))
         self.db.init()
         return super().__post_init__()
@@ -79,7 +79,7 @@ class Novel(BaseWorker):
             try:
                 response = cast(NovelDetail, response)
                 input_paragraph = response.output_paragraph
-                short_memory = response.output_memory.rational
+                short_memory = response.output_memory.updated_memory
             except Exception:
                 logger.error(f"Response is not NovelDetail, can not parse. {response}")
                 raise ValueError("Response is not NovelDetail, can not parse.")
@@ -95,6 +95,5 @@ class Novel(BaseWorker):
         return history
 
     def run(self, *args, **kwargs):
-        reponse = self._ask(*args, **kwargs)
-        self._parse(reponse)
+        self._ask(*args, **kwargs)
         return "\n".join(self.db.all())
