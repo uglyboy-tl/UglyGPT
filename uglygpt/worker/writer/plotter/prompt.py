@@ -24,6 +24,7 @@ UNIVERSAL TRUTH:
 """
 
 THEME_LIGHT = """What is the light side of the following universal truth? Write an essay on the topic.
+Translate the output into Chinese if it is not already in Chinese.
 
 UNIVERSAL TRUTH: {theme}
 
@@ -31,6 +32,7 @@ LIGHT SIDE ESSAY:
 """
 
 THEME_DARK = """What is the dark side of the following universal truth? Write an essay on the topic.
+Translate the output into Chinese if it is not already in Chinese.
 
 UNIVERSAL TRUTH: {theme}
 
@@ -38,6 +40,7 @@ DARK SIDE ESSAY:
 """
 
 THEME_UNDERSTAND = """What are some ways that someone can misunderstand or misapply this universal truth? What are some different perspectives? Write an essay on the topic.
+Translate the output into Chinese if it is not already in Chinese.
 
 UNIVERSAL TRUTH: {theme}
 

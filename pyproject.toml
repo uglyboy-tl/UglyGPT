@@ -7,11 +7,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-uglychain = {extras = ["llama-index","bm25"], version = "^0.1.0"}
-llama-index-readers-github = {version = "^0.1.1", python = ">=3.11,<3.12", extras = ["github"], optional = true}
+uglychain = "^0.1.0"
 
-[tool.poetry.extras]
-github = ["llama-index-readers-github"]
+[tool.poetry.group.dev.dependencies]
+uglychain = {extras = ["llama-index","bm25","dashscope"], version = "^0.1.0"}
+llama-index-readers-github = {version = "^0.1.1", python = ">=3.11,<3.12"}
+
+[tool.poetry.group.test.dependencies]
+ruff = "^0.2.2"
 
 [build-system]
 requires = ["poetry-core"]

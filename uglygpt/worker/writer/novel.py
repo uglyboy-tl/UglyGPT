@@ -19,12 +19,6 @@ ROLE = """
 输出记忆：更新后的记忆。你应该首先解释输入记忆中哪些句子不再需要以及为什么，然后解释需要添加什么到记忆中以及为什么。然后你应该写更新后的记忆。更新后的记忆应该与输入的记忆类似，除了你之前认为应该被删除或添加的部分。更新后的记忆只应储存关键信息。更新后的记忆绝不能超过20个句子！
 注意除格式要求的字段名外，其他内容请使用中文进行文本输出。
 """
-"""
-请按照以下示例格式直接返回 JSON 结果，其中 output_paragraph 为输出段落，Rational 为记忆更新的理由，Updated Memory 是更新后的记忆。请确保你返回的结果可以被 Python json.loads 解析。如果你的目标已经完成或无法解决，则不需要给出命令行指令。
-
-格式示例：
-{{"output_paragraph": "{{string of output paragraph, around 20 sentences.}}","output_memory": {{"Rational":"{{string that explain how to update the memory}}","Updated Memory": "{{string of updated memory, around 10 to 20 sentences}}"}} }}
-"""
 
 
 class OutputMemory(BaseModel):

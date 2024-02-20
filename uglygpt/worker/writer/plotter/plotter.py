@@ -45,7 +45,7 @@ class Novel(BaseWorker):
         if not hasattr(self, "_theme"):
             self.llm.prompt = THEME
             self._theme = self.llm(synopsis=self.synopsis)
-            self._flesh_out_theme()
+            #self._flesh_out_theme()
         return self._theme
 
     def _flesh_out_theme(self):
@@ -93,10 +93,3 @@ class Novel(BaseWorker):
         # logger.info(f"Setting: {self.setting}")
         # logger.info(f"Character: {self.character}")
         # logger.info(f"Outline: {self.outline}")
-
-
-if __name__ == "__main__":
-    novel = Novel()
-    novel.run(
-        "一个关于人族和虫族的战争，人族的女王被虫族的女王抓住，虫族女王想要用人族女王的身体来孵化自己的后代。"
-    )
