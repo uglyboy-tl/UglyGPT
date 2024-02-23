@@ -42,7 +42,7 @@ class GithubTrending:
             self.model, storage=SQLiteStorage(self.filename, "ReadmeSummarizer", 30)
         )
         self.category = Category(
-            self.model, storage=SQLiteStorage(self.filename, "Category", 30)
+            Model.YI, storage=SQLiteStorage(self.filename, "Category", 30)
         )
         self.finished = SQLiteStorage(self.filename, "Finished", 30)
         self.old = SQLiteStorage(self.filename, "Feishu", 30)
