@@ -35,14 +35,17 @@ class GithubTrending:
     summarizer: ReadmeSummarizer = field(init=False)
     category: Category = field(init=False)
     model: Model = Model.DEFAULT
+    summarizer_model: Model = Model.DEFAULT
     _data: Dict[str, str] = field(init=False)
 
     def __post_init__(self):
+        if self.summarizer_model == Model.DEFAULT and self.model != Model.DEFAULT:
+            self.summarizer_model = self.model
         self.summarizer = ReadmeSummarizer(
-            self.model, storage=SQLiteStorage(self.filename, "ReadmeSummarizer", 30)
+            self.summarizer_model, storage=SQLiteStorage(self.filename, "ReadmeSummarizer", 30)
         )
         self.category = Category(
-            Model.YI, storage=SQLiteStorage(self.filename, "Category", 30)
+            self.model, storage=SQLiteStorage(self.filename, "Category", 30)
         )
         self.finished = SQLiteStorage(self.filename, "Finished", 30)
         self.old = SQLiteStorage(self.filename, "Feishu", 30)
