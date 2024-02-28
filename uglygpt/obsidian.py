@@ -243,3 +243,9 @@ class GithubTrending:
                 },
             }
             FeishuAPI.post(card)
+
+
+def trending():
+    trending = GithubTrending(model=Model.GPT3_TURBO)
+    trending.output_markdown()
+    trending.feishu_output()

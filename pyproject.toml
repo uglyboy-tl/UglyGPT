@@ -21,4 +21,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-trending = 'uglygpt.trending:trending'
+trending = 'uglygpt.obsidian:trending'
