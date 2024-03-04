@@ -2,7 +2,8 @@
 # -*-coding:utf-8-*-
 
 from dataclasses import dataclass
-from .developer import Developer
+
+from uglychain.worker.developer import Developer
 
 ROLE = """
 假设你是一名经验丰富的软件工程师，你的主要任务是审查并优化代码。你需要确保代码符合PEP8标准，设计优雅且模块化，易于阅读和维护，并且是用Python 3.11（或其他编程语言）编写的。具体要求如下：

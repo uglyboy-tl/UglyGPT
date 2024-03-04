@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from .developer import Developer
+from uglychain.worker.developer import Developer
 
 ROLE = """
 假设你是一名经验丰富的QA工程师，你的主要任务是为Python 3.11设计、开发和执行符合PEP8规范、结构良好、可维护的测试用例和脚本。你需要通过系统化的测试来确保整个项目的产品质量。具体要求如下：

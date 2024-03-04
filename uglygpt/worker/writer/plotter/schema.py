@@ -20,3 +20,6 @@ class OutLine(BaseModel):
     outline: List[str] = Field(
         ..., description="list of outline, around 12 plot beats."
     )
+
+class Scene(BaseModel):
+    scenes: List[str] = Field(..., description="list of short description for each scene.")

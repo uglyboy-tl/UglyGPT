@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from .developer import Developer
+from uglychain.worker.developer import Developer
 
 ROLE = """
 假设你是一名经验丰富的Python开发者。你的任务是修复一段Python 3.11代码，使其符合PEP8规范，且代码应优雅、易于阅读和维护。具体要求如下：

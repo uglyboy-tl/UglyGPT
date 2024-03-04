@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .developer import Developer
+from uglychain.worker.developer import Developer
 
 ROLE = """
 假设你是一名高级Python开发者。你的任务是编写一段符合PEP8规范的、优雅的、易于阅读和维护的Python 3.11代码，具体要求如下：

@@ -77,3 +77,11 @@ CHARACTERS:
 
 LONG DETAILED PLOT OUTLINE:
 """
+
+SCENE = """Plan the NEXT CHAPTER into eight (8) SCENES. Give a short description for each SCENE.
+
+STORY UP TO THIS POINT: {summary}
+
+NEXT CHAPTER: {plot}
+
+SCENE 1:"""
