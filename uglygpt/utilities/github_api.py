@@ -20,6 +20,7 @@ class GithubAPI:
     @classmethod
     def _github_api(cls, url: str, params: dict | None = None):
         url = f"https://api.github.com/{url}"
+        logger.debug(f"Fetching {url}")
         try:
             response = requests.get(
                 url, headers={"Authorization": f"token {cls.token}"}, params=params
@@ -60,9 +61,11 @@ class GithubAPI:
                 yield item["full_name"]
             if 'rel="next"' not in link:
                 break
-            full_url = link.split(";")[0].strip("<>")
-            parsed = urlparse(full_url)
-            url = (parsed.path + "?" + parsed.query).lstrip("/")
+            for link in link.split(","):
+                if 'rel="next"' in link:
+                    full_url = link.strip().split(";")[0].strip("<>")
+                    parsed = urlparse(full_url)
+                    url = (parsed.path + "?" + parsed.query).lstrip("/")
 
     @classmethod
     def fetch_trending_file(cls) -> str:
