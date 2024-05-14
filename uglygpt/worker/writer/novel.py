@@ -51,7 +51,7 @@ PROMPT_TEMPLATE = """
 @dataclass
 class Novel(BaseWorker):
     filename: str = "resource/local/novel.txt"
-    model: Model = Model.YI_LONGCONTEXT
+    model: Model = Model.YI
     prompt: str = PROMPT_TEMPLATE
     role: str = ROLE
     db: StorageRetriever = field(init=False)
